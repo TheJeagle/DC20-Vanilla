@@ -1354,7 +1354,7 @@ function computePlayerHitChanceVs(defense){
 
 function renderRecommendations(){
   if (!recommendationsPanel) return;
-
+  // LOL
   const level = Number(creature.level) || 0;
   const chanceVsPD = computePlayerHitChanceVs(creature.PD);
   const chanceVsPDHeavy = computePlayerHitChanceVs(creature.PD+5);
