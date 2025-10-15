@@ -4,10 +4,273 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>DC20 Creature Creator</title>
-
+    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="index.css">
   </head>
   <body>
-    <h1>DC20 Vanilla</h1>
-    <p>This is where the stuff goes.</p>
+    <nav>
+      <div id="title">DC20 Creature Creator</div>
+      <div id="nav-buttons">
+        <a class="button green is-active" href="index.html">Create New Creature</a>
+        <a class="button purple" href="myCreatures.html">My Creatures</a>
+        <a class="button purple" href="auth.html">My Account</a>
+        <button class="button red" type="button" id="logoutButton">Logout</button>
+      </div>
+    </nav>
+
+    <div id="inputPanel">
+      <h2>Inputs</h2>
+      <div id="creatureInputs">
+        <label for="creatureName">Name</label>
+        <input type="text" id="creatureName" name="name" placeholder="Creature Name"/>
+
+        <label for="creatureLevel">Level (0 - 10)</label>
+        <input type="number" id="creatureLevel" name="level" min="0" max="10" value="1"/>
+
+        <label for="creatureShortDescription">Short Description</label>
+        <textarea id="creatureShortDescription" name="shortDescription" rows="2" placeholder="One or two sentences that capture the creature’s core concept."></textarea>
+        <p class="input-helper">Used whenever the statblock is condensed; keep it punchy so readers instantly understand the creature’s main idea.</p>
+
+        <label for="creatureLongDescription">Long Description</label>
+        <textarea id="creatureLongDescription" name="longDescription" rows="4" placeholder="Add lore, origin stories, or any extended notes you want to appear with the full statblock."></textarea>
+        <p class="input-helper">Appears on the full statblock for lore or extended guidance.</p>
+
+        <span class="input-label">Power Tier</span>
+        <div class="option-group">
+          <input type="radio" id="powerMinion" name="power" value="minion">
+          <label class="option-tile" for="powerMinion">Minion</label>
+
+          <input type="radio" id="powerWeak" name="power" value="weak">
+          <label class="option-tile" for="powerWeak">Weak</label>
+
+          <input type="radio" id="powerNormal" name="power" value="normal" checked>
+          <label class="option-tile" for="powerNormal">Normal</label>
+
+          <input type="radio" id="powerApex" name="power" value="apex">
+          <label class="option-tile" for="powerApex">Apex</label>
+
+          <input type="radio" id="powerLegendary" name="power" value="legendary">
+          <label class="option-tile" for="powerLegendary">Legendary</label>
+        </div>
+
+        <span class="input-label">Role</span>
+        <div class="option-group option-group--rows-5">
+          <input type="radio" id="roleArtillerist" name="role" value="artillerist">
+          <label class="option-tile" for="roleArtillerist">Artillerist</label>
+
+          <input type="radio" id="roleBrute" name="role" value="brute">
+          <label class="option-tile" for="roleBrute">Brute</label>
+
+          <input type="radio" id="roleController" name="role" value="controller">
+          <label class="option-tile" for="roleController">Controller</label>
+
+          <input type="radio" id="roleDefender" name="role" value="defender">
+          <label class="option-tile" for="roleDefender">Defender</label>
+
+          <input type="radio" id="roleLeader" name="role" value="leader">
+          <label class="option-tile" for="roleLeader">Leader</label>
+
+          <input type="radio" id="roleLurker" name="role" value="lurker">
+          <label class="option-tile" for="roleLurker">Lurker</label>
+
+          <input type="radio" id="roleSkirmisher" name="role" value="skirmisher">
+          <label class="option-tile" for="roleSkirmisher">Skirmisher</label>
+
+          <input type="radio" id="roleSupport" name="role" value="support">
+          <label class="option-tile" for="roleSupport">Support</label>
+
+          <input type="radio" id="roleCaster" name="role" value="caster">
+          <label class="option-tile" for="roleCaster">Caster</label>
+
+          <input type="radio" id="roleNone" name="role" value="none" checked>
+          <label class="option-tile" for="roleNone">None</label>
+        </div>
+
+        <span class="input-label">Type</span>
+        <div class="option-group">
+          <input type="radio" id="typeHumanoid" name="type" value="humanoid" checked>
+          <label class="option-tile" for="typeHumanoid">Humanoid</label>
+
+          <input type="radio" id="typeBeast" name="type" value="beast">
+          <label class="option-tile" for="typeBeast">Beast</label>
+
+          <input type="radio" id="typeUndead" name="type" value="undead">
+          <label class="option-tile" for="typeUndead">Undead</label>
+        </div>
+
+        <span class="input-label">Size</span>
+        <div class="option-group option-group--wrap grid3">
+          <input type="radio" id="sizeTiny" name="size" value="tiny">
+          <label class="option-tile" for="sizeTiny">Tiny</label>
+
+          <input type="radio" id="sizeSmall" name="size" value="small">
+          <label class="option-tile" for="sizeSmall">Small</label>
+
+          <input type="radio" id="sizeMedium" name="size" value="medium" checked>
+          <label class="option-tile" for="sizeMedium">Medium</label>
+
+          <input type="radio" id="sizeLarge" name="size" value="large">
+          <label class="option-tile" for="sizeLarge">Large</label>
+
+          <input type="radio" id="sizeHuge" name="size" value="huge">
+          <label class="option-tile" for="sizeHuge">Huge</label>
+
+          <input type="radio" id="sizeGargantuan" name="size" value="gargantuan">
+          <label class="option-tile" for="sizeGargantuan">Gargantuan</label>
+        </div>
+
+        <div class="trait-picker" data-trait="resistances">
+          <button type="button" class="trait-picker-toggle" aria-expanded="false">Resistances</button>
+          <div class="trait-picker-content">
+            <div class="trait-picker-section">
+              <span class="trait-picker-title">Damage</span>
+              <div class="option-group option-group--wrap trait-picker-options" data-trait="resistances" data-category="damage"></div>
+            </div>
+            <div class="trait-picker-separator" role="separator"></div>
+            <div class="trait-picker-section">
+              <span class="trait-picker-title">Conditions</span>
+              <div class="option-group option-group--wrap trait-picker-options" data-trait="resistances" data-category="condition"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="trait-picker" data-trait="vulnerabilities">
+          <button type="button" class="trait-picker-toggle" aria-expanded="false">Vulnerabilities</button>
+          <div class="trait-picker-content">
+            <div class="trait-picker-section">
+              <span class="trait-picker-title">Damage</span>
+              <div class="option-group option-group--wrap trait-picker-options" data-trait="vulnerabilities" data-category="damage"></div>
+            </div>
+            <div class="trait-picker-separator" role="separator"></div>
+            <div class="trait-picker-section">
+              <span class="trait-picker-title">Conditions</span>
+              <div class="option-group option-group--wrap trait-picker-options" data-trait="vulnerabilities" data-category="condition"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="trait-picker" data-trait="immunities">
+          <button type="button" class="trait-picker-toggle" aria-expanded="false">Immunities</button>
+          <div class="trait-picker-content">
+            <div class="trait-picker-section">
+              <span class="trait-picker-title">Damage</span>
+              <div class="option-group option-group--wrap trait-picker-options" data-trait="immunities" data-category="damage"></div>
+            </div>
+            <div class="trait-picker-separator" role="separator"></div>
+            <div class="trait-picker-section">
+              <span class="trait-picker-title">Conditions</span>
+              <div class="option-group option-group--wrap trait-picker-options" data-trait="immunities" data-category="condition"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="statblockPanel">
+      <div class="statblock">
+        <div id="statblockName">Creature Name</div>
+        <div id="statblockInfo">Medium Undead | Level 1 Lurker</div>
+        <div class="statblock-divider"></div>
+
+        <div class="statblock-vitals">
+          <span class="statblock-label">HP</span>
+          <span class="statblock-value" id="statblockHP">--</span>
+          <span class="statblock-label">PD</span>
+          <span class="statblock-value" id="statblockPD">-- / -- / --</span>
+          <span class="statblock-label">AD</span>
+          <span class="statblock-value" id="statblockAD">-- / -- / --</span>
+        </div>
+
+        <div class="statblock-attributes">
+          <div class="attribute-card">
+            <span class="attribute-label">MIG</span>
+            <span class="attribute-value" id="statblockMIG">--</span>
+            <span class="attribute-save">(<span id="statblockMIGSave">--</span>)</span>
+          </div>
+          <div class="attribute-card">
+            <span class="attribute-label">AGI</span>
+            <span class="attribute-value" id="statblockAGI">--</span>
+            <span class="attribute-save">(<span id="statblockAGISave">--</span>)</span>
+          </div>
+          <div class="attribute-card">
+            <span class="attribute-label">CHA</span>
+            <span class="attribute-value" id="statblockCHA">--</span>
+            <span class="attribute-save">(<span id="statblockCHASave">--</span>)</span>
+          </div>
+          <div class="attribute-card">
+            <span class="attribute-label">INT</span>
+            <span class="attribute-value" id="statblockINT">--</span>
+            <span class="attribute-save">(<span id="statblockINTSave">--</span>)</span>
+          </div>
+        </div>
+
+        <hr class="statblock-rule" />
+
+
+        <div class="statblock-traits statblock-trait-section">
+          <div class="statblock-trait-row">
+            <span class="statblock-trait-label">Resistances:</span>
+            <span class="statblock-trait-values" id="statblockResistances"></span>
+          </div>
+          <div class="statblock-trait-row">
+            <span class="statblock-trait-label">Vulnerabilities:</span>
+            <span class="statblock-trait-values" id="statblockVulnerabilities"></span>
+          </div>
+          <div class="statblock-trait-row">
+            <span class="statblock-trait-label">Immunities:</span>
+            <span class="statblock-trait-values" id="statblockImmunities"></span>
+          </div>
+          <div class="statblock-trait-row">
+            <span class="statblock-trait-label">Skills:</span>
+            <span class="statblock-trait-values" id="statblockSkills"></span>
+          </div>
+          <div class="statblock-trait-row">
+            <span class="statblock-trait-label">Senses:</span>
+            <span class="statblock-trait-values" id="statblockSenses"></span>
+          </div>
+        </div>
+
+        <div class="statblock-feature-section">
+          <span class="statblock-feature-heading">Features</span>
+          <div id="statblockFeatures" class="statblock-feature-list"></div>
+        </div>
+
+        <div class="statblock-actions-section">
+          <div class="statblock-actions-heading" id="statblockActionsHeading">Actions (0)</div>
+          <div class="statblock-actions-bar" id="statblockActionsInfo"></div>
+          <div id="statblockActions" class="statblock-actions-list"></div>
+        </div>
+
+        <div class="statblock-divider"></div>
+        <div class="statblock-description-heading">Short Description</div>
+        <p id="statblockShortDescription" class="statblock-short-description"></p>
+        <div class="statblock-description-heading">Longer Description</div>
+        <div id="statblockLongDescription" class="statblock-long-description"></div>
+
+        
+      </div>
+    </div>
+
+    <div id="savePanel">
+      <h2>Save</h2>
+      <p class="save-note">Need to tweak numbers after generation? Open the editor to adjust deltas without losing the baseline.</p>
+      <button type="button" id="resetInputsButton" class="save-action">Reset Inputs</button>
+      <button type="button" id="editCreatureButton" class="save-action">Edit Creature</button>
+      <button type="button" id="saveToFirebaseButton" class="save-action">Save to Firebase</button>
+      <div id="saveStatus" class="save-status" aria-live="polite"></div>
+    </div>
+
+    <div id="featurePanel">
+      <h2>Features</h2>
+      <div id="featureSearchRow">
+        <input type="search" id="featureSearch" placeholder="Search features" autocomplete="off">
+      </div>
+      <div id="featureControls"></div>
+    </div>
+
+    <div id="recomendationsPanel">
+      <h2>Recomendations</h2>
+    </div>
+    <script type="module" src="index.js"></script>
   </body>
 </html>

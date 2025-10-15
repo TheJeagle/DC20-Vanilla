@@ -1,0 +1,506 @@
+[
+  {
+    "id": "common-ranged-attack",
+    "type": "action-attack",
+    "name": "Common Ranged Attack",
+    "featureCost": 0,
+    "effects": {
+      "cost": 1,
+      "actionType": "Ranged Martial Attack",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": 0,
+          "type": "Piercing"
+        }
+      ],
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "10 / 15 Spaces"
+    },
+    "tags": [
+      "attack/martial",
+      "attack/single-target",
+      "target/pd",
+      "ap-cost/1",
+      "feature-cost/0"
+    ],
+    "actionType": "Ranged Martial Attack"
+  },
+  {
+    "id": "physical-resistance",
+    "type": "modifier",
+    "name": "Physical Resistance",
+    "description": "Take Half damage from Physical attacks.",
+    "featureCost": 1,
+    "effects": {
+      "resistances": {
+        "damage": [
+          "Piercing",
+          "Slashing",
+          "Bludgeoning"
+        ]
+      }
+    },
+    "tags": [
+      "role/defender",
+      "creature/construct",
+      "feature-cost/1"
+    ]
+  },
+  {
+    "id": "common-melee",
+    "type": "action-attack",
+    "name": "Melee Attack",
+    "description": "Melee Attack",
+    "featureCost": 0,
+    "effects": {
+      "cost": 1,
+      "actionType": "Melee Martial Attack",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": 0,
+          "type": "Piercing"
+        }
+      ],
+      "targetDefense": "PD"
+    },
+    "tags": [
+      "attack/martial",
+      "attack/single-target",
+      "target/pd",
+      "ap-cost/1",
+      "feature-cost/0"
+    ],
+    "actionType": "Melee Martial Attack"
+  },
+  {
+    "id": "battle-hardened",
+    "type": "modifier",
+    "name": "Battle Hardened",
+    "description": "Battle-scarred discipline hardens the creature's defenses.",
+    "featureCost": 2,
+    "effects": {
+      "hp": 12,
+      "pd": 2,
+      "ad": 2
+    },
+    "tags": [
+      "role/defender",
+      "role/brute",
+      "creature/humanoid",
+      "feature-cost/2"
+    ]
+  },
+  {
+    "id": "iron-hide",
+    "type": "modifier",
+    "name": "Iron Hide",
+    "description": "Thick plating bolsters the creature's hide.",
+    "featureCost": 1,
+    "effects": {
+      "hp": 5,
+      "pd": 1,
+      "resistances": {
+        "damage": [
+          "Slashing"
+        ]
+      }
+    },
+    "tags": [
+      "role/defender",
+      "creature/beast",
+      "feature-cost/1"
+    ]
+  },
+  {
+    "id": "melee-bash",
+    "type": "action-attack",
+    "name": "Bash",
+    "description": "Bash a grappled creature into the ground.",
+    "featureCost": 1,
+    "effects": {
+      "cost": 2,
+      "actionType": "Melee Martial Attack",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": 1,
+          "type": "Bludgeoning"
+        }
+      ],
+      "targetDefense": "AD",
+      "target": "a grappled creature",
+      "save": {
+        "attribute": "Mig",
+        "effect": "On a failure, the target gets knocked Prone."
+      }
+    },
+    "tags": [
+      "attack/martial",
+      "attack/single-target",
+      "target/ad",
+      "ap-cost/2",
+      "feature-cost/1",
+      "status/hindered"
+    ],
+    "actionType": "Melee Martial Attack"
+  },
+  {
+    "id": "covering-fire",
+    "type": "action-attack",
+    "name": "Covering Fire",
+    "description": "You loose a hail of arrows blanketing an area, potentially causing targets to bleed.",
+    "featureCost": 2,
+    "effects": {
+      "cost": 2,
+      "actionType": "Area Martial Attack",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": -1,
+          "type": "Piercing"
+        }
+      ],
+      "targetDefense": "AD",
+      "target": "a 3 Space Cube",
+      "range": "5 Spaces",
+      "save": {
+        "attribute": "Agi",
+        "effect": "On a failure, the target gains the Bleeding condition."
+      }
+    },
+    "tags": [
+      "attack/martial",
+      "attack/aoe",
+      "target/ad",
+      "ap-cost/2",
+      "feature-cost/2",
+      "status/bleeding"
+    ],
+    "actionType": "Area Martial Attack"
+  },
+  {
+    "id": "natures-healing",
+    "type": "action-check-utility",
+    "name": "Nature's Healing",
+    "featureDescription": "Long range single target healing",
+    "featureCost": 1,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "actionDescription": "You mend the wounds of a creature within range",
+      "range": "10 Spaces",
+      "target": "one creature",
+      "dc": 10,
+      "check": {
+        "dc": 10,
+        "failure": "Target regains 1 HP.",
+        "success": "Target regains 2 HP.",
+        "successEach5": "+1 HP."
+      }
+    },
+    "tags": [
+      "attack/spellcaster",
+      "ap-cost/2",
+      "feature-cost/1",
+      "role/support"
+    ]
+  },
+  {
+    "id": "translocate",
+    "type": "action-check-utility",
+    "actionType": "utility",
+    "name": "Translocate",
+    "description": "You disappear and reappear in a new space within 3 Spaces, navigating the Fey Plane to get to your new location.",
+    "featureCost": 1,
+    "effects": {
+      "cost": 1
+    },
+    "tags": [
+      "attack/spellcaster",
+      "ap-cost/1",
+      "feature-cost/1",
+      "utility",
+      "movement"
+    ]
+  },
+  {
+    "id": "entangling-vines",
+    "type": "action-check-utility",
+    "name": "Entangling Vines",
+    "actionType": "Spell Check",
+    "featureDescription": "Create Difficult terrain",
+    "featureCost": 1,
+    "effects": {
+      "cost": 2,
+      "actionDescription": "The area becomes difficult terrain for 1 minute.",
+      "range": "5 Spaces",
+      "target": "a 2 space sphere",
+      "check": {
+        "dc": 10
+      }
+    },
+    "tags": [
+      "attack/spellcaster",
+      "attack/aoe",
+      "ap-cost/2",
+      "feature-cost/1",
+      "status/hindered"
+    ]
+  },
+  {
+    "id": "umbral-blast",
+    "type": "action-attack",
+    "name": "Umbral Blast",
+    "description": "A magical AoE attack that deals True Damage",
+    "featureCost": 1,
+    "effects": {
+      "cost": 2,
+      "actionType": "Area Spell Attack",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": -2,
+          "type": "Umbral"
+        },
+        {
+          "useBase": false,
+          "modifier": 1,
+          "type": "True"
+        }
+      ],
+      "targetDefense": "AD",
+      "target": "a 1 Space Sphere",
+      "range": "10 Spaces"
+    },
+    "tags": [
+      "attack/spellcaster",
+      "attack/aoe",
+      "target/ad",
+      "ap-cost/2",
+      "feature-cost/1",
+      "tier/apex"
+    ],
+    "actionType": "Area Spell Attack"
+  },
+  {
+    "id": "pack-instincts",
+    "type": "passive",
+    "name": "Pack Instincts",
+    "description": "The creature thrives when fighting alongside allies. When within 1 space of an ally it gains +2 to Hit.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Gain advantage on attack rolls when an ally is adjacent to the target."
+    },
+    "tags": [
+      "role/support",
+      "role/leader",
+      "creature/humanoid",
+      "feature-cost/1"
+    ]
+  },
+  {
+    "type": "action-attack",
+    "name": "Fishhook shot",
+    "id": "fishhook-shot",
+    "featureDescription": "a attack that pulls target towards the attacker",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "3 Spaces",
+      "actionDescription": "You fling out a hooked barb that strikes the target and attempt to pull them closer",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": 0,
+          "type": "Piercing"
+        }
+      ],
+      "save": {
+        "attribute": "Mig",
+        "failure": "Target is pulled towards you 2 Spaces",
+        "failureEach5": "+1 Space"
+      }
+    }
+  },
+  {
+    "type": "action-check-utility",
+    "name": "Healing Burst",
+    "id": "healing-burst",
+    "featureDescription": "a healing effect targeting every creature around the caster",
+    "featureCost": 1,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "actionDescription": "A burst of healing light shines around you, healing any creature it touches",
+      "target": "every creature",
+      "range": "3 Spaces",
+      "check": {
+        "dc": 10,
+        "failure": "Targets heal 1 HP",
+        "success": "Targets heal 2 HP",
+        "successEach5": "+1 HP"
+      }
+    }
+  },
+  {
+    "type": "action-check-utility",
+    "name": "Fey Step",
+    "id": "fey-step",
+
+    "actionType": "utility",
+    "featureDescription": "Short range teleport",
+    "featureCost": 0,
+    "effects": {
+      "cost": 1,
+      "actionDescription": "You teleport to a location of your choice within 4 Spaces."
+    }
+  },
+  {
+    "type": "action-check-utility",
+    "name": "Wing Blast",
+    "id": "wing-blast",
+    "featureDescription": "A action that pushes away creatures close to the user",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 1,
+      "target": "all creatures",
+      "range": "1 Space",
+      "check": {
+        "dc": 15,
+        "success": "push them 1 Space directly away from you",
+        "successEach5": "+1 Space"
+      }
+    }
+  },
+  {
+    "type": "action-attack",
+    "name": "Whirlwind",
+    "id": "whirlwind",
+    "featureDescription": "a martial AoE attack",
+    "featureCost": 0,
+    "actionType": "Area Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "all creatures",
+      "range": "1 Space",
+      "actionDescription": "You spin while wildly attacking in all directions.",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": 0,
+          "type": "Slashing"
+        }
+      ]
+    }
+  },
+  {
+    "type": "action-check-utility",
+    "name": "Rallying Cry",
+    "id": "rallying-cry",
+    "featureDescription": "Give allies ADV",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 2,
+      "actionDescription": "You yell out to your allies, granting them ADV on their next check",
+      "target": "1 or more creatures",
+      "range": "10 Spaces",
+      "check": {
+        "dc": 10,
+        "failure": "Target 1 Creature",
+        "success": "Target 2 Creatures",
+        "successEach5": "Target +1 Creature"
+      }
+    }
+  },
+  {
+    "type": "action-check-utility",
+    "name": "Arcane Push",
+    "id": "arcane-push",
+    "featureDescription": "Push targets 1 Space",
+    "featureCost": 1,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "actionDescription": "You weave the arcane into a solid force that pushed the Target 1 Space in any horizontal direction",
+      "target": "One or more creatures",
+      "range": "10 Spaces",
+      "check": {
+        "dc": 10,
+        "failure": "Target 1 Creature",
+        "success": "Target 2 Creatures",
+        "successEach5": "Target +1 Creature"
+      }
+    }
+  },
+  {
+    "type": "action-check-utility",
+    "name": "Arcane Push",
+    "id": "arcane-push",
+    "featureDescription": "Push targets 1 Space",
+    "featureCost": 1,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "actionDescription": "You weave the arcane into a solid force that pushed the Target 1 Space in any horizontal direction",
+      "target": "One or more creatures",
+      "range": "10 Spaces",
+      "check": {
+        "dc": 10,
+        "failure": "Target 1 Creature",
+        "success": "Target 2 Creatures",
+        "successEach5": "Target +1 Creature"
+      }
+    }
+  },
+  {
+    "type": "action-check-utility",
+    "name": "Charge",
+    "id": "charge2",
+
+    "actionType": "utility",
+    "featureDescription": "Required by other features",
+    "featureCost": 0,
+    "effects": {
+      "cost": 2,
+      "actionDescription": "You spend some time to charge up for a big move"
+    }
+  },
+  {
+    "type": "action-attack",
+    "name": "Charged Radiance",
+    "id": "charged-radiance",
+    "featureDescription": "AoE line Big Damage\nReq: Charge(2)",
+    "featureCost": 2,
+    "required": [
+      "charge2"
+    ],
+    "actionType": "Area Spell Attack",
+    "effects": {
+      "cost": 3,
+      "targetDefense": "AD",
+      "target": "a 10 Space Line",
+      "range": "1 Space",
+      "actionDescription": "Requires Charge (2)\nA bright line of radiant light burns a line in front of you",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": 2,
+          "type": "Radiant"
+        }
+      ],
+      "save": {
+        "attribute": "Mental",
+        "failure": "Targets are blinded until the end of your next round"
+      }
+    }
+  }
+]

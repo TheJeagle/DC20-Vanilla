@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Creatures • DC20 Creature Creator</title>
+    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="myCreatures.css">
+  </head>
+  <body>
+    <nav>
+      <div id="title">DC20 Creature Creator</div>
+      <div id="nav-buttons">
+        <a class="button green" href="index.html">Create New Creature</a>
+        <a class="button purple is-active" href="myCreatures.html">My Creatures</a>
+        <a class="button purple" href="auth.html">My Account</a>
+        <button class="button red" type="button" id="logoutButton">Logout</button>
+      </div>
+    </nav>
+
+    <main id="myCreaturesPage">
+      <header id="pageHeader">
+        <h1 id="pageHeaderTitle">My Creatures</h1>
+        <p>Browse the creatures you have saved. Open any creature to view it in the builder.</p>
+      </header>
+
+      <div id="pageStatus" class="page-status" role="status" aria-live="polite"></div>
+
+      <div class="controls-wrapper">
+        <div class="controls-grid">
+          <div class="controls-header controls-header--sort">Sort by:</div>
+          <div class="controls-header controls-header--filter">Filter results:</div>
+
+          <div class="sort-column">
+            <div id="sortControls" class="sort-controls" role="group" aria-label="Sort creatures">
+              <div class="sort-buttons">
+                <button type="button" class="sort-button" data-sort-key="name">Name</button>
+                <button type="button" class="sort-button" data-sort-key="size">Size</button>
+                <button type="button" class="sort-button" data-sort-key="type">Type</button>
+                <button type="button" class="sort-button" data-sort-key="level">Level</button>
+                <button type="button" class="sort-button" data-sort-key="power">Power</button>
+                <button type="button" class="sort-button" data-sort-key="role">Role</button>
+              </div>
+            </div>
+          </div>
+
+          <form id="filterForm" class="filter-controls" aria-label="Filter creatures">
+            <div class="filter-group">
+              <span class="filter-label">Level</span>
+              <div class="filter-level">
+                <label class="filter-level-label" for="filterLevelMin">Min</label>
+                <input type="number" id="filterLevelMin" name="levelMin" min="0" max="99" placeholder="0">
+                <label class="filter-level-label" for="filterLevelMax">Max</label>
+                <input type="number" id="filterLevelMax" name="levelMax" min="0" max="99" placeholder="10">
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <span class="filter-label">Power</span>
+              <div class="filter-options" data-filter="power">
+                <input type="radio" id="filterPowerAny" name="filterPower" value="" checked>
+                <label class="filter-option" for="filterPowerAny">Any</label>
+                <input type="radio" id="filterPowerMinion" name="filterPower" value="minion">
+                <label class="filter-option" for="filterPowerMinion">Minion</label>
+                <input type="radio" id="filterPowerWeak" name="filterPower" value="weak">
+                <label class="filter-option" for="filterPowerWeak">Weak</label>
+                <input type="radio" id="filterPowerNormal" name="filterPower" value="normal">
+                <label class="filter-option" for="filterPowerNormal">Normal</label>
+                <input type="radio" id="filterPowerApex" name="filterPower" value="apex">
+                <label class="filter-option" for="filterPowerApex">Apex</label>
+                <input type="radio" id="filterPowerLegendary" name="filterPower" value="legendary">
+                <label class="filter-option" for="filterPowerLegendary">Legendary</label>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <span class="filter-label">Role</span>
+              <div class="filter-options" data-filter="role">
+                <input type="radio" id="filterRoleAny" name="filterRole" value="" checked>
+                <label class="filter-option" for="filterRoleAny">Any</label>
+                <input type="radio" id="filterRoleArtillerist" name="filterRole" value="artillerist">
+                <label class="filter-option" for="filterRoleArtillerist">Artillerist</label>
+                <input type="radio" id="filterRoleBrute" name="filterRole" value="brute">
+                <label class="filter-option" for="filterRoleBrute">Brute</label>
+                <input type="radio" id="filterRoleController" name="filterRole" value="controller">
+                <label class="filter-option" for="filterRoleController">Controller</label>
+                <input type="radio" id="filterRoleDefender" name="filterRole" value="defender">
+                <label class="filter-option" for="filterRoleDefender">Defender</label>
+                <input type="radio" id="filterRoleLeader" name="filterRole" value="leader">
+                <label class="filter-option" for="filterRoleLeader">Leader</label>
+                <input type="radio" id="filterRoleLurker" name="filterRole" value="lurker">
+                <label class="filter-option" for="filterRoleLurker">Lurker</label>
+                <input type="radio" id="filterRoleSkirmisher" name="filterRole" value="skirmisher">
+                <label class="filter-option" for="filterRoleSkirmisher">Skirmisher</label>
+                <input type="radio" id="filterRoleSupport" name="filterRole" value="support">
+                <label class="filter-option" for="filterRoleSupport">Support</label>
+                <input type="radio" id="filterRoleCaster" name="filterRole" value="caster">
+                <label class="filter-option" for="filterRoleCaster">Caster</label>
+                <input type="radio" id="filterRoleNone" name="filterRole" value="none">
+                <label class="filter-option" for="filterRoleNone">None</label>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <span class="filter-label">Type</span>
+              <div class="filter-options" data-filter="type">
+                <input type="radio" id="filterTypeAny" name="filterType" value="" checked>
+                <label class="filter-option" for="filterTypeAny">Any</label>
+                <input type="radio" id="filterTypeHumanoid" name="filterType" value="humanoid">
+                <label class="filter-option" for="filterTypeHumanoid">Humanoid</label>
+                <input type="radio" id="filterTypeBeast" name="filterType" value="beast">
+                <label class="filter-option" for="filterTypeBeast">Beast</label>
+                <input type="radio" id="filterTypeUndead" name="filterType" value="undead">
+                <label class="filter-option" for="filterTypeUndead">Undead</label>
+                <input type="radio" id="filterTypeConstruct" name="filterType" value="construct">
+                <label class="filter-option" for="filterTypeConstruct">Construct</label>
+                <input type="radio" id="filterTypeDragon" name="filterType" value="dragon">
+                <label class="filter-option" for="filterTypeDragon">Dragon</label>
+                <input type="radio" id="filterTypeElemental" name="filterType" value="elemental">
+                <label class="filter-option" for="filterTypeElemental">Elemental</label>
+                <input type="radio" id="filterTypeFey" name="filterType" value="fey">
+                <label class="filter-option" for="filterTypeFey">Fey</label>
+                <input type="radio" id="filterTypeFiend" name="filterType" value="fiend">
+                <label class="filter-option" for="filterTypeFiend">Fiend</label>
+                <input type="radio" id="filterTypeGiant" name="filterType" value="giant">
+                <label class="filter-option" for="filterTypeGiant">Giant</label>
+                <input type="radio" id="filterTypePlant" name="filterType" value="plant">
+                <label class="filter-option" for="filterTypePlant">Plant</label>
+                <input type="radio" id="filterTypeOoze" name="filterType" value="ooze">
+                <label class="filter-option" for="filterTypeOoze">Ooze</label>
+                <input type="radio" id="filterTypeAberration" name="filterType" value="aberration">
+                <label class="filter-option" for="filterTypeAberration">Aberration</label>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <span class="filter-label">Size</span>
+              <div class="filter-options" data-filter="size">
+                <input type="radio" id="filterSizeAny" name="filterSize" value="" checked>
+                <label class="filter-option" for="filterSizeAny">Any</label>
+                <input type="radio" id="filterSizeTiny" name="filterSize" value="tiny">
+                <label class="filter-option" for="filterSizeTiny">Tiny</label>
+                <input type="radio" id="filterSizeSmall" name="filterSize" value="small">
+                <label class="filter-option" for="filterSizeSmall">Small</label>
+                <input type="radio" id="filterSizeMedium" name="filterSize" value="medium">
+                <label class="filter-option" for="filterSizeMedium">Medium</label>
+                <input type="radio" id="filterSizeLarge" name="filterSize" value="large">
+                <label class="filter-option" for="filterSizeLarge">Large</label>
+                <input type="radio" id="filterSizeHuge" name="filterSize" value="huge">
+                <label class="filter-option" for="filterSizeHuge">Huge</label>
+                <input type="radio" id="filterSizeGargantuan" name="filterSize" value="gargantuan">
+                <label class="filter-option" for="filterSizeGargantuan">Gargantuan</label>
+              </div>
+            </div>
+          </form>
+
+          <div class="filter-actions">
+            <button type="button" id="filterClear" class="filter-clear">Clear Filters</button>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <section id="creatureViews" class="creature-views" aria-labelledby="pageHeaderTitle">
+        <div class="cards-container">
+          <div id="creaturesList" class="creature-list" data-empty="true"></div>
+        </div>
+        <div class="table-container" data-empty="true">
+          <table id="creaturesTable" class="creatures-table">
+            <thead>
+              <tr>
+                <th scope="col" data-sort-key="name">Name</th>
+                <th scope="col" data-sort-key="size">Size</th>
+                <th scope="col" data-sort-key="type">Type</th>
+                <th scope="col" data-sort-key="level">Level</th>
+                <th scope="col" data-sort-key="power">Power</th>
+                <th scope="col" data-sort-key="role">Role</th>
+                <th scope="col" class="actions-header">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="creaturesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="myCreatures.js"></script>
+  </body>
+</html>

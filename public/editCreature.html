@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DC20 Creature Editor</title>
+    <link rel="stylesheet" href="reset.css" />
+    <link rel="stylesheet" href="index.css" />
+    <style>
+      :root {
+        --editor-bg: #0c0b12;
+        --editor-panel: #141320;
+        --editor-border: rgba(255,255,255,0.08);
+      }
+      body {
+        background: radial-gradient(circle at top, #1b1534, #0c0b12 65%);
+        color: #f4f3ff;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding: 32px;
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        letter-spacing: 0.04em;
+      }
+      header .subtitle {
+        font-size: 0.95rem;
+        color: rgba(255,255,255,0.75);
+      }
+      .action-bar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .btn {
+        appearance: none;
+        border: 1px solid var(--editor-border);
+        border-radius: 999px;
+        padding: 10px 20px;
+        background: linear-gradient(180deg, rgba(92,83,168,0.25), rgba(46,40,92,0.45));
+        color: #f4f3ff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.15s ease;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+      }
+      .btn.secondary {
+        background: transparent;
+      }
+      main {
+        display: grid;
+        gap: 24px;
+      }
+      .panel {
+        background: var(--editor-panel);
+        border: 1px solid var(--editor-border);
+        border-radius: 18px;
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 18px 32px rgba(0,0,0,0.25);
+      }
+      .panel h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .panel-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.03);
+      }
+      .panel-field strong {
+        letter-spacing: 0.04em;
+        font-size: 0.9rem;
+      }
+      .two-column {
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 960px) {
+        .two-column {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 160px 140px;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.03);
+      }
+      .field-row:nth-child(odd) {
+        background: rgba(255,255,255,0.05);
+      }
+      .field-row label {
+        font-weight: 600;
+        letter-spacing: 0.03em;
+      }
+      .field-row .baseline {
+        font-size: 0.95rem;
+        color: rgba(255,255,255,0.7);
+      }
+      .field-row input[type="number"] {
+        width: 100%;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(8,7,16,0.55);
+        color: inherit;
+        padding: 8px 12px;
+        font-size: 0.95rem;
+      }
+      .delta-preview {
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.75);
+      }
+      .delta-preview span {
+        font-weight: 600;
+      }
+      .attribute-editor {
+        display: grid;
+        gap: 18px;
+      }
+      @media (min-width: 960px) {
+        .attribute-editor {
+          grid-template-columns: 1.2fr 1fr;
+        }
+      }
+      .attribute-editor h3 {
+        margin: 0 0 8px 0;
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.82);
+      }
+      .attribute-values {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .attribute-value-row {
+        display: grid;
+        grid-template-columns: 1fr 180px;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.04);
+      }
+      .attribute-value-row:nth-child(odd) {
+        background: rgba(255,255,255,0.06);
+      }
+      .attribute-value-row strong {
+        font-size: 1.05rem;
+      }
+      .attribute-value-row .baseline {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.7);
+      }
+      .attribute-value-row input[type="number"] {
+        width: 100%;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(8,7,16,0.55);
+        color: inherit;
+        padding: 8px 12px;
+        font-size: 0.95rem;
+      }
+      #attributeList {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .attribute-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.03);
+      }
+      .attribute-item strong {
+        font-size: 1.05rem;
+        letter-spacing: 0.04em;
+      }
+      .attribute-item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .attribute-item-info .assigned {
+        font-size: 0.95rem;
+        color: rgba(255,255,255,0.75);
+      }
+      .attr-controls {
+        display: flex;
+        gap: 8px;
+      }
+      .chip-button {
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        background: rgba(12,10,28,0.85);
+        color: inherit;
+        cursor: pointer;
+      }
+      #statusMessage {
+        padding: 14px 18px;
+        border-radius: 12px;
+        background: rgba(255, 70, 70, 0.18);
+        border: 1px solid rgba(255, 86, 86, 0.35);
+        display: none;
+      }
+      .note {
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.68);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Edit Creature</h1>
+        <div class="subtitle">Adjust deltas without touching the generated baseline</div>
+      </div>
+      <div class="action-bar">
+        <button class="btn secondary" id="btnBack">Back to Builder</button>
+        <button class="btn" id="btnSave">Save Changes</button>
+      </div>
+    </header>
+
+    <div id="statusMessage"></div>
+
+    <main>
+      <section class="panel" id="baseInfoPanel">
+        <h2>Baseline Inputs</h2>
+        <div class="two-column" id="baseInfo"></div>
+        <p class="note">These values come from the creature builder. To change them, head back to the main page.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Core Stat Adjustments</h2>
+        <div class="two-column" id="coreStats"></div>
+        <p class="note">Enter the difference you want to apply. For example, +1 will add 1 to the generated PD.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Attribute Order &amp; Tweaks</h2>
+        <div class="attribute-editor">
+          <div>
+            <h3>Values</h3>
+            <div class="attribute-values" id="attributeValueList"></div>
+          </div>
+          <div>
+            <h3>Attribute Order</h3>
+            <div id="attributeList"></div>
+          </div>
+        </div>
+        <p class="note">Edit the ranked values on the left, then use the arrows to decide which attribute receives each slot.</p>
+      </section>
+    </main>
+
+    <script type="module" src="./editCreature.js"></script>
+  </body>
+</html>

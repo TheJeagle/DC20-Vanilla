@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Feature JSON Builder</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --panel:#111827;       /* gray-900 */
+      --muted:#94a3b8;       /* slate-400 */
+      --text:#e5e7eb;        /* gray-200 */
+      --accent:#38bdf8;      /* sky-400 */
+      --accent-2:#22c55e;    /* green-500 */
+      --warn:#f59e0b;        /* amber-500 */
+      --danger:#ef4444;      /* red-500 */
+      --border:#1f2937;      /* gray-800 */
+      --chip:#0b1222;        /* dark blue-ish */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background:linear-gradient(120deg,#0a1224,#0f172a 30%, #0f172a 70%, #0a1224);
+      color:var(--text);
+      display:grid; grid-template-columns: 1.1fr .9fr; gap:20px; padding:20px;
+    }
+    @media (max-width: 1100px){ body{grid-template-columns: 1fr; } }
+
+    header{
+      grid-column:1 / -1; display:flex; align-items:center; gap:14px;
+    }
+    .logo{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:radial-gradient( circle at 30% 20%, rgba(56,189,248,.35), transparent 50%), linear-gradient(180deg,#0b1222,#0a0f1e); box-shadow: inset 0 0 0 1px #13203a, var(--shadow); }
+    .logo svg{ opacity:.9 }
+    h1{ font-size:22px; margin:0 }
+    .sub{ color:var(--muted) }
+
+    .panel{ background:linear-gradient(180deg,#0c1324,#0b0f1c); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .panel .head{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .panel .head h2{ margin:0; font-size:16px }
+
+    #right-column { display: flex; flex-direction: column; gap: 20px; }
+
+    form{ padding:16px; display:grid; gap:14px; }
+
+    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media (max-width: 700px){ .grid-2{ grid-template-columns:1fr; } }
+
+    label{ display:grid; gap:6px; font-weight:600; }
+    label span{ font-weight:600; color:#c7d2fe }
+    input, select, textarea{ width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:#0a1222; color:var(--text); outline:none; }
+    textarea{ min-height:80px; resize:vertical }
+    input[readonly]{ opacity:.8 }
+
+    .muted{ color:var(--muted); font-size:12px }
+    .row{ display:flex; gap:10px; align-items:center }
+
+    .btn{ appearance:none; border:none; padding:10px 14px; border-radius:12px; background:#0b1222; color:var(--text); border:1px solid var(--border); cursor:pointer; transition:.15s ease; font-weight:600 }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 8px 20px rgba(0,0,0,.35) }
+    .btn.primary{ background:linear-gradient(180deg,#0b1f2f,#0a1725); border-color:#133046; color:#d5f3ff; }
+    .btn.accent{ background:linear-gradient(180deg,#032234,#041a2a); border-color:#0b6b8f; color:#b9efff }
+    .btn.green{ background:linear-gradient(180deg,#082415,#071e12); border-color:#164d2a; color:#d6ffe6 }
+    .btn.warn{ background:linear-gradient(180deg,#261b05,#1c1404); border-color:#5a4308; color:#ffe9be }
+    .btn.danger{ background:linear-gradient(180deg,#2b0c0c,#200909); border-color:#5c1515; color:#ffd5d5 }
+
+    .section{ padding:12px; border:1px dashed #1a2338; border-radius:12px; background: #091222; }
+    .section h3{ margin:0 0 10px 0; font-size:14px; color:#a5b4fc }
+
+    table{ width:100%; border-collapse:separate; border-spacing:0 6px; }
+    th, td{ text-align:left; padding:8px 10px; }
+    th{ color:#a3a3a3; font-weight:600; font-size:12px }
+    tbody tr{ background:#0a1222; border-radius:10px; }
+    tbody tr td:first-child{ border-top-left-radius:10px; border-bottom-left-radius:10px }
+    tbody tr td:last-child{ border-top-right-radius:10px; border-bottom-right-radius:10px }
+
+    .chip{ display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; background:var(--chip); border:1px solid var(--border); margin:4px; font-size:12px }
+    .chip button{ background:transparent; border:none; color:#9fb6ff; cursor:pointer; padding:0 2px }
+
+    .stack{ display:flex; flex-wrap:wrap; align-items:center }
+    .stack input{ width:auto; min-width:180px }
+
+    .list{ padding:12px; max-height: 48vh; overflow:auto }
+    .list .item{ display:grid; grid-template-columns: 1fr auto auto; gap:8px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:12px; margin-bottom:8px; background:#0a1222 }
+    .item .meta{ color:var(--muted); font-size:12px }
+
+    pre{ margin:0; padding:16px; background:#050b18; border-top:1px solid var(--border); border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); max-height: 40vh; overflow:auto }
+
+    .toolbar{ display:flex; gap:8px; padding:12px; border-top:1px solid var(--border); }
+
+    .note{ font-size:12px; color:#9ca3af }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 12a8 8 0 1116 0 8 8 0 01-16 0z" stroke="#38bdf8" stroke-width="2"/>
+        <path d="M8 12l3 3 5-7" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Feature JSON Builder</h1>
+      <div class="sub">Fill fields → generate clean JSON for your game data.</div>
+    </div>
+  </header>
+
+  <section class="panel" id="editor">
+    <div class="head">
+      <h2>Create / Edit Feature</h2>
+      <button class="btn" id="btnReset">Reset</button>
+    </div>
+
+    <form id="featureForm" novalidate>
+      <div class="grid-2">
+        <label>
+          <span>Type</span>
+          <select id="type" required>
+            <option value="action-attack">Action (Attack)</option>
+            <option value="action-check-utility">Action (Check/Utility)</option>
+            <option value="modifier">Modifier</option>
+            <option value="passive">Passive</option>
+          </select>
+        </label>
+        <div id="actionTypeWrappers">
+            <label id="actionTypeAttackWrap">
+              <span>Action Type</span>
+              <select id="actionTypeAttack">
+                <option value="Melee Martial Attack">Melee Martial Attack</option>
+                <option value="Melee Spell Attack">Melee Spell Attack</option>
+                <option value="Ranged Martial Attack">Ranged Martial Attack</option>
+                <option value="Ranged Spell Attack">Ranged Spell Attack</option>
+                <option value="Area Martial Attack">Area Martial Attack</option>
+                <option value="Area Spell Attack">Area Spell Attack</option>
+              </select>
+            </label>
+            <label id="actionTypeCheckUtilWrap">
+              <span>Action Type</span>
+              <select id="actionTypeCheckUtil">
+                <option value="Martial Check">Martial Check</option>
+                <option value="Spell Check">Spell Check</option>
+                <option value="Utility">Utility</option>
+              </select>
+            </label>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <label>
+          <span>Name</span>
+          <input id="name" placeholder="e.g., Melee Attack" required />
+          <div class="muted">Changing the name updates the id automatically (unless you edit id manually).</div>
+        </label>
+        <label>
+          <span>ID</span>
+          <input id="id" placeholder="auto-from-name" />
+          <div class="muted">Lowercase, spaces → dashes. You can override.</div>
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label>
+          <span>Feature Description</span>
+          <textarea id="featureDescription" placeholder="High-level rules text..."></textarea>
+        </label>
+        <label>
+          <span>Feature Cost</span>
+          <input id="featureCost" type="number" step="1" min="0" value="0" />
+        </label>
+      </div>
+
+      <div class="section" id="requiredFeaturesSection">
+        <h3>Required Features</h3>
+        <div class="stack">
+          <input id="required_input" placeholder="Add feature id (e.g., grapple)" />
+          <button type="button" class="btn" id="btnAddRequired">Add</button>
+        </div>
+        <div id="required_chips" class="stack"></div>
+        <div class="muted">Dependencies are other feature ids that should accompany this feature.</div>
+      </div>
+
+      <div class="section" id="effectsActionAttack">
+        <h3>Effects — Action (Attack)</h3>
+        <div class="grid-2">
+          <label><span>AP Cost</span><input id="eff_aa_cost" type="number" step="1" min="0" value="1" /></label>
+          <label><span>Target Defense</span><select id="eff_aa_targetDefense"><option value="PD">PD</option><option value="AD">AD</option></select></label>
+        </div>
+        <div class="grid-2">
+          <label><span>Target (text)</span><input id="eff_aa_target" placeholder="e.g., a grappled creature" /></label>
+          <label><span>Range (text)</span><input id="eff_aa_range" placeholder="e.g., 5 Spaces" /></label>
+        </div>
+        <label><span>Action Description (flavor text)</span><textarea id="eff_aa_actionDescription" placeholder="Descriptive text for the action..."></textarea></label>
+        <div class="section">
+          <h3>Damage Segments</h3>
+          <table><thead><tr><th>useBase</th><th>modifier</th><th>type</th><th></th></tr></thead><tbody id="damageRows"></tbody></table>
+          <div class="row"><button type="button" class="btn accent" id="btnAddDamage">+ Add Segment</button></div>
+        </div>
+        <div class="section">
+          <h3>Save Details</h3>
+          <label><span>Save Attribute</span><input id="eff_aa_save_attribute" list="saveAttrs" placeholder="e.g., Mig" /></label>
+          <div class="grid-2">
+            <label><span>Failure</span><input id="eff_aa_save_failure" placeholder="What happens on Failure" /></label>
+            <label><span>Success</span><input id="eff_aa_save_success" placeholder="What happens on Success" /></label>
+          </div>
+          <div class="grid-2">
+            <label><span>Failure (each 5)</span><input id="eff_aa_save_failureEach5" placeholder="Additional effect per 5 under DC" /></label>
+            <label><span>Success (each 5)</span><input id="eff_aa_save_successEach5" placeholder="Additional effect per 5 over DC" /></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="effectsActionCheckUtil">
+        <h3>Effects — Action (Check/Utility)</h3>
+        <label><span>AP Cost</span><input id="eff_acu_cost" type="number" step="1" min="0" value="1" /></label>
+        <div id="acu_target_range_wrap" class="grid-2">
+            <label><span>Target (text)</span><input id="eff_acu_target" placeholder="e.g., an adjacent ally" /></label>
+            <label><span>Range (text)</span><input id="eff_acu_range" placeholder="e.g., 5 Spaces" /></label>
+        </div>
+        <label><span>Action Description (flavor text)</span><textarea id="eff_acu_actionDescription" placeholder="Descriptive text for the action..."></textarea></label>
+        <div id="checkSection" class="section">
+            <h3>Check Details</h3>
+            <label><span>DC</span><input id="eff_acu_check_dc" type="number" min="0" step="1" placeholder="e.g., 10" /></label>
+            <div class="grid-2">
+              <label><span>Failure</span><input id="eff_acu_check_failure" placeholder="What happens on Failure" /></label>
+              <label><span>Success</span><input id="eff_acu_check_success" placeholder="What happens on Success" /></label>
+            </div>
+            <div class="grid-2">
+              <label><span>Failure (each 5)</span><input id="eff_acu_check_failureEach5" placeholder="Additional effect per 5 under DC" /></label>
+              <label><span>Success (each 5)</span><input id="eff_acu_check_successEach5" placeholder="Additional effect per 5 over DC" /></label>
+            </div>
+        </div>
+      </div>
+
+      <div class="section" id="effectsModifier">
+        <h3>Effects — Modifier</h3>
+        <div class="grid-2"><label><span>HP</span><input id="mod_hp" type="number" step="1" /></label><label><span>PD</span><input id="mod_pd" type="number" step="1" /></label></div>
+        <div class="grid-2">
+          <label><span>AD</span><input id="mod_ad" type="number" step="1" /></label>
+          <div>
+            <label><span>Resistances → damage types</span>
+              <div class="stack" id="resist_stack"><input id="resist_input" list="damageTypes" placeholder="Type and press Add/Enter" /><button type="button" class="btn" id="btnAddResist">Add</button></div>
+            </label>
+            <div id="resist_chips" class="stack"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="effectsPassive">
+        <h3>Effects — Passive</h3>
+        <label><span>Text</span><textarea id="passive_text" placeholder="Rules text for this passive…"></textarea></label>
+      </div>
+
+      <div class="row" style="justify-content:flex-end; gap:10px;">
+        <button type="button" class="btn" id="btnPreviewObj">Preview JSON</button>
+        <button type="submit" class="btn green" id="btnSave">Save to Collection</button>
+      </div>
+
+      <div class="section" id="singlePreview" hidden>
+        <h3>Live Preview (current feature JSON)</h3>
+        <pre id="singleJson"></pre>
+      </div>
+    </form>
+  </section>
+
+  <div id="right-column">
+      <section class="panel" id="preview-panel">
+        <div class="head">
+            <h2>Live Preview</h2>
+        </div>
+        <div style="padding: 16px;">
+            <div class="grid-2" style="padding: 8px; background: #050b18; border-radius: 8px; margin-bottom: 10px;">
+                <label class="muted">Preview Base Damage <input type="number" id="preview_base_dmg" value="3" style="font-size: 12px; padding: 4px;"></label>
+                <label class="muted">Preview Base DC <input type="number" id="preview_base_dc" value="14" style="font-size: 12px; padding: 4px;"></label>
+            </div>
+            <div id="previewOutput" style="background:#0a1222; padding:12px; border-radius:10px; white-space:pre-wrap; line-height:1.6; border: 1px solid var(--border); min-height: 100px;"></div>
+        </div>
+      </section>
+      <section class="panel" id="collection">
+        <div class="head">
+          <h2>Collection</h2>
+          <div class="row">
+            <button class="btn" id="btnClear">Clear</button>
+            <button class="btn primary" id="btnCopy">Copy JSON</button>
+            <button class="btn primary" id="btnDownload">Download JSON</button>
+          </div>
+        </div>
+        <div class="list" id="list"></div>
+        <div class="toolbar"><span class="note">Items persist locally (localStorage).</span></div>
+        <pre id="outputJson">[\n]</pre>
+      </section>
+  </div>
+
+
+  <template id="tplDamageRow">
+    <tr>
+      <td><input type="checkbox" class="dm_useBase" /></td>
+      <td><input type="number" step="1" class="dm_modifier" value="0" style="width:100px" /></td>
+      <td><input list="damageTypes" class="dm_type" placeholder="e.g., Piercing" /></td>
+      <td><button type="button" class="btn danger btnDelDamage">Remove</button></td>
+    </tr>
+  </template>
+
+  <datalist id="damageTypes"><option value="Piercing"></option><option value="Slashing"></option><option value="Bludgeoning"></option><option value="Umbral"></option><option value="True"></option><option value="Fire"></option><option value="Cold"></option><option value="Lightning"></option><option value="Poison"></option><option value="Radiant"></option><option value="Necrotic"></option></datalist>
+  <datalist id="saveAttrs"><option value="Mig"></option><option value="Agi"></option><option value="Int"></option><option value="Cha"></option><option value="Physical"></option><option value="Mental"></option></datalist>
+
+  <script>
+    (function(){
+      const $ = (sel, el=document) => el.querySelector(sel);
+      const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+
+      const form = $('#featureForm');
+      const els = {
+        type: $('#type'), name: $('#name'), id: $('#id'), featureDescription: $('#featureDescription'), featureCost: $('#featureCost'),
+        // Action Types
+        actionTypeAttackWrap: $('#actionTypeAttackWrap'), actionTypeAttack: $('#actionTypeAttack'),
+        actionTypeCheckUtilWrap: $('#actionTypeCheckUtilWrap'), actionTypeCheckUtil: $('#actionTypeCheckUtil'),
+        // Sections
+        effectsActionAttack: $('#effectsActionAttack'), effectsActionCheckUtil: $('#effectsActionCheckUtil'),
+        effectsModifier: $('#effectsModifier'), effectsPassive: $('#effectsPassive'),
+        // Action Attack
+        eff_aa_cost: $('#eff_aa_cost'), eff_aa_targetDefense: $('#eff_aa_targetDefense'), eff_aa_target: $('#eff_aa_target'), eff_aa_range: $('#eff_aa_range'),
+        eff_aa_actionDescription: $('#eff_aa_actionDescription'), damageRows: $('#damageRows'),
+        eff_aa_save_attribute: $('#eff_aa_save_attribute'), eff_aa_save_failure: $('#eff_aa_save_failure'), eff_aa_save_failureEach5: $('#eff_aa_save_failureEach5'),
+        eff_aa_save_success: $('#eff_aa_save_success'), eff_aa_save_successEach5: $('#eff_aa_save_successEach5'),
+        // Action Check/Util
+        eff_acu_cost: $('#eff_acu_cost'), acu_target_range_wrap: $('#acu_target_range_wrap'), eff_acu_target: $('#eff_acu_target'), eff_acu_range: $('#eff_acu_range'),
+        eff_acu_actionDescription: $('#eff_acu_actionDescription'), checkSection: $('#checkSection'),
+        eff_acu_check_dc: $('#eff_acu_check_dc'), eff_acu_check_failure: $('#eff_acu_check_failure'), eff_acu_check_failureEach5: $('#eff_acu_check_failureEach5'),
+        eff_acu_check_success: $('#eff_acu_check_success'), eff_acu_check_successEach5: $('#eff_acu_check_successEach5'),
+        // Modifier
+        mod_hp: $('#mod_hp'), mod_pd: $('#mod_pd'), mod_ad: $('#mod_ad'), resist_input: $('#resist_input'), resist_chips: $('#resist_chips'),
+        // Passive
+        passive_text: $('#passive_text'),
+        // Previews & Collection
+        singlePreview: $('#singlePreview'), singleJson: $('#singleJson'),
+        previewOutput: $('#previewOutput'),
+        preview_base_dmg: $('#preview_base_dmg'), preview_base_dc: $('#preview_base_dc'),
+        list: $('#list'), outputJson: $('#outputJson'),
+        // Buttons
+        btnAddDamage: $('#btnAddDamage'), btnAddResist: $('#btnAddResist'), btnPreviewObj: $('#btnPreviewObj'),
+        btnSave: $('#btnSave'), btnReset: $('#btnReset'), btnClear: $('#btnClear'), btnCopy: $('#btnCopy'), btnDownload: $('#btnDownload'),
+        required_input: $('#required_input'), required_chips: $('#required_chips'), btnAddRequired: $('#btnAddRequired'),
+      };
+
+      let idTouched = false;
+      let editingIndex = null;
+      let collection = [];
+      let requiredFeatures = [];
+      let resistancesDamage = [];
+
+      // ---------- HELPERS ----------
+      const slugify = str => (str||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-z-9\s-]/g,'').trim().replace(/[\s_]+/g,'-').replace(/-+/g,'-');
+      const numOrUndefined = v => { const n = Number(v); return (v === '' || v === null || v === undefined || !Number.isFinite(n)) ? undefined : n; };
+      const cleanObject = obj => {
+        if (Array.isArray(obj)) return obj.map(cleanObject).filter(v => !(v === undefined || (typeof v === 'object' && v !== null && Object.keys(v).length === 0)));
+        if (obj && typeof obj === 'object') {
+          return Object.entries(obj).reduce((acc, [k, v]) => {
+            const cv = cleanObject(v);
+            if (cv !== undefined && !(typeof cv === 'object' && cv !== null && Object.keys(cv).length === 0)) acc[k] = cv;
+            return acc;
+          }, {});
+        }
+        return obj === '' || obj === null ? undefined : obj;
+      };
+
+      // ---------- UI VISIBILITY ----------
+      function showSections() {
+        const type = els.type.value;
+        const subType = type === 'action-check-utility' ? els.actionTypeCheckUtil.value : '';
+
+        // Hide all major effect sections
+        [els.effectsActionAttack, els.effectsActionCheckUtil, els.effectsModifier, els.effectsPassive].forEach(el => el.hidden = true);
+        // Hide action type dropdowns more reliably
+        els.actionTypeAttackWrap.style.display = 'none';
+        els.actionTypeCheckUtilWrap.style.display = 'none';
+
+        // Show relevant sections based on main type
+        if (type === 'action-attack') {
+            els.effectsActionAttack.hidden = false;
+            els.actionTypeAttackWrap.style.display = 'grid';
+        } else if (type === 'action-check-utility') {
+            els.effectsActionCheckUtil.hidden = false;
+            els.actionTypeCheckUtilWrap.style.display = 'grid';
+            // Further refine visibility for check vs utility
+            const isCheck = subType.includes('Check');
+            els.checkSection.hidden = !isCheck;
+            els.acu_target_range_wrap.style.display = isCheck ? 'grid' : 'none';
+        } else if (type === 'modifier') {
+            els.effectsModifier.hidden = false;
+        } else if (type === 'passive') {
+            els.effectsPassive.hidden = false;
+        }
+        updateAllPreviews();
+      }
+
+      // ---------- DYNAMIC ROWS (DAMAGE, RESIST) ----------
+      function addDamageRow(pref={useBase:true, modifier:0, type:''}){
+        const row = $('#tplDamageRow').content.firstElementChild.cloneNode(true);
+        $('.dm_useBase', row).checked = !!pref.useBase;
+        $('.dm_modifier', row).value = pref.modifier ?? 0;
+        $('.dm_type', row).value = pref.type ?? '';
+        $('.btnDelDamage', row).addEventListener('click', () => { row.remove(); updateAllPreviews(); });
+        els.damageRows.appendChild(row);
+      }
+      const readDamageRows = () => $$('#damageRows tr').map(tr => ({ useBase: $('.dm_useBase', tr).checked, modifier: Number($('.dm_modifier', tr).value || 0), type: $('.dm_type', tr).value.trim() })).filter(seg => seg.type);
+
+      function renderResistChips(){
+        els.resist_chips.innerHTML = resistancesDamage.map((dmg, i) => `<span class="chip">${dmg}<button type="button" data-idx="${i}" aria-label="remove">×</button></span>`).join('');
+      }
+      els.resist_chips.addEventListener('click', e => {
+        if(e.target.tagName === 'BUTTON'){
+          resistancesDamage.splice(Number(e.target.dataset.idx), 1);
+          renderResistChips();
+          updateAllPreviews();
+        }
+      });
+
+      function renderRequiredChips(){
+        els.required_chips.innerHTML = requiredFeatures.map((featId, i) => `<span class="chip">${featId}<button type="button" data-idx="${i}" aria-label="remove">×</button></span>`).join('');
+      }
+      els.required_chips.addEventListener('click', e => {
+        if (e.target.tagName === 'BUTTON') {
+          requiredFeatures.splice(Number(e.target.dataset.idx), 1);
+          renderRequiredChips();
+          updateAllPreviews();
+        }
+      });
+
+      // ---------- DATA & JSON ----------
+      function currentFeatureObject() {
+        const base = {
+          type: els.type.value,
+          name: els.name.value.trim(),
+          id: (els.id.value || slugify(els.name.value)).trim(),
+          featureDescription: els.featureDescription.value.trim(),
+          featureCost: numOrUndefined(els.featureCost.value),
+        };
+        if (requiredFeatures.length) {
+          base.required = requiredFeatures.slice();
+        }
+
+        const type = els.type.value;
+        if (type === 'action-attack') {
+          base.actionType = els.actionTypeAttack.value;
+          base.effects = {
+            cost: numOrUndefined(els.eff_aa_cost.value),
+            targetDefense: els.eff_aa_targetDefense.value,
+            target: els.eff_aa_target.value.trim(),
+            range: els.eff_aa_range.value.trim(),
+            actionDescription: els.eff_aa_actionDescription.value.trim(),
+            damageSegments: readDamageRows(),
+            save: {
+              attribute: els.eff_aa_save_attribute.value.trim(),
+              failure: els.eff_aa_save_failure.value.trim(),
+              failureEach5: els.eff_aa_save_failureEach5.value.trim(),
+              success: els.eff_aa_save_success.value.trim(),
+              successEach5: els.eff_aa_save_successEach5.value.trim(),
+            }
+          };
+        }
+        else if (type === 'action-check-utility') {
+          const actionType = els.actionTypeCheckUtil.value;
+          base.actionType = actionType;
+          base.effects = {
+              cost: numOrUndefined(els.eff_acu_cost.value),
+              actionDescription: els.eff_acu_actionDescription.value.trim(),
+          };
+          if (actionType.includes('Check')){
+            base.effects.target = els.eff_acu_target.value.trim();
+            base.effects.range = els.eff_acu_range.value.trim();
+            base.effects.check = {
+              dc: numOrUndefined(els.eff_acu_check_dc.value),
+              failure: els.eff_acu_check_failure.value.trim(),
+              failureEach5: els.eff_acu_check_failureEach5.value.trim(),
+              success: els.eff_acu_check_success.value.trim(),
+              successEach5: els.eff_acu_check_successEach5.value.trim(),
+            }
+          }
+        }
+        else if (type === 'modifier') {
+          base.effects = {
+            hp: numOrUndefined(els.mod_hp.value),
+            pd: numOrUndefined(els.mod_pd.value),
+            ad: numOrUndefined(els.mod_ad.value),
+            resistances: resistancesDamage.length ? { damage: resistancesDamage.slice() } : undefined,
+          };
+        }
+        else if (type === 'passive') {
+          base.effects = { text: els.passive_text.value.trim() };
+        }
+        return cleanObject(base);
+      }
+
+      // ---------- PREVIEWS ----------
+      function updateSingleJsonPreview() {
+        els.singleJson.textContent = JSON.stringify(currentFeatureObject(), null, 2);
+      }
+
+      function updateFormattedPreview() {
+          const obj = currentFeatureObject();
+          let out = '';
+          const baseDmg = Number(els.preview_base_dmg.value);
+          const baseDc = Number(els.preview_base_dc.value);
+
+          if (Array.isArray(obj.required) && obj.required.length) {
+              out += `Requires: ${obj.required.join(', ')}\n\n`;
+          }
+
+          if (obj.type === 'action-attack' && obj.effects) {
+              const e = obj.effects;
+              const dmgStrings = (e.damageSegments || []).map(seg => `${(seg.useBase ? baseDmg : 0) + seg.modifier} ${seg.type} damage`);
+              out += `<strong>${obj.name || '...'} (${e.cost || 0} AP):</strong> ${obj.actionType || ''} vs ${e.targetDefense || ''} dealing ${dmgStrings.join(' and ') || 'no damage'}.\n`;
+              if (e.target || e.range) out += `Target ${e.target || '...'} within ${e.range || '...'}.\n`;
+              if (e.save?.attribute) {
+                  out += `${e.save.attribute} Save <strong>DC ${baseDc}</strong>.\n`;
+                  if (e.save.failure) out += `Failure: ${e.save.failure}\n`;
+                  if (e.save.failureEach5) out += `Failure (Each 5): ${e.save.failureEach5}\n`;
+                  if (e.save.success) out += `Success: ${e.save.success}\n`;
+                  if (e.save.successEach5) out += `Success (Each 5): ${e.save.successEach5}\n`;
+              }
+              if (e.actionDescription) out += e.actionDescription;
+          }
+          else if (obj.type === 'action-check-utility' && obj.effects) {
+              const e = obj.effects;
+              if (obj.actionType?.includes('Check')) {
+                  out += `<strong>${obj.name || '...'} (${e.cost || 0} AP):</strong> ${obj.actionType || ''} DC ${e.check?.dc || '...'}.\n`;
+                  if (e.target || e.range) out += `Target ${e.target || '...'} within ${e.range || '...'}.\n`;
+                  if (e.check) {
+                      if (e.check.failure) out += `Failure: ${e.check.failure}\n`;
+                      if (e.check.failureEach5) out += `Failure (Each 5): ${e.check.failureEach5}\n`;
+                      if (e.check.success) out += `Success: ${e.check.success}\n`;
+                      if (e.check.successEach5) out += `Success (Each 5): ${e.check.successEach5}\n`;
+                  }
+              } else { // Utility
+                  out += `<strong>${obj.name || '...'} (${e.cost || 0} AP):</strong> ${obj.actionType || ''}.\n`;
+              }
+              if (e.actionDescription) out += e.actionDescription;
+          }
+          else if (obj.type === 'modifier') { out = `(Modifier preview not available)`; }
+          else if (obj.type === 'passive') { out = obj.effects?.text || '(Passive preview not available)'; }
+
+          els.previewOutput.textContent = out.trim() || 'Fill in the form to see a preview...';
+      }
+      const updateAllPreviews = () => { updateSingleJsonPreview(); updateFormattedPreview(); };
+
+      // ---------- COLLECTION & PERSISTENCE ----------
+      function renderList(){
+        els.list.innerHTML = collection.map((item, idx) => `
+          <div class="item">
+            <div><strong>${item.name}</strong> <span class="meta">(${item.id}) · <em>${item.type}</em> · cost ${item.featureCost || 0}${item.required && item.required.length ? ` · requires ${item.required.join(', ')}` : ''}</span></div>
+            <button type="button" class="btn" data-idx="${idx}">Edit</button>
+            <button type="button" class="btn danger" data-idx="${idx}">Delete</button>
+          </div>`).join('');
+      }
+      const renderOutput = () => { els.outputJson.textContent = JSON.stringify(collection, null, 2); };
+      const persist = () => { try{ localStorage.setItem('feature-json-builder', JSON.stringify(collection)); }catch(e){ console.warn(e); } };
+      const restore = () => { try{ collection = JSON.parse(localStorage.getItem('feature-json-builder')) || []; }catch{ collection = []; } };
+
+      // ---------- FORM STATE ----------
+      function clearForm(){
+        form.reset();
+        els.type.value = 'action-attack';
+        els.featureCost.value = 0;
+        els.eff_aa_cost.value = 1;
+        els.damageRows.innerHTML = '';
+        requiredFeatures = [];
+        renderRequiredChips();
+        resistancesDamage = [];
+        renderResistChips();
+        idTouched = false;
+        editingIndex = null;
+        addDamageRow({useBase:true, modifier:0, type:'Piercing'});
+        showSections();
+      }
+
+      function loadIntoForm(obj, idx){
+        clearForm();
+        editingIndex = idx;
+        els.type.value = obj.type;
+        els.name.value = obj.name || '';
+        els.id.value = obj.id || '';
+        idTouched = true;
+        els.featureDescription.value = obj.featureDescription || '';
+        els.featureCost.value = obj.featureCost ?? 0;
+        requiredFeatures = Array.isArray(obj.required) ? obj.required.map(v => (typeof v === 'string' ? v.trim() : '')).filter(Boolean) : [];
+        renderRequiredChips();
+
+        if (obj.type === 'action-attack') {
+          els.actionTypeAttack.value = obj.actionType || 'Melee Martial Attack';
+          if(obj.effects) {
+            const e = obj.effects;
+            els.eff_aa_cost.value = e.cost ?? 1;
+            els.eff_aa_targetDefense.value = e.targetDefense || 'PD';
+            els.eff_aa_target.value = e.target || '';
+            els.eff_aa_range.value = e.range || '';
+            els.eff_aa_actionDescription.value = e.actionDescription || '';
+            (e.damageSegments || []).forEach(addDamageRow);
+            if(e.save){
+              els.eff_aa_save_attribute.value = e.save.attribute || '';
+              els.eff_aa_save_failure.value = e.save.failure || '';
+              els.eff_aa_save_failureEach5.value = e.save.failureEach5 || '';
+              els.eff_aa_save_success.value = e.save.success || '';
+              els.eff_aa_save_successEach5.value = e.save.successEach5 || '';
+            }
+          }
+        }
+        else if (obj.type === 'action-check-utility') {
+          els.actionTypeCheckUtil.value = obj.actionType || 'Martial Check';
+          if(obj.effects){
+            els.eff_acu_cost.value = obj.effects.cost ?? 1;
+            els.eff_acu_target.value = obj.effects.target || '';
+            els.eff_acu_range.value = obj.effects.range || '';
+            els.eff_acu_actionDescription.value = obj.effects.actionDescription || '';
+            if(obj.effects.check){
+              const c = obj.effects.check;
+              els.eff_acu_check_dc.value = c.dc ?? '';
+              els.eff_acu_check_failure.value = c.failure || '';
+              els.eff_acu_check_failureEach5.value = c.failureEach5 || '';
+              els.eff_acu_check_success.value = c.success || '';
+              els.eff_acu_check_successEach5.value = c.successEach5 || '';
+            }
+          }
+        }
+        else if (obj.type === 'modifier' && obj.effects) {
+          els.mod_hp.value = obj.effects.hp ?? '';
+          els.mod_pd.value = obj.effects.pd ?? '';
+          els.mod_ad.value = obj.effects.ad ?? '';
+          resistancesDamage = (obj.effects.resistances?.damage || []).slice();
+          renderResistChips();
+        }
+        else if (obj.type === 'passive' && obj.effects) {
+          els.passive_text.value = obj.effects.text || '';
+        }
+        showSections();
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+
+      // ---------- EVENT LISTENERS ----------
+      // Add listeners to all form elements to update previews
+      $$('input, select, textarea', document).forEach(el => {
+          el.addEventListener('input', updateAllPreviews);
+          el.addEventListener('change', updateAllPreviews);
+      });
+      // Specific logic for name/id
+      els.name.addEventListener('input', () => { if (!idTouched) els.id.value = slugify(els.name.value); });
+      els.id.addEventListener('input', () => { idTouched = true; });
+      // Type dropdowns control visibility
+      els.type.addEventListener('change', showSections);
+      els.actionTypeCheckUtil.addEventListener('change', showSections);
+      // Dynamic rows
+      els.btnAddDamage.addEventListener('click', () => { addDamageRow(); updateAllPreviews(); });
+      // Resistances
+      els.btnAddResist.addEventListener('click', () => {
+        const v = els.resist_input.value.trim();
+        if (v && !resistancesDamage.includes(v)) { resistancesDamage.push(v); }
+        els.resist_input.value = '';
+        renderResistChips(); updateAllPreviews();
+      });
+      els.resist_input.addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); els.btnAddResist.click(); }});
+      els.btnAddRequired.addEventListener('click', () => {
+        const v = els.required_input.value.trim();
+        if (v && !requiredFeatures.includes(v)) { requiredFeatures.push(v); }
+        els.required_input.value = '';
+        renderRequiredChips();
+        updateAllPreviews();
+      });
+      els.required_input.addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); els.btnAddRequired.click(); }});
+      // Form/Collection buttons
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const obj = currentFeatureObject();
+        if(!obj.name || !obj.id){ alert('Name and ID are required.'); return; }
+        if (editingIndex === null) collection.push(obj); else collection[editingIndex] = obj;
+        persist(); renderList(); renderOutput(); clearForm();
+      });
+      els.btnPreviewObj.addEventListener('click', () => { els.singlePreview.hidden = !els.singlePreview.hidden; updateSingleJsonPreview(); });
+      els.btnReset.addEventListener('click', () => clearForm());
+      els.btnClear.addEventListener('click', () => { if(confirm('Clear the entire collection?')){ collection = []; persist(); renderList(); renderOutput(); }});
+      els.list.addEventListener('click', e => {
+        const idx = e.target.dataset.idx;
+        if(idx === undefined) return;
+        if(e.target.textContent === 'Edit') loadIntoForm(collection[idx], Number(idx));
+        else if(e.target.textContent === 'Delete') { if(confirm('Delete this item?')){ collection.splice(idx,1); persist(); renderList(); renderOutput(); }}
+      });
+      els.btnCopy.addEventListener('click', async (e) => {
+        try{ await navigator.clipboard.writeText(JSON.stringify(collection, null, 2)); e.target.textContent = 'Copied!'; setTimeout(()=> e.target.textContent = 'Copy JSON', 1200); }
+        catch(err){ alert('Copy failed: '+err.message); }
+      });
+      els.btnDownload.addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(collection, null, 2)], {type:'application/json'}));
+        a.download = 'features.json'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      });
+
+      // ---------- INIT ----------
+      restore();
+      renderList();
+      renderOutput();
+      clearForm();
+    })();
+  </script>
+</body>
+</html>
