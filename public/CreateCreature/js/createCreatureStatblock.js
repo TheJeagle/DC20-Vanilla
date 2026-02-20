@@ -629,11 +629,12 @@ function renderRecommendations() {
     { label: 'Avg. damage before death: ', value: `${expectedDamageDealt}` },
   ];
 
+  const hasAnyActions = allActions.length > 0;
   const warnings = [];
-  if (targetedDefenses.length > 0 && !targetedDefenses.includes('PD')) {
+  if (hasAnyActions && !targetedDefenses.includes('PD')) {
     warnings.push('No attacks target PD — characters who invest in Precision Defense gain no benefit against this creature.');
   }
-  if (targetedDefenses.length > 0 && !targetedDefenses.includes('AD')) {
+  if (hasAnyActions && !targetedDefenses.includes('AD')) {
     warnings.push('No attacks target AD — characters who invest in Area Defense gain no benefit against this creature.');
   }
 
@@ -715,10 +716,10 @@ function renderRecommendations() {
   }
 
   recommendationsPanel.innerHTML = '<h2>Recommendations</h2>';
-  recommendationsPanel.appendChild(wrapper);
   if (warnings.length) {
     recommendationsPanel.appendChild(warningsBox);
   }
+  recommendationsPanel.appendChild(wrapper);
 }
 
 function renderCreatureStatblock() {
