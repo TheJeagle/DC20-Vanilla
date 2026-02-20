@@ -637,8 +637,29 @@ function renderRecommendations() {
     warnings.push('No attacks target AD — characters who invest in Area Defense gain no benefit against this creature.');
   }
 
-  if (chanceVsPD < 45 || chanceVsAD < 45) {
-    warnings.push(`Low player hit chance: PD ${chanceVsPD}%, AD ${chanceVsAD}%.`);
+  const pdMissHigh = missPD > 50;
+  const pdMissLow  = missPD < 40;
+  const adMissHigh = missAD > 50;
+  const adMissLow  = missAD < 40;
+
+  if (pdMissHigh) {
+    if (adMissLow) {
+      warnings.push(`PD miss chance is high (${missPD}%) but offset by a low AD miss chance (${missAD}%) — only balanced if the party can target both defenses.`);
+    } else {
+      warnings.push(`PD miss chance is high (${missPD}%) — creature may be too durable against precision attacks.`);
+    }
+  } else if (pdMissLow) {
+    if (adMissHigh) {
+      warnings.push(`PD miss chance is low (${missPD}%) but offset by a high AD miss chance (${missAD}%) — only balanced if the party can target both defenses.`);
+    } else {
+      warnings.push(`PD miss chance is low (${missPD}%) — creature may be too fragile against precision attacks.`);
+    }
+  }
+
+  if (adMissHigh && !pdMissLow) {
+    warnings.push(`AD miss chance is high (${missAD}%) — creature may be too durable against area attacks.`);
+  } else if (adMissLow && !pdMissHigh) {
+    warnings.push(`AD miss chance is low (${missAD}%) — creature may be too fragile against area attacks.`);
   }
 
   if (Number.isFinite(turnsToKill) && turnsToKill > 4) {
