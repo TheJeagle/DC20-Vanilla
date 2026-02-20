@@ -87,6 +87,22 @@ function computeVisibleFeatureIds(includeSelected = true) {
 
 let lastFilterKey = '';
 
+/** Tracks which feature group/section keys are currently collapsed. Survives re-renders. */
+const collapsedGroups = new Set();
+
+/**
+ * Wire a heading as a toggle for its wrapper element.
+ * Restores collapsed state from collapsedGroups and registers a click handler.
+ */
+function wireToggle(wrapperEl, headingEl, key) {
+  if (collapsedGroups.has(key)) wrapperEl.classList.add('is-collapsed');
+  headingEl.addEventListener('click', () => {
+    if (collapsedGroups.has(key)) collapsedGroups.delete(key);
+    else collapsedGroups.add(key);
+    renderFeatureControls();
+  });
+}
+
 function buildFilterKey() {
   return [creature.role, creature.type, creature.size].map(normaliseValue).join('|');
 }
@@ -441,6 +457,7 @@ function renderFeatureControls() {
     actionsHeading.className = 'feature-group-title';
     actionsHeading.textContent = 'Actions';
     actionsWrapper.appendChild(actionsHeading);
+    wireToggle(actionsWrapper, actionsHeading, 'Actions');
 
     const sections = [
       {
@@ -467,10 +484,14 @@ function renderFeatureControls() {
       const activeBuckets = section.buckets.filter(({ key }) => actionBuckets[key]?.length);
       if (activeBuckets.length === 0) return;
 
+      const sectionWrapper = document.createElement('div');
+      sectionWrapper.className = 'feature-section-wrapper';
+
       const sectionHeading = document.createElement('h2');
       sectionHeading.className = 'feature-group-subtitle';
       sectionHeading.textContent = section.title;
-      actionsWrapper.appendChild(sectionHeading);
+      sectionWrapper.appendChild(sectionHeading);
+      wireToggle(sectionWrapper, sectionHeading, `Actions > ${section.title}`);
 
       const showBucketHeading = activeBuckets.length > 1;
       activeBuckets.forEach(({ key, title }) => {
@@ -491,8 +512,10 @@ function renderFeatureControls() {
         });
 
         subgroup.appendChild(grid);
-        actionsWrapper.appendChild(subgroup);
+        sectionWrapper.appendChild(subgroup);
       });
+
+      actionsWrapper.appendChild(sectionWrapper);
     });
 
     featureControls.appendChild(actionsWrapper);
@@ -518,8 +541,10 @@ function renderFeatureControls() {
 
     const heading = document.createElement('h3');
     heading.className = 'feature-group-title';
-    heading.textContent = typeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1);
+    const groupLabel = typeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1);
+    heading.textContent = groupLabel;
     groupWrapper.appendChild(heading);
+    wireToggle(groupWrapper, heading, groupLabel);
 
     const grid = document.createElement('div');
     grid.className = 'feature-group-grid';
