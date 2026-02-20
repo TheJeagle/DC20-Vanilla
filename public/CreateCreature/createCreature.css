@@ -1037,6 +1037,10 @@ body{
 
 /* Print */
 @media print {
+  @page {
+    margin: 1.2cm;
+  }
+
   .site-nav,
   .page-col--left,
   .page-col--right,
@@ -1057,6 +1061,7 @@ body{
 
   .page-col--center {
     width: 100%;
+    zoom: 0.6;
   }
 
   #statblockPanel {
@@ -1064,6 +1069,19 @@ body{
     border-radius: 0;
     padding: 0;
   }
+
+  /* Tighten internal spacing */
+  #statblockPanel .statblock         { gap: 0.4rem; }
+  .statblock-vitals                  { gap: 0.3rem; }
+  .statblock-attributes              { gap: 0.3rem; }
+  .attribute-card                    { padding: 0.4rem 0.5rem; }
+  .statblock-traits                  { gap: 0.3rem; }
+  .statblock-feature-section         { gap: 0.3rem; padding-top: 0.4rem; }
+  .statblock-feature-list            { gap: 0.3rem; }
+  .statblock-feature-item            { padding: 0.3rem 0.5rem; }
+  .statblock-actions-section         { gap: 0.4rem; padding-top: 0.4rem; }
+  .statblock-actions-list            { gap: 0.4rem; }
+  .statblock-action-item             { padding: 0.4rem 0.5rem; }
 
   /* Expand any collapsed sections */
   .statblock-feature-section.is-collapsed .statblock-feature-list,
