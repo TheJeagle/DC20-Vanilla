@@ -823,6 +823,26 @@ body{
 }
 /* Features End */
 
+/* Drag-to-reorder */
+.drag-handle {
+  text-align: center;
+  cursor: grab;
+  color: rgba(0,0,0,0.2);
+  font-size: 0.9rem;
+  user-select: none;
+  letter-spacing: 0.15rem;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+.drag-handle:active { cursor: grabbing; }
+
+.statblock-feature-item.drag-over,
+.statblock-action-item.drag-over {
+  outline: 2px dashed rgba(91,44,111,0.45);
+  outline-offset: 2px;
+}
+/* Drag-to-reorder End */
+
 /* Recommendations */
 #recommendationsPanel{
     background-color: #ffffff;

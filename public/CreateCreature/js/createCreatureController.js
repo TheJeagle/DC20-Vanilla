@@ -39,7 +39,7 @@ import {
   arraysEqual,
   ATTRIBUTE_KEYS,
 } from './createCreatureStats.js';
-import { renderCreatureStatblock } from './createCreatureStatblock.js';
+import { renderCreatureStatblock, setFeatureReorderHandler } from './createCreatureStatblock.js';
 import {
   renderFeatureControls,
   ensureSelectedFeatureDependencies,
@@ -853,6 +853,10 @@ function initializeEventHandlers() {
   }
 
   setFeatureSelectionChangeHandler(() => {
+    updateStatblock();
+  });
+
+  setFeatureReorderHandler(() => {
     updateStatblock();
   });
 

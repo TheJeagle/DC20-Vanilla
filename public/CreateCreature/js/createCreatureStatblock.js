@@ -3,6 +3,37 @@ import { creature, featureState, TITLE_FALLBACK } from './createCreatureState.js
 import { FEATURE_TYPES, getFeatureSummary } from '../../features.js';
 import { SkillAttribute } from '../../Rules/gameRules.js';
 
+let dragSourceId = null;
+let onFeatureReorder = () => {};
+
+export function setFeatureReorderHandler(cb) {
+  onFeatureReorder = typeof cb === 'function' ? cb : () => {};
+}
+
+function reorderFeatureById(dragId, dropId) {
+  const ids = featureState.selectedIds;
+  const from = ids.indexOf(dragId);
+  const to = ids.indexOf(dropId);
+  if (from === -1 || to === -1 || from === to) return;
+  ids.splice(from, 1);
+  ids.splice(to, 0, dragId);
+}
+
+function attachDragHandlers(el, featureId) {
+  el.draggable = true;
+  el.addEventListener('dragstart', () => { dragSourceId = featureId; });
+  el.addEventListener('dragover', (e) => { e.preventDefault(); el.classList.add('drag-over'); });
+  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+  el.addEventListener('drop', (e) => {
+    e.preventDefault();
+    el.classList.remove('drag-over');
+    if (dragSourceId && dragSourceId !== featureId) {
+      reorderFeatureById(dragSourceId, featureId);
+      onFeatureReorder();
+    }
+  });
+}
+
 function appendField(parent, value, field) {
   if (value === undefined || value === null || value === '') return;
   const span = document.createElement('span');
@@ -166,6 +197,12 @@ function renderFeatureSummary() {
   items.forEach((feature) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'statblock-feature-item';
+    wrapper.dataset.featureId = feature.id;
+    attachDragHandlers(wrapper, feature.id);
+
+    const handle = document.createElement('div');
+    handle.className = 'drag-handle';
+    handle.textContent = '⠿';
 
     const name = document.createElement('div');
     name.className = 'feature-name';
@@ -176,7 +213,7 @@ function renderFeatureSummary() {
     const summary = getFeatureSummary(feature);
     description.textContent = summary || 'No description provided.';
 
-    wrapper.append(name, description);
+    wrapper.append(handle, name, description);
     statblockFeatures.appendChild(wrapper);
   });
 }
@@ -200,6 +237,13 @@ function createActionBadges(action) {
 function createActionCardElement(action, { showTrigger = false } = {}) {
   const wrapper = document.createElement('div');
   wrapper.className = 'statblock-action-item';
+  wrapper.dataset.featureId = action.id;
+  attachDragHandlers(wrapper, action.id);
+
+  const handle = document.createElement('div');
+  handle.className = 'drag-handle';
+  handle.textContent = '⠿';
+  wrapper.appendChild(handle);
 
   const header = document.createElement('div');
   header.className = 'action-header';
@@ -661,4 +705,4 @@ function renderCreatureStatblock() {
   renderRecommendations();
 }
 
-export { renderCreatureStatblock };
+export { renderCreatureStatblock, setFeatureReorderHandler };
