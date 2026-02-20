@@ -705,4 +705,4 @@ function renderCreatureStatblock() {
   renderRecommendations();
 }
 
-export { renderCreatureStatblock, setFeatureReorderHandler };
+export { renderCreatureStatblock };
