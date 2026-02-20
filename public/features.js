@@ -36,9 +36,9 @@ function getFeatureSummary(feature) {
   if (!feature) return '';
   const effects = feature.effects ?? {};
   const summary =
+    effects.text ??
     feature.description ??
     feature.featureDescription ??
-    effects.text ??
     effects.actionDescription ??
     '';
   return typeof summary === 'string' ? summary.trim() : '';

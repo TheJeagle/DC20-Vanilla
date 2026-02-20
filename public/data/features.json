@@ -24,6 +24,7 @@
     "effects": {
       "cost": 1,
       "targetDefense": "PD",
+      "range": "1 Space",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
     "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
@@ -72,6 +73,7 @@
       "cost": 2,
       "targetDefense": "AD",
       "target": "a grappled creature",
+      "range": "1 Space",
       "damageSegments": [{ "useBase": true, "modifier": 1, "type": "Bludgeoning" }],
       "save": {
         "attribute": "Mig",
@@ -128,7 +130,7 @@
     "description": "You disappear and reappear in a new space within 3 Spaces, navigating the Fey Plane.",
     "featureCost": 1,
     "actionType": "Spell Utility",
-    "effects": { "cost": 1 },
+    "effects": { "cost": 1, "range": "3 Spaces" },
     "tags": ["attack/spellcaster", "ap-cost/1", "feature-cost/1"]
   },
   {
@@ -229,6 +231,7 @@
     "actionType": "Spell Utility",
     "effects": {
       "cost": 1,
+      "range": "4 Spaces",
       "actionDescription": "You teleport to a location of your choice within 4 Spaces."
     },
     "tags": ["attack/spellcaster", "ap-cost/1", "feature-cost/0"]
@@ -452,6 +455,7 @@
       "cost": 2,
       "targetDefense": "AD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You bring down a crushing blow with all your might.",
       "damageSegments": [{ "useBase": true, "modifier": 2, "type": "Bludgeoning" }],
       "save": {
@@ -574,6 +578,7 @@
     "reactionTrigger": "When an ally within 1 Space of you is targeted by an attack",
     "effects": {
       "cost": 0,
+      "range": "1 Space",
       "actionDescription": "You shove your ally aside and become the target of the triggering attack instead."
     },
     "tags": ["role/brute", "role/defender", "ap-cost/0", "feature-cost/1"]
@@ -851,6 +856,7 @@
       "cost": 2,
       "targetDefense": "AD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You drive your shield into the target with crushing force.",
       "damageSegments": [{ "useBase": true, "modifier": 1, "type": "Bludgeoning" }],
       "save": {
@@ -907,6 +913,7 @@
       "cost": 2,
       "targetDefense": "PD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You strike the target with a goading blow, forcing their attention onto you.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }],
       "save": {
@@ -927,6 +934,7 @@
     "reactionTrigger": "When an ally within 1 Space of you is targeted by an attack",
     "effects": {
       "cost": 0,
+      "range": "1 Space",
       "actionDescription": "You step into the path of the attack, becoming the target instead. The attack targets your PD or AD (same defense as originally targeted)."
     },
     "tags": ["role/defender", "ap-cost/0", "feature-cost/1"]
@@ -978,6 +986,7 @@
       "cost": 2,
       "targetDefense": "PD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You find an opening and drive your weapon deep. This attack has ADV if you are Hidden from the target or if an ally is adjacent to it.",
       "damageSegments": [{ "useBase": true, "modifier": 3, "type": "Piercing" }]
     },
@@ -994,6 +1003,7 @@
       "cost": 2,
       "targetDefense": "AD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You seize the target from behind. On a hit, the target is Grappled. While Grappled this way, the target makes an Agi Save at the end of each of its turns or becomes Incapacitated.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Bludgeoning" }],
       "save": {
@@ -1014,6 +1024,7 @@
       "cost": 1,
       "targetDefense": "PD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You strike quickly with a venomous weapon.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Poison" }],
       "save": {
@@ -1225,6 +1236,7 @@
       "cost": 2,
       "targetDefense": "AD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You reach out and draw the life force from your target. You regain HP equal to the damage dealt.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Necrotic" }]
     },
@@ -1321,6 +1333,7 @@
       "cost": 2,
       "targetDefense": "PD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You slash across your target twice in quick succession.",
       "damageSegments": [
         { "useBase": true, "modifier": 0, "type": "Slashing" },
@@ -1495,6 +1508,7 @@
       "cost": 1,
       "targetDefense": "PD",
       "target": "a creature",
+      "range": "1 Space",
       "actionDescription": "You sink your fangs into the target, injecting venom.",
       "damageSegments": [
         { "useBase": true, "modifier": 0, "type": "Piercing" },

@@ -728,6 +728,9 @@ function recomputeCreatureFromInputs() {
   creature.featureActions = [];
   creature.featureReactions = [];
   creature.featurePassives = [];
+  creature.resistances = { damage: [], condition: [] };
+  creature.vulnerabilities = { damage: [], condition: [] };
+  creature.immunities = { damage: [], condition: [] };
 
   const selectedFeatures = featureState.selectedIds
     .map((id) => featureState.byId[id])
