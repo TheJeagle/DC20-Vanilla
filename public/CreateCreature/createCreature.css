@@ -1089,18 +1089,17 @@ body{
   .statblock-vitals { grid-template-columns: auto auto auto auto auto auto; }
   .statblock-vitals .statblock-value { white-space: nowrap; }
 
-  /* Action description inherits print font size instead of its screen override */
-  .statblock-action-item .action-description { font-size: inherit; }
+  /* All description/body text inherits print base size (no absolute rem overrides) */
+  .feature-description,
+  .action-description,
+  .action-trigger { font-size: inherit; }
 
   /* Skills/Senses labels and values stay on one line, pills tighter */
   .statblock-trait-row { flex-wrap: nowrap; gap: 0.25rem; }
   .statblock-trait-values { flex: 1; }
   .statblock-trait-values span { padding: 0.1rem 0.25rem; }
 
-  /* Passive feature description slightly smaller than card base */
-  .statblock-feature-item .feature-description { font-size: 0.85em; }
-
-  /* Collapse action summary lines into a single inline paragraph */
+/* Collapse action summary lines into a single inline paragraph */
   .statblock-action-item .action-summary {
     display: block;
   }
