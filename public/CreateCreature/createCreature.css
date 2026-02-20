@@ -1034,3 +1034,48 @@ body{
 /* Hit chance bars End */
 
 /* Recommendations End */
+
+/* Print */
+@media print {
+  .site-nav,
+  .page-col--left,
+  .page-col--right,
+  #recommendationsPanel,
+  .drag-handle,
+  .statblock-remove-btn {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    padding: 0;
+  }
+
+  .page-columns {
+    display: block;
+  }
+
+  .page-col--center {
+    width: 100%;
+  }
+
+  #statblockPanel {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  /* Expand any collapsed sections */
+  .statblock-feature-section.is-collapsed .statblock-feature-list,
+  .statblock-actions-section.is-collapsed .statblock-actions-bar,
+  .statblock-actions-section.is-collapsed .statblock-actions-list {
+    display: flex !important;
+  }
+
+  /* Hide collapse arrows */
+  .statblock-feature-heading::after,
+  .statblock-actions-heading::after {
+    content: '' !important;
+  }
+}
+/* Print End */

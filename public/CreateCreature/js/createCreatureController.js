@@ -827,6 +827,13 @@ function initializeEventHandlers() {
     });
   }
 
+  if (dom.printStatblockButton) {
+    dom.printStatblockButton.addEventListener('click', () => {
+      updateStatblock();
+      window.print();
+    });
+  }
+
   if (dom.copyObsidianButton) {
     dom.copyObsidianButton.addEventListener('click', async () => {
       updateStatblock();

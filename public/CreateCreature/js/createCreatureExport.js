@@ -22,7 +22,7 @@ function buildActionDesc(action, fallbackSaveDC) {
   if (action.actionType) parts.push(action.actionType);
   if (action.targetDefense) parts.push(`vs ${action.targetDefense}`);
   if (action.target) parts.push(action.target);
-  if (action.range) parts.push(`${action.range} spaces`);
+  if (action.range) parts.push(action.range);
 
   if (Array.isArray(action.damage) && action.damage.length) {
     const dmg = action.damage
