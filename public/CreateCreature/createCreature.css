@@ -886,14 +886,33 @@ body{
 .drag-handle {
   text-align: center;
   cursor: grab;
-  color: rgba(0,0,0,0.2);
-  font-size: 0.9rem;
+  color: rgba(0,0,0,0.25);
+  font-size: 0.85rem;
   user-select: none;
   letter-spacing: 0.15rem;
   line-height: 1;
-  margin-bottom: 0.2rem;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.12s ease, opacity 0.12s ease;
 }
 .drag-handle:active { cursor: grabbing; }
+
+.statblock-feature-item:hover .drag-handle,
+.statblock-action-item:hover .drag-handle {
+  max-height: 1.5rem;
+  opacity: 1;
+  margin-bottom: 0.2rem;
+}
+
+.statblock-feature-item[draggable="true"],
+.statblock-action-item[draggable="true"] {
+  cursor: grab;
+}
+.statblock-feature-item[draggable="true"]:active,
+.statblock-action-item[draggable="true"]:active {
+  cursor: grabbing;
+}
 
 .statblock-feature-item.drag-over,
 .statblock-action-item.drag-over {
