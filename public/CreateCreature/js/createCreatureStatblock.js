@@ -644,22 +644,22 @@ function renderRecommendations() {
 
   if (pdMissHigh) {
     if (adMissLow) {
-      warnings.push(`PD miss chance is high (${missPD}%) but offset by a low AD miss chance (${missAD}%) — only balanced if the party can target both defenses.`);
+      warnings.push(`Player Hit Chance vs PD is low: ${chanceVsPD}%, but offset by a high Player Hit Chance vs AD: ${chanceVsAD}% — only balanced if the party can target both defenses.`);
     } else {
-      warnings.push(`PD miss chance is high (${missPD}%) — creature may be too durable against precision attacks.`);
+      warnings.push(`Player Hit Chance vs PD is low: ${chanceVsPD}% — This creature may be too durable against Precision Attacks.`);
     }
   } else if (pdMissLow) {
     if (adMissHigh) {
-      warnings.push(`PD miss chance is low (${missPD}%) but offset by a high AD miss chance (${missAD}%) — only balanced if the party can target both defenses.`);
+      warnings.push(`Player Hit Chance vs PD is high: ${chanceVsPD}%, but offset by a low Player Hit Chance vs AD: ${chanceVsAD}% — only balanced if the party can target both defenses.`);
     } else {
-      warnings.push(`PD miss chance is low (${missPD}%) — creature may be too fragile against precision attacks.`);
+      warnings.push(`Player Hit Chance vs PD is high: ${chanceVsPD}% — This creature may be too fragile against Precision Attacks.`);
     }
   }
 
   if (adMissHigh && !pdMissLow) {
-    warnings.push(`AD miss chance is high (${missAD}%) — creature may be too durable against area attacks.`);
+    warnings.push(`Player Hit Chance vs AD is low: ${chanceVsAD}% — This creature may be too durable against Area Attacks.`);
   } else if (adMissLow && !pdMissHigh) {
-    warnings.push(`AD miss chance is low (${missAD}%) — creature may be too fragile against area attacks.`);
+    warnings.push(`Player Hit Chance vs AD is high: ${chanceVsAD}% — This creature may be too fragile against Area Attacks.`);
   }
 
   if (Number.isFinite(turnsToKill) && turnsToKill > 4) {
