@@ -55,7 +55,7 @@ function buildActionDesc(action, fallbackSaveDC) {
 }
 
 function buildActionEntry(action, fallbackSaveDC) {
-  const cost = action.cost != null ? `(${action.cost})` : '';
+  const cost = action.cost != null ? ` (${action.cost})` : '';
   const name = `${action.name || 'Action'}${cost}`;
   const desc = buildActionDesc(action, fallbackSaveDC);
   return `  - name: ${name}\n    desc: ${yamlQuote(desc)}`;
