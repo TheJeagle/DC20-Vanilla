@@ -4,28 +4,29 @@
     "type": "action-attack",
     "name": "Common Ranged Attack",
     "featureCost": 0,
+    "actionType": "Ranged Martial Attack",
     "effects": {
       "cost": 1,
-      "actionType": "Ranged Martial Attack",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": 0,
-          "type": "Piercing"
-        }
-      ],
       "targetDefense": "PD",
       "target": "a creature",
-      "range": "10 / 15 Spaces"
+      "range": "10 / 15 Spaces",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
-    "tags": [
-      "attack/martial",
-      "attack/single-target",
-      "target/pd",
-      "ap-cost/1",
-      "feature-cost/0"
-    ],
-    "actionType": "Ranged Martial Attack"
+    "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
+  },
+  {
+    "id": "common-melee",
+    "type": "action-attack",
+    "name": "Melee Attack",
+    "description": "A basic melee strike.",
+    "featureCost": 0,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
+    },
+    "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
   },
   {
     "id": "physical-resistance",
@@ -34,46 +35,9 @@
     "description": "Take Half damage from Physical attacks.",
     "featureCost": 1,
     "effects": {
-      "resistances": {
-        "damage": [
-          "Piercing",
-          "Slashing",
-          "Bludgeoning"
-        ]
-      }
+      "resistances": { "damage": ["Piercing", "Slashing", "Bludgeoning"] }
     },
-    "tags": [
-      "role/defender",
-      "creature/construct",
-      "feature-cost/1"
-    ]
-  },
-  {
-    "id": "common-melee",
-    "type": "action-attack",
-    "name": "Melee Attack",
-    "description": "Melee Attack",
-    "featureCost": 0,
-    "effects": {
-      "cost": 1,
-      "actionType": "Melee Martial Attack",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": 0,
-          "type": "Piercing"
-        }
-      ],
-      "targetDefense": "PD"
-    },
-    "tags": [
-      "attack/martial",
-      "attack/single-target",
-      "target/pd",
-      "ap-cost/1",
-      "feature-cost/0"
-    ],
-    "actionType": "Melee Martial Attack"
+    "tags": ["role/defender", "creature/construct", "feature-cost/1"]
   },
   {
     "id": "battle-hardened",
@@ -81,17 +45,8 @@
     "name": "Battle Hardened",
     "description": "Battle-scarred discipline hardens the creature's defenses.",
     "featureCost": 2,
-    "effects": {
-      "hp": 12,
-      "pd": 2,
-      "ad": 2
-    },
-    "tags": [
-      "role/defender",
-      "role/brute",
-      "creature/humanoid",
-      "feature-cost/2"
-    ]
+    "effects": { "hp": 12, "pd": 2, "ad": 2 },
+    "tags": ["role/defender", "role/brute", "creature/humanoid", "feature-cost/2"]
   },
   {
     "id": "iron-hide",
@@ -102,17 +57,9 @@
     "effects": {
       "hp": 5,
       "pd": 1,
-      "resistances": {
-        "damage": [
-          "Slashing"
-        ]
-      }
+      "resistances": { "damage": ["Slashing"] }
     },
-    "tags": [
-      "role/defender",
-      "creature/beast",
-      "feature-cost/1"
-    ]
+    "tags": ["role/defender", "creature/beast", "feature-cost/1"]
   },
   {
     "id": "melee-bash",
@@ -120,32 +67,18 @@
     "name": "Bash",
     "description": "Bash a grappled creature into the ground.",
     "featureCost": 1,
+    "actionType": "Melee Martial Attack",
     "effects": {
       "cost": 2,
-      "actionType": "Melee Martial Attack",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": 1,
-          "type": "Bludgeoning"
-        }
-      ],
       "targetDefense": "AD",
       "target": "a grappled creature",
+      "damageSegments": [{ "useBase": true, "modifier": 1, "type": "Bludgeoning" }],
       "save": {
         "attribute": "Mig",
-        "effect": "On a failure, the target gets knocked Prone."
+        "failure": "The target is knocked Prone."
       }
     },
-    "tags": [
-      "attack/martial",
-      "attack/single-target",
-      "target/ad",
-      "ap-cost/2",
-      "feature-cost/1",
-      "status/hindered"
-    ],
-    "actionType": "Melee Martial Attack"
+    "tags": ["role/brute", "attack/martial", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/1", "status/hindered"]
   },
   {
     "id": "covering-fire",
@@ -153,47 +86,32 @@
     "name": "Covering Fire",
     "description": "You loose a hail of arrows blanketing an area, potentially causing targets to bleed.",
     "featureCost": 2,
+    "actionType": "Area Martial Attack",
     "effects": {
       "cost": 2,
-      "actionType": "Area Martial Attack",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": -1,
-          "type": "Piercing"
-        }
-      ],
       "targetDefense": "AD",
       "target": "a 3 Space Cube",
       "range": "5 Spaces",
+      "damageSegments": [{ "useBase": true, "modifier": -1, "type": "Piercing" }],
       "save": {
         "attribute": "Agi",
-        "effect": "On a failure, the target gains the Bleeding condition."
+        "failure": "The target gains the Bleeding condition."
       }
     },
-    "tags": [
-      "attack/martial",
-      "attack/aoe",
-      "target/ad",
-      "ap-cost/2",
-      "feature-cost/2",
-      "status/bleeding"
-    ],
-    "actionType": "Area Martial Attack"
+    "tags": ["role/artillerist", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/bleeding"]
   },
   {
     "id": "natures-healing",
     "type": "action-check-utility",
     "name": "Nature's Healing",
-    "featureDescription": "Long range single target healing",
+    "featureDescription": "Long range single target healing.",
     "featureCost": 1,
     "actionType": "Spell Check",
     "effects": {
       "cost": 2,
-      "actionDescription": "You mend the wounds of a creature within range",
+      "actionDescription": "You mend the wounds of a creature within range.",
       "range": "10 Spaces",
       "target": "one creature",
-      "dc": 10,
       "check": {
         "dc": 10,
         "failure": "Target regains 1 HP.",
@@ -201,171 +119,125 @@
         "successEach5": "+1 HP."
       }
     },
-    "tags": [
-      "attack/spellcaster",
-      "ap-cost/2",
-      "feature-cost/1",
-      "role/support"
-    ]
+    "tags": ["attack/spellcaster", "ap-cost/2", "feature-cost/1", "role/support"]
   },
   {
     "id": "translocate",
     "type": "action-check-utility",
-    "actionType": "utility",
     "name": "Translocate",
-    "description": "You disappear and reappear in a new space within 3 Spaces, navigating the Fey Plane to get to your new location.",
+    "description": "You disappear and reappear in a new space within 3 Spaces, navigating the Fey Plane.",
     "featureCost": 1,
-    "effects": {
-      "cost": 1
-    },
-    "tags": [
-      "attack/spellcaster",
-      "ap-cost/1",
-      "feature-cost/1",
-      "utility",
-      "movement"
-    ]
+    "actionType": "Spell Utility",
+    "effects": { "cost": 1 },
+    "tags": ["attack/spellcaster", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "entangling-vines",
     "type": "action-check-utility",
     "name": "Entangling Vines",
-    "actionType": "Spell Check",
-    "featureDescription": "Create Difficult terrain",
+    "featureDescription": "Create Difficult terrain.",
     "featureCost": 1,
+    "actionType": "Spell Check",
     "effects": {
       "cost": 2,
       "actionDescription": "The area becomes difficult terrain for 1 minute.",
       "range": "5 Spaces",
-      "target": "a 2 space sphere",
-      "check": {
-        "dc": 10
-      }
+      "target": "a 2 Space Sphere",
+      "check": { "dc": 10 }
     },
-    "tags": [
-      "attack/spellcaster",
-      "attack/aoe",
-      "ap-cost/2",
-      "feature-cost/1",
-      "status/hindered"
-    ]
+    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1", "status/hindered"]
   },
   {
     "id": "umbral-blast",
     "type": "action-attack",
     "name": "Umbral Blast",
-    "description": "A magical AoE attack that deals True Damage",
+    "description": "A magical AoE attack that deals Umbral and True damage.",
     "featureCost": 1,
+    "actionType": "Area Spell Attack",
     "effects": {
       "cost": 2,
-      "actionType": "Area Spell Attack",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": -2,
-          "type": "Umbral"
-        },
-        {
-          "useBase": false,
-          "modifier": 1,
-          "type": "True"
-        }
-      ],
       "targetDefense": "AD",
       "target": "a 1 Space Sphere",
-      "range": "10 Spaces"
+      "range": "10 Spaces",
+      "damageSegments": [
+        { "useBase": true, "modifier": -2, "type": "Umbral" },
+        { "useBase": false, "modifier": 1, "type": "True" }
+      ]
     },
-    "tags": [
-      "attack/spellcaster",
-      "attack/aoe",
-      "target/ad",
-      "ap-cost/2",
-      "feature-cost/1",
-      "tier/apex"
-    ],
-    "actionType": "Area Spell Attack"
+    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/1", "tier/apex"]
   },
   {
     "id": "pack-instincts",
     "type": "passive",
     "name": "Pack Instincts",
-    "description": "The creature thrives when fighting alongside allies. When within 1 space of an ally it gains +2 to Hit.",
+    "description": "The creature thrives when fighting alongside allies.",
     "featureCost": 1,
     "effects": {
-      "text": "Gain advantage on attack rolls when an ally is adjacent to the target."
+      "text": "Gain ADV on attack rolls when an ally is adjacent to the target."
     },
-    "tags": [
-      "role/support",
-      "role/leader",
-      "creature/humanoid",
-      "feature-cost/1"
-    ]
+    "tags": ["role/support", "role/leader", "creature/humanoid", "feature-cost/1"]
   },
   {
-    "type": "action-attack",
-    "name": "Fishhook shot",
     "id": "fishhook-shot",
-    "featureDescription": "a attack that pulls target towards the attacker",
+    "type": "action-attack",
+    "name": "Fishhook Shot",
+    "featureDescription": "An attack that pulls the target toward the attacker.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Ranged Martial Attack",
     "effects": {
       "cost": 1,
       "targetDefense": "PD",
       "target": "a creature",
       "range": "3 Spaces",
-      "actionDescription": "You fling out a hooked barb that strikes the target and attempt to pull them closer",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": 0,
-          "type": "Piercing"
-        }
-      ],
+      "actionDescription": "You fling out a hooked barb that strikes the target and attempt to pull them closer.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }],
       "save": {
         "attribute": "Mig",
-        "failure": "Target is pulled towards you 2 Spaces",
-        "failureEach5": "+1 Space"
+        "failure": "Target is pulled toward you 2 Spaces.",
+        "failureEach5": "+1 Space."
       }
-    }
+    },
+    "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
   },
   {
+    "id": "healing-burst",
     "type": "action-check-utility",
     "name": "Healing Burst",
-    "id": "healing-burst",
-    "featureDescription": "a healing effect targeting every creature around the caster",
+    "featureDescription": "A healing effect targeting every creature around the caster.",
     "featureCost": 1,
     "actionType": "Spell Check",
     "effects": {
       "cost": 2,
-      "actionDescription": "A burst of healing light shines around you, healing any creature it touches",
+      "actionDescription": "A burst of healing light shines around you, healing any creature it touches.",
       "target": "every creature",
       "range": "3 Spaces",
       "check": {
         "dc": 10,
-        "failure": "Targets heal 1 HP",
-        "success": "Targets heal 2 HP",
-        "successEach5": "+1 HP"
+        "failure": "Targets heal 1 HP.",
+        "success": "Targets heal 2 HP.",
+        "successEach5": "+1 HP."
       }
-    }
+    },
+    "tags": ["attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1", "role/support"]
   },
   {
+    "id": "fey-step",
     "type": "action-check-utility",
     "name": "Fey Step",
-    "id": "fey-step",
-
-    "actionType": "utility",
-    "featureDescription": "Short range teleport",
+    "featureDescription": "Short range teleport.",
     "featureCost": 0,
+    "actionType": "Spell Utility",
     "effects": {
       "cost": 1,
       "actionDescription": "You teleport to a location of your choice within 4 Spaces."
-    }
+    },
+    "tags": ["attack/spellcaster", "ap-cost/1", "feature-cost/0"]
   },
   {
+    "id": "wing-blast",
     "type": "action-check-utility",
     "name": "Wing Blast",
-    "id": "wing-blast",
-    "featureDescription": "A action that pushes away creatures close to the user",
+    "featureDescription": "Push away creatures close to the user.",
     "featureCost": 1,
     "actionType": "Martial Check",
     "effects": {
@@ -374,16 +246,17 @@
       "range": "1 Space",
       "check": {
         "dc": 15,
-        "success": "push them 1 Space directly away from you",
-        "successEach5": "+1 Space"
+        "success": "Push each target 1 Space directly away from you.",
+        "successEach5": "+1 Space."
       }
-    }
+    },
+    "tags": ["creature/dragon", "creature/beast", "attack/martial", "attack/aoe", "ap-cost/1", "feature-cost/1"]
   },
   {
+    "id": "whirlwind",
     "type": "action-attack",
     "name": "Whirlwind",
-    "id": "whirlwind",
-    "featureDescription": "a martial AoE attack",
+    "featureDescription": "A martial AoE attack hitting all adjacent creatures.",
     "featureCost": 0,
     "actionType": "Area Martial Attack",
     "effects": {
@@ -392,140 +265,105 @@
       "target": "all creatures",
       "range": "1 Space",
       "actionDescription": "You spin while wildly attacking in all directions.",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": 0,
-          "type": "Slashing"
-        }
-      ]
-    }
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Slashing" }]
+    },
+    "tags": ["role/brute", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/0"]
   },
   {
+    "id": "rallying-cry",
     "type": "action-check-utility",
     "name": "Rallying Cry",
-    "id": "rallying-cry",
-    "featureDescription": "Give allies ADV",
+    "featureDescription": "Grant allies ADV on their next check.",
     "featureCost": 1,
     "actionType": "Martial Check",
     "effects": {
       "cost": 2,
-      "actionDescription": "You yell out to your allies, granting them ADV on their next check",
+      "actionDescription": "You yell out to your allies, granting them ADV on their next check.",
       "target": "1 or more creatures",
       "range": "10 Spaces",
       "check": {
         "dc": 10,
-        "failure": "Target 1 Creature",
-        "success": "Target 2 Creatures",
-        "successEach5": "Target +1 Creature"
+        "failure": "Target 1 creature.",
+        "success": "Target 2 creatures.",
+        "successEach5": "Target +1 creature."
       }
-    }
+    },
+    "tags": ["role/support", "attack/martial", "ap-cost/2", "feature-cost/1"]
   },
   {
+    "id": "arcane-push",
     "type": "action-check-utility",
     "name": "Arcane Push",
-    "id": "arcane-push",
-    "featureDescription": "Push targets 1 Space",
+    "featureDescription": "Push targets 1 Space.",
     "featureCost": 1,
     "actionType": "Spell Check",
     "effects": {
       "cost": 2,
-      "actionDescription": "You weave the arcane into a solid force that pushed the Target 1 Space in any horizontal direction",
+      "actionDescription": "You weave the arcane into a solid force that pushes the target 1 Space in any horizontal direction.",
       "target": "One or more creatures",
       "range": "10 Spaces",
       "check": {
         "dc": 10,
-        "failure": "Target 1 Creature",
-        "success": "Target 2 Creatures",
-        "successEach5": "Target +1 Creature"
+        "failure": "Target 1 creature.",
+        "success": "Target 2 creatures.",
+        "successEach5": "Target +1 creature."
       }
-    }
+    },
+    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1"]
   },
   {
-    "type": "action-check-utility",
-    "name": "Arcane Push",
-    "id": "arcane-push",
-    "featureDescription": "Push targets 1 Space",
-    "featureCost": 1,
-    "actionType": "Spell Check",
-    "effects": {
-      "cost": 2,
-      "actionDescription": "You weave the arcane into a solid force that pushed the Target 1 Space in any horizontal direction",
-      "target": "One or more creatures",
-      "range": "10 Spaces",
-      "check": {
-        "dc": 10,
-        "failure": "Target 1 Creature",
-        "success": "Target 2 Creatures",
-        "successEach5": "Target +1 Creature"
-      }
-    }
-  },
-  {
+    "id": "charge2",
     "type": "action-check-utility",
     "name": "Charge",
-    "id": "charge2",
-
-    "actionType": "utility",
-    "featureDescription": "Required by other features",
+    "featureDescription": "Required by other features. Charge up for a big move.",
     "featureCost": 0,
+    "actionType": "Martial Utility",
     "effects": {
       "cost": 2,
-      "actionDescription": "You spend some time to charge up for a big move"
-    }
+      "actionDescription": "You spend some time to charge up for a big move."
+    },
+    "tags": ["ap-cost/2", "feature-cost/0"]
   },
   {
+    "id": "charged-radiance",
     "type": "action-attack",
     "name": "Charged Radiance",
-    "id": "charged-radiance",
-    "featureDescription": "AoE line Big Damage\nReq: Charge(2)",
+    "featureDescription": "AoE line attack. Requires: Charge.",
     "featureCost": 2,
-    "required": [
-      "charge2"
-    ],
     "actionType": "Area Spell Attack",
+    "required": ["charge2"],
     "effects": {
       "cost": 3,
       "targetDefense": "AD",
       "target": "a 10 Space Line",
       "range": "1 Space",
-      "actionDescription": "Requires Charge (2)\nA bright line of radiant light burns a line in front of you",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": 2,
-          "type": "Radiant"
-        }
-      ],
+      "actionDescription": "Requires Charge. A bright line of radiant light burns a path in front of you.",
+      "damageSegments": [{ "useBase": true, "modifier": 2, "type": "Radiant" }],
       "save": {
         "attribute": "Mental",
-        "failure": "Targets are blinded until the end of your next round"
+        "failure": "Targets are Blinded until the end of your next round."
       }
-    }
+    },
+    "tags": ["attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/3", "feature-cost/2", "status/blinded"]
   },
   {
+    "id": "stab-and-run",
     "type": "action-attack",
     "name": "Stab and Run",
-    "id": "stab-and-run",
-    "featureDescription": "reaction: Attack and run when a hostile creature attacks",
+    "featureDescription": "Reaction: Attack and move when a hostile creature attacks you.",
     "featureCost": 2,
     "actionType": "Melee Martial Attack",
-    "effects": {
-      "cost": 2,
-      "targetDefense": "PD",
-      "target": "The creature making the attack",
-      "range": "1 Space",
-      "actionDescription": "after the attack you move up to your Speed without causing opportunity attacks.",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": 0,
-          "type": "Piercing"
-        }
-      ]
-    },
     "isReaction": true,
-    "reactionTrigger": "When a hostile creature makes an attack action within 1 Space of you"
+    "reactionTrigger": "When a hostile creature makes an attack action within 1 Space of you",
+    "effects": {
+      "cost": 0,
+      "targetDefense": "PD",
+      "target": "the creature making the attack",
+      "range": "1 Space",
+      "actionDescription": "After the attack you move up to your Speed without causing opportunity attacks.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
+    },
+    "tags": ["role/lurker", "attack/martial", "attack/single-target", "target/pd", "ap-cost/0", "feature-cost/2"]
   },
   {
     "id": "wall-of-earth",
@@ -540,11 +378,7 @@
       "target": "a 4 Space line (2 Space tall wall)",
       "range": "5 Spaces"
     },
-    "tags": [
-      "utility/spellcaster",
-      "ap-cost/2",
-      "feature-cost/2"
-    ]
+    "tags": ["role/controller", "attack/spellcaster", "ap-cost/2", "feature-cost/2"]
   },
   {
     "id": "earth-spike",
@@ -555,25 +389,12 @@
     "actionType": "Ranged Spell Attack",
     "effects": {
       "cost": 1,
-      "actionType": "Ranged Spell Attack",
-      "damageSegments": [
-        {
-          "useBase": true,
-          "modifier": 0,
-          "type": "Piercing"
-        }
-      ],
       "targetDefense": "PD",
       "target": "a creature",
-      "range": "5 Spaces"
+      "range": "5 Spaces",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
-    "tags": [
-      "attack/spellcaster",
-      "attack/single-target",
-      "target/pd",
-      "ap-cost/1",
-      "feature-cost/1"
-    ]
+    "tags": ["attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "gemantic-aura",
@@ -584,10 +405,7 @@
     "effects": {
       "text": "When you cast spells you can do so as if you were standing in any Space over earth in your Aura, and any creature within your Aura has DisADV on Saves against you."
     },
-    "tags": [
-      "passive/spellcaster",
-      "feature-cost/1"
-    ]
+    "tags": ["creature/elemental", "feature-cost/1"]
   },
   {
     "id": "earth-walker",
@@ -598,9 +416,1285 @@
     "effects": {
       "text": "Ignore Difficult Terrain created by rock, dirt, mud, or sand."
     },
-    "tags": [
-      "passive",
-      "feature-cost/1"
-    ]
+    "tags": ["creature/elemental", "feature-cost/1"]
+  },
+
+  {
+    "id": "brute-relentless",
+    "type": "passive",
+    "name": "Relentless",
+    "description": "This creature refuses to fall.",
+    "featureCost": 2,
+    "effects": {
+      "text": "When reduced to 0 HP for the first time in combat, you instead drop to 1 HP. This effect can only occur once per encounter."
+    },
+    "tags": ["role/brute", "feature-cost/2"]
+  },
+  {
+    "id": "bone-crusher",
+    "type": "passive",
+    "name": "Bone Crusher",
+    "description": "Grappled foes are crushed mercilessly.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Creatures you Grapple take 2 Bludgeoning damage at the start of each of your turns."
+    },
+    "tags": ["role/brute", "feature-cost/1"]
+  },
+  {
+    "id": "heavy-strike",
+    "type": "action-attack",
+    "name": "Heavy Strike",
+    "description": "A devastating overhead blow that can topple even sturdy opponents.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "actionDescription": "You bring down a crushing blow with all your might.",
+      "damageSegments": [{ "useBase": true, "modifier": 2, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is knocked Prone."
+      }
+    },
+    "tags": ["role/brute", "attack/martial", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/1", "status/hindered"]
+  },
+  {
+    "id": "lunge",
+    "type": "action-attack",
+    "name": "Lunge",
+    "description": "Charge forward and drive your weapon into your foe.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "3 Spaces (must move at least 2 Spaces toward target first)",
+      "actionDescription": "You surge forward, adding momentum to your strike.",
+      "damageSegments": [{ "useBase": true, "modifier": 2, "type": "Piercing" }]
+    },
+    "tags": ["role/brute", "attack/martial", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1"]
+  },
+  {
+    "id": "tremor-strike",
+    "type": "action-attack",
+    "name": "Tremor Strike",
+    "description": "Slam the ground, sending shockwaves through the earth.",
+    "featureCost": 2,
+    "actionType": "Area Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a 2 Space Sphere",
+      "range": "1 Space",
+      "actionDescription": "You drive your fist or weapon into the ground, sending a shockwave rippling outward.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is knocked Prone."
+      }
+    },
+    "tags": ["role/brute", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/hindered"]
+  },
+  {
+    "id": "grapple",
+    "type": "action-check-utility",
+    "name": "Grapple",
+    "description": "Seize and hold a creature in place.",
+    "featureCost": 0,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 1,
+      "target": "a creature",
+      "range": "1 Space",
+      "actionDescription": "You reach out and attempt to seize the target.",
+      "check": {
+        "dc": 10,
+        "failure": "The target resists.",
+        "success": "The target is Grappled.",
+        "successEach5": "Extend the Grapple's effective range by 1 Space."
+      }
+    },
+    "tags": ["role/brute", "attack/martial", "ap-cost/1", "feature-cost/0", "status/restrained"]
+  },
+  {
+    "id": "war-cry",
+    "type": "action-check-utility",
+    "name": "War Cry",
+    "description": "A terrifying battle cry that shakes the resolve of your enemies.",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 2,
+      "target": "all creatures",
+      "range": "5 Spaces",
+      "actionDescription": "You unleash a thunderous roar. Each creature you target must make a Cha Save or become Frightened of you until the end of your next turn.",
+      "check": {
+        "dc": 10,
+        "failure": "Target 1 creature in range.",
+        "success": "Target all creatures in range.",
+        "successEach5": "Frightened creatures also become Taunted."
+      }
+    },
+    "tags": ["role/brute", "attack/martial", "ap-cost/2", "feature-cost/1", "status/frightened"]
+  },
+  {
+    "id": "haymaker-throw",
+    "type": "action-check-utility",
+    "name": "Haymaker Throw",
+    "description": "Hurl a Grappled creature into another target.",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "required": ["grapple"],
+    "effects": {
+      "cost": 1,
+      "target": "a Grappled creature",
+      "range": "1 Space",
+      "actionDescription": "You hurl a Grappled creature up to 3 Spaces. If it collides with another creature, both take Bludgeoning damage equal to your base damage. Requires: Grapple.",
+      "check": {
+        "dc": 10,
+        "failure": "Throw 1 Space.",
+        "success": "Throw up to 3 Spaces.",
+        "successEach5": "+1 Space."
+      }
+    },
+    "tags": ["role/brute", "attack/martial", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "body-block",
+    "type": "action-check-utility",
+    "name": "Body Block",
+    "description": "Throw yourself in the path of an attack targeting an ally.",
+    "featureCost": 1,
+    "actionType": "Martial Utility",
+    "isReaction": true,
+    "reactionTrigger": "When an ally within 1 Space of you is targeted by an attack",
+    "effects": {
+      "cost": 0,
+      "actionDescription": "You shove your ally aside and become the target of the triggering attack instead."
+    },
+    "tags": ["role/brute", "role/defender", "ap-cost/0", "feature-cost/1"]
+  },
+
+  {
+    "id": "sharpshooter",
+    "type": "passive",
+    "name": "Sharpshooter",
+    "description": "Precise aim cuts through cover and leaves lasting wounds.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Your ranged attacks ignore cover bonuses to PD and AD. When your ranged attack deals damage, the target gains the Bleeding condition."
+    },
+    "tags": ["role/artillerist", "feature-cost/1", "status/bleeding"]
+  },
+  {
+    "id": "siege-trained",
+    "type": "passive",
+    "name": "Siege Trained",
+    "description": "This creature's area attacks cover greater ground.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Area attacks made by this creature increase their area by 1 Space in each dimension (e.g. a 3 Space Cube becomes a 4 Space Cube)."
+    },
+    "tags": ["role/artillerist", "feature-cost/1"]
+  },
+  {
+    "id": "sniper-shot",
+    "type": "action-attack",
+    "name": "Sniper Shot",
+    "description": "A precise shot aimed at exposed weak points from long distance.",
+    "featureCost": 2,
+    "actionType": "Ranged Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "15 / 25 Spaces",
+      "actionDescription": "You line up a perfect shot. You must not have moved this turn.",
+      "damageSegments": [{ "useBase": true, "modifier": 2, "type": "Piercing" }]
+    },
+    "tags": ["role/artillerist", "attack/martial", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/2"]
+  },
+  {
+    "id": "explosive-arrow",
+    "type": "action-attack",
+    "name": "Explosive Arrow",
+    "description": "An arrow tipped with a volatile substance that detonates on impact.",
+    "featureCost": 2,
+    "actionType": "Area Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a 2 Space Sphere",
+      "range": "10 Spaces",
+      "actionDescription": "You fire an arrow that explodes on impact in a burst of fire and shrapnel.",
+      "damageSegments": [
+        { "useBase": true, "modifier": -1, "type": "Piercing" },
+        { "useBase": false, "modifier": 1, "type": "Fire" }
+      ],
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target gains the Burning condition."
+      }
+    },
+    "tags": ["role/artillerist", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/burning"]
+  },
+  {
+    "id": "chain-shot",
+    "type": "action-attack",
+    "name": "Chain Shot",
+    "description": "A weighted shot that passes through multiple enemies in a line.",
+    "featureCost": 1,
+    "actionType": "Ranged Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "up to 2 creatures in a line",
+      "range": "10 Spaces",
+      "actionDescription": "You fire a spinning chain shot that tears through enemies in a straight path.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Bludgeoning" }]
+    },
+    "tags": ["role/artillerist", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "suppressive-fire",
+    "type": "action-check-utility",
+    "name": "Suppressive Fire",
+    "description": "Lay down a hail of fire to pin enemies in place.",
+    "featureCost": 2,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 2,
+      "target": "a 3 Space Cube",
+      "range": "10 Spaces",
+      "actionDescription": "You flood an area with projectiles. The area becomes Difficult Terrain until the start of your next turn. Creatures moving through it make an Agi Save or become Hindered.",
+      "check": {
+        "dc": 10,
+        "failure": "The area is Difficult Terrain.",
+        "success": "The area is Difficult Terrain and creatures moving through it make an Agi Save or become Hindered.",
+        "successEach5": "Increase the area by 1 Space."
+      }
+    },
+    "tags": ["role/artillerist", "attack/martial", "attack/aoe", "ap-cost/2", "feature-cost/2", "status/hindered"]
+  },
+  {
+    "id": "smoke-arrow",
+    "type": "action-check-utility",
+    "name": "Smoke Arrow",
+    "description": "Fire an arrow that bursts into concealing smoke on impact.",
+    "featureCost": 1,
+    "actionType": "Martial Utility",
+    "effects": {
+      "cost": 1,
+      "target": "a 2 Space Sphere",
+      "range": "10 Spaces",
+      "actionDescription": "You fire a smoke arrow that erupts into a thick cloud. The area is Heavily Obscured until the start of your next turn."
+    },
+    "tags": ["role/artillerist", "attack/martial", "attack/aoe", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "caltrops",
+    "type": "action-check-utility",
+    "name": "Scatter Caltrops",
+    "description": "Scatter spiked caltrops across the battlefield.",
+    "featureCost": 1,
+    "actionType": "Martial Utility",
+    "effects": {
+      "cost": 1,
+      "target": "a 2 Space Sphere",
+      "range": "5 Spaces",
+      "actionDescription": "You scatter caltrops in the area. It becomes Difficult Terrain. Any creature that enters the area for the first time on its turn takes 1 Piercing damage."
+    },
+    "tags": ["role/artillerist", "ap-cost/1", "feature-cost/1"]
+  },
+
+  {
+    "id": "aura-of-dread",
+    "type": "passive",
+    "name": "Aura of Dread",
+    "description": "The creature exudes an aura of supernatural terror.",
+    "featureCost": 2,
+    "effects": {
+      "text": "Creatures that start their turn within 3 Spaces of you must make a Cha Save or become Frightened of you until the start of their next turn."
+    },
+    "tags": ["role/controller", "feature-cost/2", "status/frightened"]
+  },
+  {
+    "id": "lingering-curse",
+    "type": "passive",
+    "name": "Lingering Curse",
+    "description": "Failed saves leave lingering marks on the target.",
+    "featureCost": 1,
+    "effects": {
+      "text": "When a creature fails a Save against one of your effects, it has DisADV on its next Save against your effects."
+    },
+    "tags": ["role/controller", "feature-cost/1"]
+  },
+  {
+    "id": "mindbreak",
+    "type": "action-attack",
+    "name": "Mindbreak",
+    "description": "A focused psychic assault that overloads the target's mind.",
+    "featureCost": 2,
+    "actionType": "Ranged Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "range": "8 Spaces",
+      "actionDescription": "You unleash a bolt of psychic energy that shatters concentration.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Umbral" }],
+      "save": {
+        "attribute": "Int",
+        "failure": "The target is Stunned until the end of its next turn."
+      }
+    },
+    "tags": ["role/controller", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/2", "status/stunned"]
+  },
+  {
+    "id": "gravity-well",
+    "type": "action-check-utility",
+    "name": "Gravity Well",
+    "description": "Create a gravitational anomaly that drags creatures toward a point.",
+    "featureCost": 2,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 3,
+      "target": "a 3 Space Sphere",
+      "range": "8 Spaces",
+      "actionDescription": "You create a crushing gravitational field. Each creature in the area makes a Mig Save or is pulled 2 Spaces toward the center and becomes Hindered until the end of its next turn.",
+      "check": {
+        "dc": 10,
+        "failure": "Affect 1 creature in the area.",
+        "success": "Affect all creatures in the area.",
+        "successEach5": "Increase pull distance by 1 Space."
+      }
+    },
+    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "ap-cost/3", "feature-cost/2", "status/hindered"]
+  },
+  {
+    "id": "frost-nova",
+    "type": "action-attack",
+    "name": "Frost Nova",
+    "description": "An explosion of freezing energy that encases nearby enemies in ice.",
+    "featureCost": 2,
+    "actionType": "Area Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a 2 Space Sphere",
+      "range": "1 Space",
+      "actionDescription": "A burst of intense cold erupts from you, freezing everything nearby.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Cold" }],
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target gains the Slowed condition until the end of its next turn."
+      }
+    },
+    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/slowed"]
+  },
+  {
+    "id": "mass-confusion",
+    "type": "action-check-utility",
+    "name": "Mass Confusion",
+    "description": "Scramble the senses of multiple creatures at once.",
+    "featureCost": 2,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "target": "up to 3 creatures",
+      "range": "10 Spaces",
+      "actionDescription": "You flood the minds of your targets with disorienting illusions. Each target makes an Int Save or becomes Disoriented until the end of its next turn.",
+      "check": {
+        "dc": 10,
+        "failure": "Target 1 creature.",
+        "success": "Target 2 creatures.",
+        "successEach5": "Target 1 additional creature."
+      }
+    },
+    "tags": ["role/controller", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/disoriented"]
+  },
+
+  {
+    "id": "guardian-stance",
+    "type": "passive",
+    "name": "Guardian Stance",
+    "description": "The creature's presence bolsters nearby allies.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Allies within 1 Space of you gain +1 to PD and AD."
+    },
+    "tags": ["role/defender", "feature-cost/1"]
+  },
+  {
+    "id": "stalwart",
+    "type": "passive",
+    "name": "Stalwart",
+    "description": "This creature cannot be easily moved or shaken.",
+    "featureCost": 1,
+    "effects": {
+      "text": "You cannot be knocked Prone or moved against your will by non-magical means. When a creature misses you with a melee attack, you may make a free melee attack against it as a Reaction."
+    },
+    "tags": ["role/defender", "feature-cost/1"]
+  },
+  {
+    "id": "shield-slam",
+    "type": "action-attack",
+    "name": "Shield Slam",
+    "description": "Smash into a foe with your shield, knocking them off balance.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "actionDescription": "You drive your shield into the target with crushing force.",
+      "damageSegments": [{ "useBase": true, "modifier": 1, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is knocked Prone and pushed 1 Space directly away from you."
+      }
+    },
+    "tags": ["role/defender", "attack/martial", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/1", "status/hindered"]
+  },
+  {
+    "id": "sweeping-guard",
+    "type": "action-attack",
+    "name": "Sweeping Guard",
+    "description": "A wide arc attack that punishes all creatures within reach.",
+    "featureCost": 1,
+    "actionType": "Area Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "all creatures",
+      "range": "1 Space",
+      "actionDescription": "You sweep your weapon in a wide arc, striking all who approach.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Slashing" }]
+    },
+    "tags": ["role/defender", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/1"]
+  },
+  {
+    "id": "retributive-strike",
+    "type": "action-attack",
+    "name": "Retributive Strike",
+    "description": "Strike back when an ally near you is attacked.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within 1 Space of you deals damage to an ally",
+    "effects": {
+      "cost": 0,
+      "targetDefense": "PD",
+      "target": "the triggering creature",
+      "range": "1 Space",
+      "actionDescription": "You immediately lash back at any creature that strikes your allies.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Slashing" }]
+    },
+    "tags": ["role/defender", "attack/martial", "attack/single-target", "target/pd", "ap-cost/0", "feature-cost/1"]
+  },
+  {
+    "id": "taunt-strike",
+    "type": "action-attack",
+    "name": "Taunt Strike",
+    "description": "A calculated blow meant to draw the enemy's focus.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "actionDescription": "You strike the target with a goading blow, forcing their attention onto you.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }],
+      "save": {
+        "attribute": "Cha",
+        "failure": "The target gains the Taunted condition, targeting only you with its next attack."
+      }
+    },
+    "tags": ["role/defender", "attack/martial", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1", "status/taunted"]
+  },
+  {
+    "id": "interpose",
+    "type": "action-check-utility",
+    "name": "Interpose",
+    "description": "Throw yourself between an attack and an ally.",
+    "featureCost": 1,
+    "actionType": "Martial Utility",
+    "isReaction": true,
+    "reactionTrigger": "When an ally within 1 Space of you is targeted by an attack",
+    "effects": {
+      "cost": 0,
+      "actionDescription": "You step into the path of the attack, becoming the target instead. The attack targets your PD or AD (same defense as originally targeted)."
+    },
+    "tags": ["role/defender", "ap-cost/0", "feature-cost/1"]
+  },
+  {
+    "id": "fortress-stance",
+    "type": "action-check-utility",
+    "name": "Fortress Stance",
+    "description": "Plant your feet and become an immovable wall.",
+    "featureCost": 1,
+    "actionType": "Martial Utility",
+    "effects": {
+      "cost": 1,
+      "actionDescription": "Until the start of your next turn, you gain +3 PD and AD, but your Speed becomes 0. You also cannot be moved or knocked Prone."
+    },
+    "tags": ["role/defender", "ap-cost/1", "feature-cost/1"]
+  },
+
+  {
+    "id": "ambush-predator",
+    "type": "passive",
+    "name": "Ambush Predator",
+    "description": "The creature excels at striking from concealment.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Your attacks deal +3 damage against creatures that have not yet acted in combat or that are unaware of you."
+    },
+    "tags": ["role/lurker", "feature-cost/1"]
+  },
+  {
+    "id": "shadow-step",
+    "type": "passive",
+    "name": "Shadow Step",
+    "description": "This creature flickers between patches of shadow with supernatural ease.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Once per turn, when you move through dim light or darkness, you may attempt to Hide as part of that movement."
+    },
+    "tags": ["role/lurker", "feature-cost/1"]
+  },
+  {
+    "id": "backstab",
+    "type": "action-attack",
+    "name": "Backstab",
+    "description": "Drive a blade into an exposed flank for devastating effect.",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "actionDescription": "You find an opening and drive your weapon deep. This attack has ADV if you are Hidden from the target or if an ally is adjacent to it.",
+      "damageSegments": [{ "useBase": true, "modifier": 3, "type": "Piercing" }]
+    },
+    "tags": ["role/lurker", "attack/martial", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/2"]
+  },
+  {
+    "id": "garrote",
+    "type": "action-attack",
+    "name": "Garrote",
+    "description": "Loop a cord around the target's neck and choke.",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "actionDescription": "You seize the target from behind. On a hit, the target is Grappled. While Grappled this way, the target makes an Agi Save at the end of each of its turns or becomes Incapacitated.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target is Grappled."
+      }
+    },
+    "tags": ["role/lurker", "attack/martial", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/2", "status/incapacitated"]
+  },
+  {
+    "id": "poison-strike",
+    "type": "action-attack",
+    "name": "Poison Strike",
+    "description": "A swift strike coated in potent toxin.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "actionDescription": "You strike quickly with a venomous weapon.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Poison" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target gains the Poisoned condition."
+      }
+    },
+    "tags": ["role/lurker", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1", "status/poisoned"]
+  },
+  {
+    "id": "shadow-pounce",
+    "type": "action-attack",
+    "name": "Shadow Pounce",
+    "description": "Leap from the shadows and slam into your prey.",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "range": "4 Spaces",
+      "actionDescription": "You emerge from concealment in a deadly leap. You move up to 4 Spaces toward the target as part of this action.",
+      "damageSegments": [{ "useBase": true, "modifier": 1, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is knocked Prone and Dazed until end of its next turn."
+      }
+    },
+    "tags": ["role/lurker", "attack/martial", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/2", "status/dazed"]
+  },
+  {
+    "id": "smoke-cloud",
+    "type": "action-check-utility",
+    "name": "Smoke Cloud",
+    "description": "Conjure a thick cloud of smoke to obscure the battlefield.",
+    "featureCost": 1,
+    "actionType": "Spell Utility",
+    "effects": {
+      "cost": 1,
+      "target": "a 2 Space Sphere",
+      "range": "5 Spaces",
+      "actionDescription": "You create a cloud of dense smoke. The area is Heavily Obscured until the start of your next turn."
+    },
+    "tags": ["role/lurker", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "shadow-meld",
+    "type": "action-check-utility",
+    "name": "Shadow Meld",
+    "description": "Merge with nearby shadows, becoming impossible to see.",
+    "featureCost": 1,
+    "actionType": "Spell Utility",
+    "effects": {
+      "cost": 1,
+      "actionDescription": "You step into a shadow and become Invisible until the start of your next turn or until you make an attack or cast a spell."
+    },
+    "tags": ["role/lurker", "ap-cost/1", "feature-cost/1", "status/invisible"]
+  },
+
+  {
+    "id": "aura-of-vitality",
+    "type": "passive",
+    "name": "Aura of Vitality",
+    "description": "This creature's presence accelerates the healing of nearby allies.",
+    "featureCost": 2,
+    "effects": {
+      "text": "Allies that start their turn within 2 Spaces of you regain 1 HP."
+    },
+    "tags": ["role/support", "feature-cost/2"]
+  },
+  {
+    "id": "inspiring-presence",
+    "type": "passive",
+    "name": "Inspiring Presence",
+    "description": "The creature's courage shores up the resolve of nearby allies.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Allies within 2 Spaces of you have ADV on Saves against the Frightened and Charmed conditions."
+    },
+    "tags": ["role/support", "feature-cost/1"]
+  },
+  {
+    "id": "holy-smite",
+    "type": "action-attack",
+    "name": "Holy Smite",
+    "description": "Channel divine radiance into a searing bolt of light.",
+    "featureCost": 1,
+    "actionType": "Ranged Spell Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "range": "8 Spaces",
+      "actionDescription": "You hurl a bolt of holy light at your enemy. Against Undead and Fiends, this attack deals +2 additional Radiant damage.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Radiant" }]
+    },
+    "tags": ["role/support", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "binding-bolt",
+    "type": "action-attack",
+    "name": "Binding Bolt",
+    "description": "A crackling bolt of energy that locks the target in place.",
+    "featureCost": 1,
+    "actionType": "Ranged Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "range": "8 Spaces",
+      "actionDescription": "You hurl a bolt of crackling binding energy.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Lightning" }],
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target is Restrained until the end of its next turn."
+      }
+    },
+    "tags": ["role/support", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/1", "status/restrained"]
+  },
+  {
+    "id": "sacred-flame",
+    "type": "action-attack",
+    "name": "Sacred Flame",
+    "description": "A burst of divine fire that purges corruption from a wide area.",
+    "featureCost": 2,
+    "actionType": "Area Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a 2 Space Sphere",
+      "range": "6 Spaces",
+      "actionDescription": "Divine flames erupt in a sphere, burning all enemies within.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Radiant" }],
+      "save": {
+        "attribute": "Cha",
+        "failure": "The target is Blinded until the end of its next turn."
+      }
+    },
+    "tags": ["role/support", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/blinded"]
+  },
+  {
+    "id": "bless",
+    "type": "action-check-utility",
+    "name": "Bless",
+    "description": "Call down divine favor on your allies.",
+    "featureCost": 1,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "target": "up to 3 allies",
+      "range": "5 Spaces",
+      "actionDescription": "You invoke divine blessing on your allies. Each target gains ADV on attack rolls until the start of your next turn.",
+      "check": {
+        "dc": 10,
+        "failure": "Target 1 ally.",
+        "success": "Target 2 allies.",
+        "successEach5": "Target 1 additional ally."
+      }
+    },
+    "tags": ["role/support", "attack/spellcaster", "ap-cost/2", "feature-cost/1"]
+  },
+  {
+    "id": "divine-shield",
+    "type": "action-check-utility",
+    "name": "Divine Shield",
+    "description": "Cloak an ally in protective divine energy.",
+    "featureCost": 1,
+    "actionType": "Spell Utility",
+    "effects": {
+      "cost": 1,
+      "target": "one ally",
+      "range": "5 Spaces",
+      "actionDescription": "You weave a divine barrier around an ally. The target gains +3 PD and AD until the start of your next turn."
+    },
+    "tags": ["role/support", "attack/spellcaster", "ap-cost/1", "feature-cost/1"]
+  },
+
+  {
+    "id": "undying",
+    "type": "passive",
+    "name": "Undying",
+    "description": "This creature refuses to stay dead.",
+    "featureCost": 2,
+    "effects": {
+      "text": "When reduced to 0 HP for the first time in combat, this creature instead drops to 1 HP. This effect can only occur once per encounter. The creature must be fully destroyed (reduced to 0 HP a second time) to be permanently slain."
+    },
+    "tags": ["creature/undead", "feature-cost/2"]
+  },
+  {
+    "id": "undead-resilience",
+    "type": "modifier",
+    "name": "Undead Resilience",
+    "description": "The creature's undead nature grants immunity to certain afflictions.",
+    "featureCost": 1,
+    "effects": {
+      "immunities": { "condition": ["Poisoned", "Charmed"] },
+      "resistances": { "damage": ["Necrotic", "Cold"] }
+    },
+    "tags": ["creature/undead", "feature-cost/1"]
+  },
+  {
+    "id": "life-drain",
+    "type": "action-attack",
+    "name": "Life Drain",
+    "description": "Drain the vital essence from a creature to fuel your own unlife.",
+    "featureCost": 2,
+    "actionType": "Melee Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "actionDescription": "You reach out and draw the life force from your target. You regain HP equal to the damage dealt.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Necrotic" }]
+    },
+    "tags": ["creature/undead", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/2"]
+  },
+  {
+    "id": "terrifying-visage",
+    "type": "action-check-utility",
+    "name": "Terrifying Visage",
+    "description": "Reveal your true undead nature to strike terror into the living.",
+    "featureCost": 1,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "target": "all creatures",
+      "range": "3 Spaces",
+      "actionDescription": "You unveil the horror of your undead form. Each living creature in range must make a Cha Save or become Frightened of you until the end of its next turn.",
+      "check": {
+        "dc": 10,
+        "failure": "Affect creatures within 1 Space.",
+        "success": "Affect all creatures within 3 Spaces.",
+        "successEach5": "Affected creatures are Frightened for 1 minute instead."
+      }
+    },
+    "tags": ["creature/undead", "attack/spellcaster", "ap-cost/2", "feature-cost/1", "status/frightened"]
+  },
+  {
+    "id": "necrotic-aura",
+    "type": "passive",
+    "name": "Necrotic Aura",
+    "description": "Death radiates from this creature's form.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Creatures that start their turn within 2 Spaces of you take 1 Necrotic damage."
+    },
+    "tags": ["creature/undead", "feature-cost/1"]
+  },
+
+  {
+    "id": "frightful-presence",
+    "type": "passive",
+    "name": "Frightful Presence",
+    "description": "The dragon's sheer presence terrifies lesser creatures.",
+    "featureCost": 2,
+    "effects": {
+      "text": "Any creature that starts its turn within 5 Spaces of you that is aware of you must make a Cha Save or become Frightened of you until the start of its next turn. A creature that succeeds is immune to this effect for 24 hours."
+    },
+    "tags": ["creature/dragon", "feature-cost/2", "status/frightened"]
+  },
+  {
+    "id": "dragon-scales",
+    "type": "modifier",
+    "name": "Dragon Scales",
+    "description": "Thick draconic scales provide exceptional natural armor.",
+    "featureCost": 1,
+    "effects": {
+      "hp": 5,
+      "pd": 1,
+      "ad": 1,
+      "resistances": { "damage": ["Fire"] }
+    },
+    "tags": ["creature/dragon", "feature-cost/1"]
+  },
+  {
+    "id": "fire-breath",
+    "type": "action-attack",
+    "name": "Fire Breath",
+    "description": "Unleash a devastating cone of scorching dragonfire.",
+    "featureCost": 3,
+    "actionType": "Area Spell Attack",
+    "effects": {
+      "cost": 3,
+      "targetDefense": "AD",
+      "target": "a 4 Space Cone",
+      "range": "1 Space",
+      "actionDescription": "You exhale a torrent of fire from your jaws.",
+      "damageSegments": [{ "useBase": true, "modifier": 2, "type": "Fire" }],
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target gains the Burning condition.",
+        "success": "The target takes half damage."
+      }
+    },
+    "tags": ["creature/dragon", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/3", "feature-cost/3", "status/burning", "tier/apex"]
+  },
+  {
+    "id": "claw-rake",
+    "type": "action-attack",
+    "name": "Claw Rake",
+    "description": "Tear through a target with both claws in a raking strike.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "actionDescription": "You slash across your target twice in quick succession.",
+      "damageSegments": [
+        { "useBase": true, "modifier": 0, "type": "Slashing" },
+        { "useBase": false, "modifier": 2, "type": "Slashing" }
+      ]
+    },
+    "tags": ["creature/dragon", "attack/martial", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1"]
+  },
+  {
+    "id": "wing-sweep",
+    "type": "action-check-utility",
+    "name": "Wing Sweep",
+    "description": "Beat your massive wings to scatter nearby creatures.",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 2,
+      "target": "all creatures",
+      "range": "2 Spaces",
+      "actionDescription": "You beat your wings in a powerful sweep. Each creature in range makes a Mig Save or is pushed 3 Spaces directly away from you and knocked Prone.",
+      "check": {
+        "dc": 10,
+        "failure": "Affect creatures within 1 Space.",
+        "success": "Affect all creatures within 2 Spaces.",
+        "successEach5": "Push an additional 1 Space."
+      }
+    },
+    "tags": ["creature/dragon", "attack/martial", "attack/aoe", "ap-cost/2", "feature-cost/1", "status/hindered"]
+  },
+
+  {
+    "id": "infernal-resilience",
+    "type": "modifier",
+    "name": "Infernal Resilience",
+    "description": "Born of hellfire, this creature shrugs off flame and poison.",
+    "featureCost": 1,
+    "effects": {
+      "immunities": { "damage": ["Fire"] },
+      "resistances": { "damage": ["Cold", "Poison"] }
+    },
+    "tags": ["creature/fiend", "feature-cost/1"]
+  },
+  {
+    "id": "dark-pact",
+    "type": "passive",
+    "name": "Dark Pact",
+    "description": "Striking this creature is a dangerous bargain.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Whenever a creature deals damage to you, it takes 1 Fire damage."
+    },
+    "tags": ["creature/fiend", "feature-cost/1"]
+  },
+  {
+    "id": "hellfire-bolt",
+    "type": "action-attack",
+    "name": "Hellfire Bolt",
+    "description": "Hurl a bolt of crackling hellfire at a distant foe.",
+    "featureCost": 1,
+    "actionType": "Ranged Spell Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "range": "10 Spaces",
+      "actionDescription": "You hurl a bolt of infernal flame.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Fire" }],
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target gains the Burning condition."
+      }
+    },
+    "tags": ["creature/fiend", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1", "status/burning"]
+  },
+  {
+    "id": "hellfire-burst",
+    "type": "action-attack",
+    "name": "Hellfire Burst",
+    "description": "Summon a pillar of infernal fire to immolate an area.",
+    "featureCost": 2,
+    "actionType": "Area Spell Attack",
+    "effects": {
+      "cost": 3,
+      "targetDefense": "AD",
+      "target": "a 2 Space Sphere",
+      "range": "8 Spaces",
+      "actionDescription": "A column of hellfire erupts from the ground, scorching everything within.",
+      "damageSegments": [{ "useBase": true, "modifier": 1, "type": "Fire" }],
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target gains the Burning condition.",
+        "success": "The target takes half damage."
+      }
+    },
+    "tags": ["creature/fiend", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/3", "feature-cost/2", "status/burning"]
+  },
+  {
+    "id": "infernal-gaze",
+    "type": "action-check-utility",
+    "name": "Infernal Gaze",
+    "description": "Lock eyes with a creature and overwhelm their will.",
+    "featureCost": 2,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "target": "one creature",
+      "range": "5 Spaces",
+      "actionDescription": "You fix your infernal gaze upon a creature. It makes a Cha Save or becomes Charmed by you until the end of its next turn. While Charmed this way, it regards you as a trusted ally.",
+      "check": {
+        "dc": 10,
+        "failure": "The target resists.",
+        "success": "The target is Charmed until the end of its next turn.",
+        "successEach5": "The Charmed duration increases by 1 round."
+      }
+    },
+    "tags": ["creature/fiend", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/charmed"]
+  },
+
+  {
+    "id": "thick-hide",
+    "type": "modifier",
+    "name": "Thick Hide",
+    "description": "Dense fur, scales, or chitinous plating absorbs punishment.",
+    "featureCost": 1,
+    "effects": {
+      "hp": 8,
+      "pd": 1,
+      "resistances": { "damage": ["Bludgeoning"] }
+    },
+    "tags": ["creature/beast", "feature-cost/1"]
+  },
+  {
+    "id": "pack-hunter",
+    "type": "passive",
+    "name": "Pack Hunter",
+    "description": "This creature coordinates with its packmates to bring down prey.",
+    "featureCost": 1,
+    "effects": {
+      "text": "When you make an attack against a creature that has an ally of yours adjacent to it, you deal +2 damage."
+    },
+    "tags": ["creature/beast", "feature-cost/1"]
+  },
+  {
+    "id": "pounce",
+    "type": "action-attack",
+    "name": "Pounce",
+    "description": "Leap onto your prey, bearing them to the ground.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "3 Spaces (must move at least 2 Spaces toward target first)",
+      "actionDescription": "You leap at your target and crash into them with your full weight.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is knocked Prone."
+      }
+    },
+    "tags": ["creature/beast", "attack/martial", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1", "status/hindered"]
+  },
+  {
+    "id": "venomous-bite",
+    "type": "action-attack",
+    "name": "Venomous Bite",
+    "description": "Sink venomous fangs into the target.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "actionDescription": "You sink your fangs into the target, injecting venom.",
+      "damageSegments": [
+        { "useBase": true, "modifier": 0, "type": "Piercing" },
+        { "useBase": false, "modifier": 1, "type": "Poison" }
+      ],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target gains the Poisoned condition."
+      }
+    },
+    "tags": ["creature/beast", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1", "status/poisoned"]
+  },
+  {
+    "id": "fierce-roar",
+    "type": "action-check-utility",
+    "name": "Fierce Roar",
+    "description": "Let out a thunderous roar to shake nearby enemies.",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 1,
+      "target": "all creatures",
+      "range": "3 Spaces",
+      "actionDescription": "You unleash a bone-shaking roar. Creatures in range make a Cha Save or become Frightened until the end of their next turn.",
+      "check": {
+        "dc": 10,
+        "failure": "Affect creatures within 1 Space.",
+        "success": "Affect all creatures within 3 Spaces.",
+        "successEach5": "Affected creatures are Frightened for 1 additional round."
+      }
+    },
+    "tags": ["creature/beast", "creature/dragon", "attack/martial", "attack/aoe", "ap-cost/1", "feature-cost/1", "status/frightened"]
+  },
+
+  {
+    "id": "aberrant-resilience",
+    "type": "modifier",
+    "name": "Aberrant Resilience",
+    "description": "The creature's alien biology resists mental manipulation.",
+    "featureCost": 1,
+    "effects": {
+      "immunities": { "condition": ["Charmed", "Frightened"] },
+      "resistances": { "damage": ["Umbral"] }
+    },
+    "tags": ["creature/aberration", "feature-cost/1"]
+  },
+  {
+    "id": "psychic-aura",
+    "type": "passive",
+    "name": "Psychic Aura",
+    "description": "This creature's alien mind bleeds into the thoughts of those nearby.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Creatures within 2 Spaces of you that take damage must make an Int Save or become Disoriented until the start of their next turn."
+    },
+    "tags": ["creature/aberration", "feature-cost/1", "status/disoriented"]
+  },
+  {
+    "id": "mind-blast",
+    "type": "action-attack",
+    "name": "Mind Blast",
+    "description": "Project a psychic shockwave that staggers all who feel it.",
+    "featureCost": 2,
+    "actionType": "Area Spell Attack",
+    "effects": {
+      "cost": 3,
+      "targetDefense": "AD",
+      "target": "a 3 Space Cone",
+      "range": "1 Space",
+      "actionDescription": "You project a devastating wave of psychic energy from your mind.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Umbral" }],
+      "save": {
+        "attribute": "Int",
+        "failure": "The target is Stunned until the end of its next turn."
+      }
+    },
+    "tags": ["creature/aberration", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/3", "feature-cost/2", "status/stunned"]
+  },
+  {
+    "id": "tentacle-grab",
+    "type": "action-attack",
+    "name": "Tentacle Grab",
+    "description": "Lash out with a powerful tentacle to restrain prey.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "3 Spaces",
+      "actionDescription": "You whip a tentacle toward a creature, attempting to wrap it up.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is Restrained. It can free itself with a DC 12 Mig Check on its turn."
+      }
+    },
+    "tags": ["creature/aberration", "attack/martial", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1", "status/restrained"]
+  },
+  {
+    "id": "void-gaze",
+    "type": "action-check-utility",
+    "name": "Void Gaze",
+    "description": "Fix your unfathomable gaze on a creature, filling them with existential dread.",
+    "featureCost": 2,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "target": "one creature",
+      "range": "5 Spaces",
+      "actionDescription": "You fix your alien gaze upon a creature. It makes an Int Save or becomes Frightened and Disoriented until the end of its next turn.",
+      "check": {
+        "dc": 10,
+        "failure": "Target resists.",
+        "success": "Target is Frightened and Disoriented until end of its next turn.",
+        "successEach5": "The target is also Stunned for 1 round."
+      }
+    },
+    "tags": ["creature/aberration", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/frightened", "status/disoriented"]
+  },
+
+  {
+    "id": "plant-resilience",
+    "type": "modifier",
+    "name": "Plant Resilience",
+    "description": "The creature's plant nature grants unusual resistances.",
+    "featureCost": 1,
+    "effects": {
+      "resistances": { "damage": ["Bludgeoning", "Piercing"] },
+      "vulnerabilities": { "damage": ["Fire"] }
+    },
+    "tags": ["creature/plant", "feature-cost/1"]
+  },
+  {
+    "id": "photosynthesis",
+    "type": "passive",
+    "name": "Photosynthesis",
+    "description": "This creature draws strength from natural light.",
+    "featureCost": 1,
+    "effects": {
+      "text": "While in sunlight or bright natural light, you regain 1 HP at the start of each of your turns."
+    },
+    "tags": ["creature/plant", "feature-cost/1"]
+  },
+  {
+    "id": "vine-grapple",
+    "type": "action-attack",
+    "name": "Vine Grapple",
+    "description": "Shoot out binding vines to entangle a target.",
+    "featureCost": 1,
+    "actionType": "Ranged Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "5 Spaces",
+      "actionDescription": "You launch a bundle of fast-growing vines toward your target.",
+      "damageSegments": [{ "useBase": false, "modifier": 1, "type": "Piercing" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is Restrained until the end of its next turn.",
+        "failureEach5": "The Restrained duration increases by 1 round."
+      }
+    },
+    "tags": ["creature/plant", "attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1", "status/restrained"]
+  },
+  {
+    "id": "thorn-lash",
+    "type": "action-attack",
+    "name": "Thorn Lash",
+    "description": "Whip a barbed vine at a creature, tearing through flesh.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "2 Spaces",
+      "actionDescription": "You lash out with a thorned vine, raking across the target.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Slashing" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target gains the Bleeding condition."
+      }
+    },
+    "tags": ["creature/plant", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1", "status/bleeding"]
+  },
+  {
+    "id": "spore-cloud",
+    "type": "action-check-utility",
+    "name": "Spore Cloud",
+    "description": "Release a cloud of toxic spores to sicken nearby creatures.",
+    "featureCost": 1,
+    "actionType": "Spell Utility",
+    "effects": {
+      "cost": 2,
+      "target": "a 2 Space Sphere",
+      "range": "1 Space",
+      "actionDescription": "You release a burst of toxic spores. The area becomes Heavily Obscured and Difficult Terrain. Creatures that start their turn in the area make a Mig Save or gain the Poisoned condition."
+    },
+    "tags": ["creature/plant", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1", "status/poisoned"]
   }
 ]

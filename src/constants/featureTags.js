@@ -17,7 +17,10 @@ export const tag = Object.freeze({
     UNDEAD: 'creature/undead',
     CONSTRUCT: 'creature/construct',
     ELEMENTAL: 'creature/elemental',
-    MONSTROSITY: 'creature/monstrosity',
+    DRAGON: 'creature/dragon',
+    FIEND: 'creature/fiend',
+    ABERRATION: 'creature/aberration',
+    PLANT: 'creature/plant',
   }),
   FEATURE_COST: Object.freeze({
     F0: 'feature-cost/0',
