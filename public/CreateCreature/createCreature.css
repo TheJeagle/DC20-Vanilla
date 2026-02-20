@@ -1089,10 +1089,11 @@ body{
   .statblock-vitals { grid-template-columns: auto auto auto auto auto auto; }
   .statblock-vitals .statblock-value { white-space: nowrap; }
 
-  /* All description/body text inherits print base size (no absolute rem overrides) */
-  .feature-description,
-  .action-description,
-  .action-trigger { font-size: inherit; }
+  /* All description/body text inherits print base size.
+     Must match screen-side specificity (two-class selectors) to actually override. */
+  .statblock-feature-item .feature-description,
+  .statblock-action-item .action-description,
+  .statblock-action-item .action-trigger { font-size: inherit; }
 
   /* Skills/Senses labels and values stay on one line, pills tighter */
   .statblock-trait-row { flex-wrap: nowrap; gap: 0.25rem; }
