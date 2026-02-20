@@ -1,0 +1,134 @@
+:root {
+  --accent: #8e44ad;
+  --accent-strong: #9b59b6;
+  --danger: #c0392b;
+  --nav-bg: #ffffff;
+  --nav-border: rgba(16, 16, 16, 0.08);
+  --nav-shadow: 0 12px 28px rgba(45, 26, 66, 0.08);
+  --nav-text: #1f1f1f;
+  --nav-muted: rgba(31, 31, 31, 0.6);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  padding: 18px clamp(16px, 6vw, 56px);
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: var(--nav-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.site-brand {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-weight: 700;
+  color: var(--nav-text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.site-brand span {
+  color: var(--accent);
+}
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 24px);
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  position: relative;
+  color: var(--nav-muted);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 4px;
+  transition: color 0.18s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 3px;
+  border-radius: 999px;
+  background: transparent;
+  transition: background 0.18s ease;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: var(--nav-text);
+}
+
+.nav-link.is-active {
+  color: var(--nav-text);
+}
+
+.nav-link.is-active::after {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+}
+
+.nav-button {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.nav-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(142, 68, 173, 0.26);
+}
+
+.nav-button:focus-visible {
+  outline: 2px solid rgba(142, 68, 173, 0.45);
+  outline-offset: 2px;
+}
+
+.nav-button--secondary {
+  background: rgba(142, 68, 173, 0.12);
+  color: var(--accent);
+  border-color: rgba(142, 68, 173, 0.28);
+}
+
+.nav-button--danger {
+  background: rgba(192, 57, 43, 0.1);
+  color: var(--danger);
+  border-color: rgba(192, 57, 43, 0.3);
+}
+
+.nav-button--danger:hover {
+  box-shadow: 0 12px 26px rgba(192, 57, 43, 0.18);
+}
+
+@media (max-width: 720px) {
+  .site-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .site-nav-links {
+    justify-content: center;
+  }
+
+  .nav-button {
+    width: 100%;
+    text-align: center;
+  }
+}

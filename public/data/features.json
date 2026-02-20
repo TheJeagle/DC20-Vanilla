@@ -502,5 +502,105 @@
         "failure": "Targets are blinded until the end of your next round"
       }
     }
+  },
+  {
+    "type": "action-attack",
+    "name": "Stab and Run",
+    "id": "stab-and-run",
+    "featureDescription": "reaction: Attack and run when a hostile creature attacks",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "The creature making the attack",
+      "range": "1 Space",
+      "actionDescription": "after the attack you move up to your Speed without causing opportunity attacks.",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": 0,
+          "type": "Piercing"
+        }
+      ]
+    },
+    "isReaction": true,
+    "reactionTrigger": "When a hostile creature makes an attack action within 1 Space of you"
+  },
+  {
+    "id": "wall-of-earth",
+    "type": "action-check-utility",
+    "name": "Wall of Earth",
+    "featureDescription": "Conjure a 4 Space long, 2 Space tall earthen wall.",
+    "featureCost": 2,
+    "actionType": "Spell Utility",
+    "effects": {
+      "cost": 2,
+      "actionDescription": "Conjure a 4 Space long, 2 Space tall wall of earth that fills an unoccupied area within 5 Spaces. The wall has PD 15, AD 15, 3 HP, and resistance 1 to Physical damage.",
+      "target": "a 4 Space line (2 Space tall wall)",
+      "range": "5 Spaces"
+    },
+    "tags": [
+      "utility/spellcaster",
+      "ap-cost/2",
+      "feature-cost/2"
+    ]
+  },
+  {
+    "id": "earth-spike",
+    "type": "action-attack",
+    "name": "Earth Spike",
+    "featureDescription": "Ranged spell attack that conjures a spike of earth.",
+    "featureCost": 1,
+    "actionType": "Ranged Spell Attack",
+    "effects": {
+      "cost": 1,
+      "actionType": "Ranged Spell Attack",
+      "damageSegments": [
+        {
+          "useBase": true,
+          "modifier": 0,
+          "type": "Piercing"
+        }
+      ],
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "5 Spaces"
+    },
+    "tags": [
+      "attack/spellcaster",
+      "attack/single-target",
+      "target/pd",
+      "ap-cost/1",
+      "feature-cost/1"
+    ]
+  },
+  {
+    "id": "gemantic-aura",
+    "type": "passive",
+    "name": "Gemantic Aura (3 Spaces)",
+    "description": "You emanate an aura of control over earth within a 3 Space Aura.",
+    "featureCost": 1,
+    "effects": {
+      "text": "When you cast spells you can do so as if you were standing in any Space over earth in your Aura, and any creature within your Aura has DisADV on Saves against you."
+    },
+    "tags": [
+      "passive/spellcaster",
+      "feature-cost/1"
+    ]
+  },
+  {
+    "id": "earth-walker",
+    "type": "passive",
+    "name": "Earth Walker",
+    "description": "You're not affected by Difficult Terrain created by rock, dirt, mud, or sand.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Ignore Difficult Terrain created by rock, dirt, mud, or sand."
+    },
+    "tags": [
+      "passive",
+      "feature-cost/1"
+    ]
   }
 ]

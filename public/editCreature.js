@@ -505,7 +505,7 @@ function sanitizeDeltas() {
 }
 
 function handleBack() {
-  window.location.href = 'index.html';
+  window.location.href = './CreateCreature/createCreature.html';
 }
 
 function init() {

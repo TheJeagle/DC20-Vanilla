@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DC20 Creature Library</title>
+    <link rel="stylesheet" href="../reset.css" />
+    <link rel="stylesheet" href="../site.css" />
+    <style>
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(180deg, #f7f3ff 0%, #ffffff 65%);
+        color: #1f1f1f;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: clamp(32px, 6vw, 60px);
+        padding: clamp(32px, 8vw, 96px) clamp(20px, 7vw, 96px);
+      }
+
+      .library-hero {
+        display: grid;
+        gap: 16px;
+        max-width: 780px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .library-hero h1 {
+        margin: 0;
+        font-size: clamp(2.4rem, 5vw, 3.4rem);
+        letter-spacing: -0.01em;
+      }
+
+      .library-hero p {
+        margin: 0;
+        line-height: 1.7;
+        color: rgba(31, 31, 31, 0.72);
+        font-size: 1.05rem;
+      }
+
+      .library-layout {
+        display: grid;
+        grid-template-columns: minmax(260px, 0.85fr) minmax(0, 2.15fr);
+        gap: clamp(24px, 5vw, 48px);
+        align-items: start;
+      }
+
+      @media (max-width: 960px) {
+        .library-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .filters-panel {
+        display: grid;
+        gap: 18px;
+        padding: clamp(20px, 4vw, 26px);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(142, 68, 173, 0.18);
+        box-shadow: 0 20px 44px rgba(71, 49, 110, 0.14);
+        position: sticky;
+        top: clamp(80px, 8vw, 120px);
+      }
+
+      @media (max-width: 960px) {
+        .filters-panel {
+          position: static;
+        }
+      }
+
+      .filters-panel h2 {
+        margin: 0;
+        font-size: 1.35rem;
+        color: #3a2750;
+      }
+
+      .filters-form {
+        display: grid;
+        gap: 18px;
+      }
+
+      .filter-group {
+        display: grid;
+        gap: 10px;
+      }
+
+      .filter-group label {
+        font-weight: 600;
+        color: #352345;
+        font-size: 0.95rem;
+      }
+
+      .filter-group input,
+      .filter-group select {
+        border-radius: 12px;
+        border: 1px solid rgba(142, 68, 173, 0.24);
+        padding: 10px 14px;
+        font-size: 0.96rem;
+        background: rgba(255, 255, 255, 0.95);
+      }
+
+      .level-range {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .filter-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+        color: #352345;
+      }
+
+      .filters-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .filters-actions button {
+        font: inherit;
+        border-radius: 999px;
+        padding: 10px 18px;
+        cursor: pointer;
+        border: 1px solid rgba(142, 68, 173, 0.35);
+        background: rgba(142, 68, 173, 0.12);
+        color: #5d2a7c;
+        font-weight: 600;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .filters-actions button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(142, 68, 173, 0.22);
+      }
+
+      .results-panel {
+        display: grid;
+        gap: clamp(20px, 3vw, 28px);
+      }
+
+      .results-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .results-header h2 {
+        margin: 0;
+        font-size: 1.6rem;
+      }
+
+      .results-meta {
+        margin: 4px 0 0;
+        color: rgba(31, 31, 31, 0.6);
+        font-size: 0.95rem;
+      }
+
+      .sort-control {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: rgba(31, 31, 31, 0.7);
+      }
+
+      .sort-control select {
+        border-radius: 12px;
+        border: 1px solid rgba(142, 68, 173, 0.24);
+        padding: 10px 14px;
+        font-size: 0.96rem;
+        background: rgba(255, 255, 255, 0.95);
+        color: #3a2750;
+      }
+
+      .creature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: clamp(18px, 2.8vw, 28px);
+      }
+
+      .creature-card {
+        display: grid;
+        gap: 14px;
+        padding: 22px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(142, 68, 173, 0.16);
+        box-shadow: 0 24px 52px rgba(70, 51, 112, 0.14);
+      }
+
+      .creature-card__header {
+        display: grid;
+        gap: 6px;
+      }
+
+      .creature-card__header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        letter-spacing: -0.01em;
+      }
+
+      .creature-card__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: rgba(31, 31, 31, 0.65);
+        font-size: 0.92rem;
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: rgba(124, 58, 237, 0.12);
+        color: #543089;
+      }
+
+      .creature-description {
+        margin: 0;
+        line-height: 1.55;
+        color: rgba(31, 31, 31, 0.78);
+      }
+
+      .creature-statline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.9rem;
+        color: rgba(31, 31, 31, 0.65);
+      }
+
+      .creature-statline span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .creature-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .creature-like-button {
+        border: none;
+        background: none;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        color: #c0392b;
+        font-weight: 700;
+        transition: transform 0.18s ease;
+      }
+
+      .creature-like-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .creature-like-button:not(:disabled):active {
+        transform: scale(0.95);
+      }
+
+      .creature-view-button {
+        text-decoration: none;
+        border-radius: 999px;
+        padding: 10px 20px;
+        background: rgba(142, 68, 173, 0.16);
+        border: 1px solid rgba(142, 68, 173, 0.28);
+        color: #5d2a7c;
+        font-weight: 600;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .creature-view-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 32px rgba(142, 68, 173, 0.22);
+      }
+
+      .results-empty,
+      .results-loading {
+        border-radius: 20px;
+        border: 1px dashed rgba(142, 68, 173, 0.35);
+        background: rgba(142, 68, 173, 0.08);
+        padding: 26px;
+        text-align: center;
+        color: #4a2a6d;
+        display: grid;
+        gap: 8px;
+      }
+
+      .results-empty h3 {
+        margin: 0;
+      }
+
+      .is-hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="site-nav">
+      <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
+      <div class="site-nav-links">
+        <a class="nav-link" href="../index.html">Home</a>
+        <a class="nav-link" href="../CreateCreature/createCreature.html">Create</a>
+        <a class="nav-link" href="../MyCreatures/myCreatures.html">My Creatures</a>
+        <a class="nav-link is-active" href="./viewAllCreatures.html">All Creatures</a>
+        <a class="nav-link" href="../Auth/auth.html">Account</a>
+      </div>
+      <a class="nav-button" href="../CreateCreature/createCreature.html">Start Building</a>
+    </nav>
+
+    <main>
+      <header class="library-hero">
+        <h1>Community Creature Library</h1>
+        <p>
+          Browse every creature shared by the community, filter by role, size, or level, and bookmark
+          your favourites for your next encounter.
+        </p>
+      </header>
+
+      <section class="library-layout">
+        <aside class="filters-panel">
+          <h2>Filters</h2>
+          <form id="filtersForm" class="filters-form">
+            <div class="filter-group">
+              <label for="filterSearch">Search</label>
+              <input
+                id="filterSearch"
+                name="search"
+                type="search"
+                placeholder="Search by name, traits, or description"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="filter-group">
+              <label>Level</label>
+              <div class="level-range">
+                <input id="filterLevelMin" type="number" min="1" max="20" placeholder="Min" />
+                <input id="filterLevelMax" type="number" min="1" max="20" placeholder="Max" />
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label for="filterRole">Role</label>
+              <select id="filterRole" name="role">
+                <option value="">Any</option>
+                <option>Controller</option>
+                <option>Defender</option>
+                <option>Striker</option>
+                <option>Support</option>
+                <option>Artillery</option>
+                <option>Lurker</option>
+                <option>Solo</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filterPower">Power</label>
+              <select id="filterPower" name="power">
+                <option value="">Any</option>
+                <option>Standard</option>
+                <option>Elite</option>
+                <option>Boss</option>
+                <option>Legendary</option>
+                <option>Apex</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filterSize">Size</label>
+              <select id="filterSize" name="size">
+                <option value="">Any</option>
+                <option>Tiny</option>
+                <option>Small</option>
+                <option>Medium</option>
+                <option>Large</option>
+                <option>Huge</option>
+                <option>Gargantuan</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filterType">Type</label>
+              <select id="filterType" name="type">
+                <option value="">Any</option>
+                <option>Aberration</option>
+                <option>Beast</option>
+                <option>Celestial</option>
+                <option>Construct</option>
+                <option>Dragon</option>
+                <option>Elemental</option>
+                <option>Fey</option>
+                <option>Fiend</option>
+                <option>Humanoid</option>
+                <option>Monstrosity</option>
+                <option>Ooze</option>
+                <option>Plant</option>
+                <option>Undead</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <label class="filter-toggle">
+              <input type="checkbox" id="filterLiked" />
+              Only show creatures I've liked
+            </label>
+
+            <div class="filters-actions">
+              <button type="button" id="clearFilters">Reset filters</button>
+            </div>
+          </form>
+        </aside>
+
+        <section class="results-panel">
+          <div class="results-header">
+            <div>
+              <h2>All Creatures</h2>
+              <p id="resultsMeta" class="results-meta">Loading creatures…</p>
+            </div>
+            <label class="sort-control">
+              <span>Sort by</span>
+              <select id="sortSelect">
+                <option value="newest">Newest</option>
+                <option value="likes">Most liked</option>
+                <option value="levelDesc">Level (high → low)</option>
+                <option value="levelAsc">Level (low → high)</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="resultsLoading" class="results-loading">Fetching community creatures…</div>
+          <div id="resultsEmpty" class="results-empty is-hidden">
+            <h3>No creatures match your filters</h3>
+            <p>Try adjusting the filters or building something new to share with the community.</p>
+          </div>
+
+          <div id="creatureGrid" class="creature-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer>
+      <div>&copy; <span id="footerYear"></span> DC20 Creature Creator</div>
+      <nav>
+        <a href="https://www.dc20rpg.com" target="_blank" rel="noopener noreferrer">Official DC20</a>
+        <a href="https://discord.gg/dc20rpg" target="_blank" rel="noopener noreferrer">DC20 Discord</a>
+      </nav>
+    </footer>
+
+    <script type="module" src="./viewAllCreatures.js"></script>
+  </body>
+</html>

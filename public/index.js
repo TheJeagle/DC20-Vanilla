@@ -1,7 +1,10 @@
-import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
-import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
 import { baseLevelStatsData, powerScalingFactors, roleModifiersData, attributeScoresByLevel, sizeScalingFactors, SkillAttribute } from './Rules/gameRules.js'
 import { loadFeatures, applyFeatureEffects, FEATURE_TYPES, getFeatureSummary } from './features.js'
+import { auth, db } from './firebaseClient.js';
+import { buildCreatureDocumentId } from './utils/firestore.js';
+import { loadJson as loadStoredJson, saveJson as saveStoredJson, removeItem as removeStoredItem } from './utils/storage.js';
 
 const nameInput = document.querySelector('#creatureName');
 const levelInput = document.querySelector('#creatureLevel');
@@ -65,103 +68,21 @@ let pendingLoadedCreature = null;
 
 const TITLE_FALLBACK = 'Creature Name';
 const CREATURE_EDITOR_STORAGE_KEY = 'dc20-creature-editor';
-const sessionStore = (() => {
-  try {
-    return window.sessionStorage;
-  } catch (error) {
-    console.warn('Session storage is unavailable.', error);
-    return null;
-  }
-})();
-const localStore = (() => {
-  try {
-    return window.localStorage;
-  } catch (error) {
-    console.warn('Local storage is unavailable.', error);
-    return null;
-  }
-})();
-
-function safeGetItem(storage, key) {
-  if (!storage) return null;
-  try {
-    return storage.getItem(key);
-  } catch (error) {
-    return null;
-  }
-}
-
-function safeSetItem(storage, key, value) {
-  if (!storage) return false;
-  try {
-    storage.setItem(key, value);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-function safeRemoveItem(storage, key) {
-  if (!storage) return;
-  try {
-    storage.removeItem(key);
-  } catch (error) {
-    // ignore cleanup failures
-  }
-}
 
 function loadStoredCreatureDraft() {
-  const raw =
-    safeGetItem(sessionStore, CREATURE_EDITOR_STORAGE_KEY) ??
-    safeGetItem(localStore, CREATURE_EDITOR_STORAGE_KEY);
-  if (!raw) return null;
-
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    console.error('Stored creature draft could not be parsed.', error);
-    return null;
-  }
+  return loadStoredJson(CREATURE_EDITOR_STORAGE_KEY);
 }
 
 function persistCreatureDraft(payload) {
   if (!payload) return false;
-
-  try {
-    const serialized = JSON.stringify(payload);
-    if (safeSetItem(sessionStore, CREATURE_EDITOR_STORAGE_KEY, serialized)) {
-      if (localStore && localStore !== sessionStore) {
-        safeRemoveItem(localStore, CREATURE_EDITOR_STORAGE_KEY);
-      }
-      return true;
-    }
-
-    if (safeSetItem(localStore, CREATURE_EDITOR_STORAGE_KEY, serialized)) {
-      return true;
-    }
-  } catch (error) {
-    console.error('Failed to persist creature draft.', error);
-    return false;
-  }
-
-  console.error('Unable to access web storage for creature drafts.');
-  return false;
+  return saveStoredJson(CREATURE_EDITOR_STORAGE_KEY, payload);
 }
 
-const CREATURE_FIRESTORE_ENDPOINT = 'https://firestore.googleapis.com/v1/projects/dc20-creature-creator/databases/(default)/documents/VanillaCreatures';
-const FIRESTORE_API_KEY = 'AIzaSyCgdyE834tp64B2flcR9VUzbIvXwPdwQ-k';
-const FIREBASE_CONFIG = {
-  apiKey: FIRESTORE_API_KEY,
-  authDomain: 'dc20-creature-creator.firebaseapp.com',
-  projectId: 'dc20-creature-creator',
-  storageBucket: 'dc20-creature-creator.firebasestorage.app',
-  messagingSenderId: '638039342508',
-  appId: '1:638039342508:web:a80d7ddaecdab47b1b8e09',
-  measurementId: 'G-2BEL1FHFPP',
-};
+function clearStoredCreatureDraft() {
+  removeStoredItem(CREATURE_EDITOR_STORAGE_KEY);
+}
 
-const firebaseApp = getApps().length ? getApps()[0] : initializeApp(FIREBASE_CONFIG);
-const auth = getAuth(firebaseApp);
+const CREATURE_COLLECTION = 'VanillaCreatures';
 let currentUser = null;
 
 const creature = {
@@ -330,110 +251,6 @@ function setRadioGroupValue(groupName, rawValue) {
   }
 }
 
-function encodeFirestoreValue(value) {
-  if (value === undefined) return null;
-  if (value === null) return { nullValue: null };
-  if (value instanceof Date) {
-    return { timestampValue: value.toISOString() };
-  }
-
-  if (Array.isArray(value)) {
-    const values = value
-      .map((entry) => encodeFirestoreValue(entry))
-      .filter(Boolean);
-    return { arrayValue: { values } };
-  }
-
-  const type = typeof value;
-  if (type === 'string') {
-    return { stringValue: value };
-  }
-  if (type === 'number') {
-    if (!Number.isFinite(value)) return null;
-    return Number.isInteger(value)
-      ? { integerValue: value.toString() }
-      : { doubleValue: value };
-  }
-  if (type === 'boolean') {
-    return { booleanValue: value };
-  }
-  if (type === 'object') {
-    const fields = {};
-    Object.entries(value).forEach(([key, entry]) => {
-      const encoded = encodeFirestoreValue(entry);
-      if (encoded) {
-        fields[key] = encoded;
-      }
-    });
-    return { mapValue: { fields } };
-  }
-  return null;
-}
-
-function encodeFirestoreDocument(data) {
-  const fields = {};
-  Object.entries(data).forEach(([key, value]) => {
-    const encoded = encodeFirestoreValue(value);
-    if (encoded) {
-      fields[key] = encoded;
-    }
-  });
-  return { fields };
-}
-
-function decodeFirestoreValue(value) {
-  if (value === null || value === undefined) return null;
-  if ('stringValue' in value) return value.stringValue;
-  if ('integerValue' in value) return Number(value.integerValue);
-  if ('doubleValue' in value) return Number(value.doubleValue);
-  if ('booleanValue' in value) return Boolean(value.booleanValue);
-  if ('mapValue' in value && value.mapValue.fields) return decodeFirestoreFields(value.mapValue.fields);
-  if ('arrayValue' in value) {
-    const entries = value.arrayValue.values || [];
-    return entries.map((entry) => decodeFirestoreValue(entry));
-  }
-  if ('nullValue' in value) return null;
-  if ('timestampValue' in value) return value.timestampValue;
-  if ('referenceValue' in value) return value.referenceValue;
-  if ('geoPointValue' in value) return value.geoPointValue;
-  return value;
-}
-
-function decodeFirestoreFields(fields) {
-  const result = {};
-  if (!fields || typeof fields !== 'object') return result;
-  Object.entries(fields).forEach(([key, value]) => {
-    result[key] = decodeFirestoreValue(value);
-  });
-  return result;
-}
-
-function decodeFirestoreDocument(doc) {
-  if (!doc) return null;
-  if (doc.fields) {
-    return decodeFirestoreFields(doc.fields);
-  }
-  if (doc.document && doc.document.fields) {
-    return decodeFirestoreFields(doc.document.fields);
-  }
-  return null;
-}
-
-function slugify(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 120);
-}
-
-function buildCreatureDocumentId(name, ownerId) {
-  const baseSlug = slugify(name) || `creature-${Date.now()}`;
-  if (!ownerId) return baseSlug;
-  const safeOwner = ownerId.replace(/[^a-z0-9_-]/gi, '').toLowerCase() || 'owner';
-  return `${safeOwner}-${baseSlug}`;
-}
-
 function setSaveStatus(message, tone = 'info', options = {}) {
   if (!saveStatus) return;
 
@@ -478,8 +295,7 @@ function updateSaveButtonState(user) {
 }
 
 function resetBuilderToDefaults() {
-  safeRemoveItem(sessionStore, CREATURE_EDITOR_STORAGE_KEY);
-  safeRemoveItem(localStore, CREATURE_EDITOR_STORAGE_KEY);
+  clearStoredCreatureDraft();
   pendingLoadedCreature = null;
 
   if (window.history && window.history.replaceState) {
@@ -832,25 +648,14 @@ async function fetchCreatureById(documentId) {
   const trimmedId = documentId.trim();
   if (!trimmedId) return null;
 
-  const documentUrl = `${CREATURE_FIRESTORE_ENDPOINT}/${encodeURIComponent(trimmedId)}?key=${FIRESTORE_API_KEY}`;
-  const response = await fetch(documentUrl);
-  if (response.status === 404) {
+  const docRef = doc(db, CREATURE_COLLECTION, trimmedId);
+  const snapshot = await getDoc(docRef);
+  if (!snapshot.exists()) {
     return null;
   }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Firestore fetch failed (${response.status}): ${errorText}`);
-  }
-
-  const payload = await response.json();
-  const data = decodeFirestoreDocument(payload);
-  if (!data) return null;
-
-  return {
-    id: payload.name ? payload.name.split('/').pop() : trimmedId,
-    ...data,
-  };
+  const data = snapshot.data() || {};
+  return { id: docRef.id, ...data };
 }
 
 function maybeApplyPendingCreature() {
@@ -1028,7 +833,8 @@ function renderSkillList(container, values){
     if(attributeKey){
       const base = creature.attributes[attributeKey] ?? 0;
       const scaling = 2 * Math.ceil(creature.level / 5);
-      span.textContent = `${value} (+${base + scaling})`;
+      const total = toSignedDisplayInteger(base + scaling);
+      span.textContent = `${value} (${total})`;
     } else {
       span.textContent = value;
     }
@@ -1149,13 +955,13 @@ function renderActionSummary(){
   if (!statblockActionsHeading || !statblockActionsInfo || !statblockActionsList) return;
 
   // Header stats
-  const ap = Number.isFinite(creature.AP) ? creature.AP : 0;
+  const ap = Number.isFinite(creature.AP) ? toDisplayInteger(creature.AP) : 0;
   statblockActionsHeading.textContent = `Actions (${ap})`;
 
   const infoItems = [
-    { label: 'Attack', value: `+${creature.check ?? 0}` },
-    { label: 'Save DC', value: creature.saveDC ?? 0 },
-    { label: 'Speed', value: creature.speed ?? 0 },
+    { label: 'Attack', value: toSignedDisplayInteger(Number(creature.check) || 0) },
+    { label: 'Save DC', value: toDisplayInteger(Number(creature.saveDC) || 0) },
+    { label: 'Speed', value: toDisplayInteger(Number(creature.speed) || 0) },
   ];
 
   statblockActionsInfo.innerHTML = '';
@@ -1226,6 +1032,10 @@ function renderActionSummary(){
 
     const segments = Array.isArray(action.damage) ? action.damage : [];
     if (segments.length) {
+      const showHeavyHitBonus =
+        actionTypeLabel.includes('attack') &&
+        (actionTypeLabel.includes('melee') || actionTypeLabel.includes('ranged')) &&
+        hasHalfDamage(segments);
       appendText(attackLine, ' ');
       segments.forEach((segment, index) => {
         if (index > 0) appendText(attackLine, ' + ');
@@ -1236,6 +1046,9 @@ function renderActionSummary(){
         }
       });
       appendText(attackLine, ' damage');
+      if (showHeavyHitBonus) {
+        appendText(attackLine, ', +1 on heavy hits.');
+      }
     }
     summary.appendChild(attackLine);
 
@@ -1367,6 +1180,7 @@ function renderRecommendations(){
   const damageDealtByPlayerAgainstThisMonster = (expectedPlayerDPT+2)*chanceVsPDBrutal/100 + (expectedPlayerDPT+1)*(chanceVsPDHeavy-chanceVsPDBrutal)/100 + (expectedPlayerDPT)*(chanceVsPD-chanceVsPDHeavy)/100 ;
   const turnsToKill = expectedPlayerDPT > 0 ? (Number(creature.HP) / damageDealtByPlayerAgainstThisMonster) : Infinity;
   const expectedDamageDealt = Math.ceil((Number(creature.damage) || 0) * 1.5 * (Number.isFinite(turnsToKill) ? turnsToKill : 0));
+  const turnsToKillDisplay = Number.isFinite(turnsToKill) ? toDisplayInteger(turnsToKill) : '—';
 
   const lines = [
     { label: 'To Hit chance vs PD: ', value: `${chanceVsPD}%` },
@@ -1379,7 +1193,7 @@ function renderRecommendations(){
     { label: ' - Heavy: ', value: `${chanceVsADHeavy-chanceVsADBrutal}%`},
     { label: ' - Brutal: ', value: `${chanceVsADBrutal}%`},
 
-    { label: 'Avg. turns to defeat: ', value: `${Number.isFinite(turnsToKill) ? turnsToKill.toFixed(1) : '—'}` },
+    { label: 'Avg. turns to defeat: ', value: `${turnsToKillDisplay}` },
     { label: 'Avg. damage before death: ', value: `${expectedDamageDealt}` },
   ];
 
@@ -1391,7 +1205,7 @@ function renderRecommendations(){
 
   // 2) Too many turns to kill (>4)
   if (Number.isFinite(turnsToKill) && turnsToKill > 4){
-    warnings.push(`High durability: ~${turnsToKill.toFixed(1)} turns to defeat.`);
+    warnings.push(`High durability: ~${turnsToKillDisplay} turns to defeat.`);
   }
 
   // 3) May kill a player check against baseline
@@ -1455,7 +1269,7 @@ function appendField(parent, value, field) {
   const span = document.createElement('span');
   span.className = 'action-span';
   span.dataset.field = field;
-  span.textContent = value;
+  span.textContent = formatDisplayValue(value, field);
   parent.appendChild(span);
 }
 
@@ -1473,6 +1287,37 @@ function appendText(parent, html) {
   const span = document.createElement('span');
   span.innerHTML = html;
   parent.appendChild(span);
+}
+
+function toDisplayInteger(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
+  return Math.round(value);
+}
+
+function toSignedDisplayInteger(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
+  const rounded = Math.round(value);
+  return `${rounded >= 0 ? '+' : ''}${rounded}`;
+}
+
+function toDisplayDamage(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
+  return value >= 0 ? Math.floor(value) : Math.ceil(value);
+}
+
+function formatDisplayValue(value, field) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
+  if (field === 'damageAmount') return toDisplayDamage(value);
+  return toDisplayInteger(value);
+}
+
+function hasHalfDamage(segments) {
+  return segments.some((segment) => {
+    const amount = Number(segment?.amount);
+    if (!Number.isFinite(amount)) return false;
+    const remainder = Math.abs(amount % 1);
+    return Math.abs(remainder - 0.5) < 1e-9;
+  });
 }
 
 // Syncs checkbox UI state to match trait values coming from features.
@@ -2002,22 +1847,26 @@ function updateStatblock() {
     }
   }
 
+  const hp = Number.isFinite(creature.HP) ? toDisplayInteger(creature.HP) : 0;
+  const pd = Number.isFinite(creature.PD) ? toDisplayInteger(creature.PD) : 0;
+  const ad = Number.isFinite(creature.AD) ? toDisplayInteger(creature.AD) : 0;
+
   // Display HP:
-  statblockHP.textContent = creature.HP;
+  statblockHP.textContent = hp;
 
   // Display PD / AD:
-  statblockPD.textContent = creature.PD + " / " + (creature.PD+5) + " / " + (creature.PD+10);
-  statblockAD.textContent = creature.AD + " / " + (creature.AD+5) + " / " + (creature.AD+10);
+  statblockPD.textContent = `${pd} / ${pd + 5} / ${pd + 10}`;
+  statblockAD.textContent = `${ad} / ${ad + 5} / ${ad + 10}`;
 
   // Display Attributes:
-  statblockMIG.textContent = creature.attributes.Mig;
-  statblockMIGSave.textContent = creature.attributeSaves.Mig;
-  statblockAGI.textContent = creature.attributes.Agi;
-  statblockAGISave.textContent = creature.attributeSaves.Agi;
-  statblockCHA.textContent = creature.attributes.Cha;
-  statblockCHASave.textContent = creature.attributeSaves.Cha;
-  statblockINT.textContent = creature.attributes.Int;
-  statblockINTSave.textContent = creature.attributeSaves.Int;
+  statblockMIG.textContent = toDisplayInteger(creature.attributes.Mig ?? 0);
+  statblockMIGSave.textContent = toDisplayInteger(creature.attributeSaves.Mig ?? 0);
+  statblockAGI.textContent = toDisplayInteger(creature.attributes.Agi ?? 0);
+  statblockAGISave.textContent = toDisplayInteger(creature.attributeSaves.Agi ?? 0);
+  statblockCHA.textContent = toDisplayInteger(creature.attributes.Cha ?? 0);
+  statblockCHASave.textContent = toDisplayInteger(creature.attributeSaves.Cha ?? 0);
+  statblockINT.textContent = toDisplayInteger(creature.attributes.Int ?? 0);
+  statblockINTSave.textContent = toDisplayInteger(creature.attributeSaves.Int ?? 0);
 
   const formattedSkills = creature.skills.map(toTitleCase);
   renderTraitGroup(statblockResistances, creature.resistances);
@@ -2046,35 +1895,17 @@ async function SaveToFirebase() {
     updateStatblock();
     const payload = buildCreatureSavePayload();
     const documentId = buildCreatureDocumentId(payload.name, currentUser?.uid);
-    const encoded = encodeFirestoreDocument({
-      ...payload,
-      documentId,
-    });
-
-    const postUrl = `${CREATURE_FIRESTORE_ENDPOINT}?documentId=${encodeURIComponent(documentId)}&key=${FIRESTORE_API_KEY}`;
-    const patchUrl = `${CREATURE_FIRESTORE_ENDPOINT}/${encodeURIComponent(documentId)}?key=${FIRESTORE_API_KEY}`;
-
-    let response = await fetch(postUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(encoded),
-    });
-
-    if (response.status === 409) {
-      response = await fetch(patchUrl, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(encoded),
-      });
-    }
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Firestore save failed (${response.status}): ${errorText}`);
-    }
-
+    const docRef = doc(db, CREATURE_COLLECTION, documentId);
+    await setDoc(
+      docRef,
+      {
+        ...payload,
+        documentId,
+      },
+      { merge: true }
+    );
     setSaveStatus(`Creature saved as ${documentId}.`, 'success', { sticky: true });
-    return await response.json();
+    return { id: documentId, ...payload, documentId };
   } catch (error) {
     console.error('Failed to save creature to Firebase', error);
     setSaveStatus('Failed to save creature. Check the console for details.', 'error', { sticky: true });

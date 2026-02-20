@@ -1,63 +1,25 @@
+import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
 import { featureTypes as FEATURE_TYPES } from './constants/featureTypes.js';
+import { db } from './firebaseClient.js';
 
-const FIRESTORE_ENDPOINT = 'https://firestore.googleapis.com/v1/projects/dc20-creature-creator/databases/(default)/documents/VanillaFeatures';
-const API_KEY = 'AIzaSyCgdyE834tp64B2flcR9VUzbIvXwPdwQ-k';
+const FEATURE_COLLECTION = 'VanillaFeatures';
 
 export async function loadFeatures() {
   try {
-    const response = await fetch(`${FIRESTORE_ENDPOINT}?key=${API_KEY}`);
-    if (!response.ok) {
-      throw new Error(`Firestore request failed with status ${response.status}`);
-    }
-    const payload = await response.json();
-    if (!payload.documents) {
-      return {};
-    }
-
     const byId = {};
-    payload.documents.forEach((doc) => {
-      const feature = transformDocument(doc);
-      if (feature && feature.id) {
-        byId[feature.id] = feature;
-      }
+    const snapshot = await getDocs(collection(db, FEATURE_COLLECTION));
+    snapshot.forEach((docSnapshot) => {
+      const data = docSnapshot.data();
+      if (!data) return;
+      const id = data.id || docSnapshot.id;
+      if (!id) return;
+      byId[id] = { id, ...data };
     });
     return byId;
   } catch (error) {
     console.error('Failed to load features from Firestore', error);
     return {};
   }
-}
-
-function transformDocument(doc) {
-  if (!doc || !doc.fields) return null;
-  const id = doc.fields.id ? decodeValue(doc.fields.id) : doc.name.split('/').pop();
-  const feature = decodeFields(doc.fields);
-  return { id, ...feature };
-}
-
-function decodeFields(fields) {
-  const result = {};
-  Object.entries(fields).forEach(([key, value]) => {
-    result[key] = decodeValue(value);
-  });
-  return result;
-}
-
-function decodeValue(value) {
-  if (value === null || value === undefined) return null;
-  if ('stringValue' in value) return value.stringValue;
-  if ('integerValue' in value) return Number(value.integerValue);
-  if ('doubleValue' in value) return Number(value.doubleValue);
-  if ('booleanValue' in value) return Boolean(value.booleanValue);
-  if ('mapValue' in value && value.mapValue.fields) return decodeFields(value.mapValue.fields);
-  if ('arrayValue' in value) {
-    const arr = value.arrayValue.values || [];
-    return arr.map((item) => decodeValue(item));
-  }
-  if ('nullValue' in value) return null;
-  if ('referenceValue' in value) return value.referenceValue;
-  if ('timestampValue' in value) return value.timestampValue;
-  return value;
 }
 
 function normalizeFeatureType(type) {
@@ -96,6 +58,7 @@ function getActionDescription(feature) {
 export function applyFeatureEffects(creature, features) {
   if (!features || features.length === 0) {
     creature.featureActions = [];
+    creature.featureReactions = [];
     creature.featurePassives = [];
     return;
   }
@@ -131,9 +94,11 @@ export function applyFeatureEffects(creature, features) {
   });
 
   applyModifiersToCreature(creature, modifiers);
-  creature.featureActions = actionFeatures
+  const builtActions = actionFeatures
     .map((feature) => buildAction(creature, feature))
     .filter(Boolean);
+  creature.featureActions = builtActions.filter((action) => !action.isReaction);
+  creature.featureReactions = builtActions.filter((action) => action.isReaction);
   creature.featurePassives = passives;
 }
 
@@ -203,6 +168,10 @@ function buildAction(creature, feature) {
 
   const { effects } = feature;
   const actionType = feature.actionType ?? effects.actionType ?? 'Attack';
+  const isReaction = Boolean(feature.isReaction || effects.isReaction);
+  const reactionTrigger = feature.reactionTrigger ?? effects.reactionTrigger ?? '';
+  const isLegendaryAction = Boolean(feature.isLegendaryAction || effects.isLegendaryAction);
+  const isApexAction = Boolean(feature.isApexAction || effects.isApexAction);
   const baseDamage = creature.damage ?? 0;
   const segments = Array.isArray(effects.damageSegments) ? effects.damageSegments : [];
   const actionTypeLabel = typeof actionType === 'string' ? actionType.toLowerCase() : '';
@@ -249,7 +218,7 @@ function buildAction(creature, feature) {
 
   return {
     id: feature.id,
-    name: feature.name,
+    name: feature.name || feature.id || 'Unnamed Action',
     description: getActionDescription(feature),
     cost: typeof effects.cost === 'number' ? effects.cost : Number(effects.cost) || 0,
     actionType,
@@ -273,6 +242,10 @@ function buildAction(creature, feature) {
         }
       : null,
     featureCost: feature.featureCost ?? 0,
+    isReaction,
+    reactionTrigger: reactionTrigger ? String(reactionTrigger).trim() : '',
+    isLegendaryAction,
+    isApexAction,
   };
 }
 

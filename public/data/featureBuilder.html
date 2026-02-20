@@ -85,11 +85,40 @@
     .list .item{ display:grid; grid-template-columns: 1fr auto auto; gap:8px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:12px; margin-bottom:8px; background:#0a1222 }
     .item .meta{ color:var(--muted); font-size:12px }
 
+    .flag-row{ display:flex; flex-wrap:wrap; gap:10px; }
+    .flag-toggle{ display:inline-flex; align-items:center; gap:8px; background:#0a1222; border:1px solid var(--border); padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:600; color:#cbd5f5; transition:.15s ease; }
+    .flag-toggle input{ accent-color:var(--accent); }
+    .flag-toggle:hover{ border-color:#38bdf880; box-shadow:0 8px 20px rgba(0,0,0,.25); }
+    #reactionTriggerWrap{ display:grid; gap:6px; margin-top:8px; }
+    #reactionTriggerWrap[hidden]{ display:none; }
+
     pre{ margin:0; padding:16px; background:#050b18; border-top:1px solid var(--border); border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); max-height: 40vh; overflow:auto }
 
     .toolbar{ display:flex; gap:8px; padding:12px; border-top:1px solid var(--border); }
 
     .note{ font-size:12px; color:#9ca3af }
+
+    .tag-groups{ display:grid; gap:12px; margin-top:12px; }
+    .tag-group{ display:grid; gap:8px; }
+    .tag-group-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:#a5b4fc; }
+    .tag-buttons{ display:flex; flex-wrap:wrap; gap:8px; }
+    .tag-button{
+      padding:6px 12px;
+      border-radius:999px;
+      background:#0b1222;
+      border:1px solid var(--border);
+      color:var(--text);
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    .tag-button:hover{ border-color:#38bdf8aa; box-shadow:0 4px 12px rgba(56,189,248,.15); }
+    .tag-button.active{
+      background:rgba(56,189,248,.18);
+      border-color:#38bdf8;
+      color:#e0f6ff;
+    }
   </style>
 </head>
 <body>
@@ -146,6 +175,29 @@
         </div>
       </div>
 
+      <div class="section" id="actionFlagsSection">
+        <h3>Action Options</h3>
+        <div class="flag-row">
+          <label class="flag-toggle">
+            <input type="checkbox" id="flagReaction" />
+            <span>Reaction</span>
+          </label>
+          <label class="flag-toggle">
+            <input type="checkbox" id="flagLegendary" />
+            <span>Legendary Action</span>
+          </label>
+          <label class="flag-toggle">
+            <input type="checkbox" id="flagApex" />
+            <span>Apex Action</span>
+          </label>
+        </div>
+        <label id="reactionTriggerWrap" hidden>
+          <span>Reaction Trigger</span>
+          <input id="reactionTrigger" placeholder="e.g., When an enemy ends its turn within 5 spaces." />
+          <div class="muted">Describe the condition that allows this reaction to be used.</div>
+        </label>
+      </div>
+
       <div class="grid-2">
         <label>
           <span>Name</span>
@@ -179,6 +231,8 @@
         <div id="required_chips" class="stack"></div>
         <div class="muted">Dependencies are other feature ids that should accompany this feature.</div>
       </div>
+
+      
 
       <div class="section" id="effectsActionAttack">
         <h3>Effects — Action (Attack)</h3>
@@ -251,8 +305,21 @@
         <label><span>Text</span><textarea id="passive_text" placeholder="Rules text for this passive…"></textarea></label>
       </div>
 
+
+      <div class="section" id="tagsSection">
+        <h3>Tags</h3>
+        <div class="muted">Click a preset or add custom tags to help filter this feature by creature role, type, or behaviour.</div>
+        <div class="stack">
+          <input id="tag_input" placeholder="Add custom tag (e.g., role/brute)" />
+          <button type="button" class="btn" id="btnAddTag">Add</button>
+        </div>
+        <div id="tag_chips" class="stack"></div>
+        <div class="tag-groups" id="tagPresetGroups"></div>
+      </div>
+
       <div class="row" style="justify-content:flex-end; gap:10px;">
         <button type="button" class="btn" id="btnPreviewObj">Preview JSON</button>
+        <button type="button" class="btn accent" id="btnUpload">Upload to Firestore</button>
         <button type="submit" class="btn green" id="btnSave">Save to Collection</button>
       </div>
 
@@ -304,7 +371,10 @@
   <datalist id="damageTypes"><option value="Piercing"></option><option value="Slashing"></option><option value="Bludgeoning"></option><option value="Umbral"></option><option value="True"></option><option value="Fire"></option><option value="Cold"></option><option value="Lightning"></option><option value="Poison"></option><option value="Radiant"></option><option value="Necrotic"></option></datalist>
   <datalist id="saveAttrs"><option value="Mig"></option><option value="Agi"></option><option value="Int"></option><option value="Cha"></option><option value="Physical"></option><option value="Mental"></option></datalist>
 
-  <script>
+  <script type="module">
+    import { db } from '../firebaseClient.js';
+    import { doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+
     (function(){
       const $ = (sel, el=document) => el.querySelector(sel);
       const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
@@ -315,6 +385,9 @@
         // Action Types
         actionTypeAttackWrap: $('#actionTypeAttackWrap'), actionTypeAttack: $('#actionTypeAttack'),
         actionTypeCheckUtilWrap: $('#actionTypeCheckUtilWrap'), actionTypeCheckUtil: $('#actionTypeCheckUtil'),
+        actionFlagsSection: $('#actionFlagsSection'),
+        flagReaction: $('#flagReaction'), flagLegendary: $('#flagLegendary'), flagApex: $('#flagApex'),
+        reactionTriggerWrap: $('#reactionTriggerWrap'), reactionTrigger: $('#reactionTrigger'),
         // Sections
         effectsActionAttack: $('#effectsActionAttack'), effectsActionCheckUtil: $('#effectsActionCheckUtil'),
         effectsModifier: $('#effectsModifier'), effectsPassive: $('#effectsPassive'),
@@ -340,7 +413,9 @@
         // Buttons
         btnAddDamage: $('#btnAddDamage'), btnAddResist: $('#btnAddResist'), btnPreviewObj: $('#btnPreviewObj'),
         btnSave: $('#btnSave'), btnReset: $('#btnReset'), btnClear: $('#btnClear'), btnCopy: $('#btnCopy'), btnDownload: $('#btnDownload'),
+        btnUpload: $('#btnUpload'),
         required_input: $('#required_input'), required_chips: $('#required_chips'), btnAddRequired: $('#btnAddRequired'),
+        tag_input: $('#tag_input'), tag_chips: $('#tag_chips'), btnAddTag: $('#btnAddTag'), tagPresetGroups: $('#tagPresetGroups'),
       };
 
       let idTouched = false;
@@ -348,6 +423,54 @@
       let collection = [];
       let requiredFeatures = [];
       let resistancesDamage = [];
+      let featureTags = [];
+
+      const TAG_PRESETS = [
+        {
+          title: 'Roles',
+          tags: [
+            { label: 'Artillerist', value: 'role/artillerist' },
+            { label: 'Brute', value: 'role/brute' },
+            { label: 'Skirmisher', value: 'role/skirmisher' },
+            { label: 'Lurker', value: 'role/lurker' },
+            { label: 'Controller', value: 'role/controller' },
+            { label: 'Support', value: 'role/support' },
+            { label: 'Leader', value: 'role/leader' },
+            { label: 'Defender', value: 'role/defender' },
+            { label: 'Caster', value: 'role/caster'}
+          ],
+        },
+        {
+          title: 'Creature Types',
+          tags: [
+            { label: 'Humanoid', value: 'creature/humanoid' },
+            { label: 'Beast', value: 'creature/beast' },
+            { label: 'Dragon', value: 'creature/dragon' },
+            { label: 'Construct', value: 'creature/construct' },
+            { label: 'Undead', value: 'creature/undead' },
+            { label: 'Elemental', value: 'creature/elemental' },
+            { label: 'Fiend', value: 'creature/fiend' },
+            { label: 'Aberration', value: 'creature/aberration' },
+            { label: 'Plant', value: 'creature/plant' },
+          ],
+        },
+        {
+          title: 'Targeting',
+          tags: [
+            { label: 'Single Target', value: 'target/single' },
+            { label: 'Area / AOE', value: 'target/area' },
+            { label: 'Cone', value: 'target/cone' },
+            { label: 'Line', value: 'target/line' },
+          ],
+        },
+        {
+          title: 'Style',
+          tags: [
+            { label: 'Martial', value: 'style/martial' },
+            { label: 'Spellcaster', value: 'style/spellcaster' },
+          ],
+        },
+      ];
 
       // ---------- HELPERS ----------
       const slugify = str => (str||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-z-9\s-]/g,'').trim().replace(/[\s_]+/g,'-').replace(/-+/g,'-');
@@ -365,6 +488,34 @@
       };
 
       // ---------- UI VISIBILITY ----------
+      function updateReactionUI() {
+        if (!els.reactionTriggerWrap) return;
+        const shouldShow = Boolean(els.flagReaction && els.flagReaction.checked && !(els.actionFlagsSection?.hidden));
+        els.reactionTriggerWrap.hidden = !shouldShow;
+        if (els.reactionTrigger) {
+          els.reactionTrigger.required = shouldShow;
+        }
+      }
+
+      function updateActionFlagUI() {
+        if (!els.actionFlagsSection) return;
+        const type = els.type.value;
+        const isAction = type === 'action-attack' || type === 'action-check-utility';
+        els.actionFlagsSection.hidden = !isAction;
+        [els.flagReaction, els.flagLegendary, els.flagApex].forEach((input) => {
+          if (!input) return;
+          input.disabled = !isAction;
+          if (!isAction) {
+            input.checked = false;
+          }
+        });
+        if (!isAction && els.reactionTrigger) {
+          els.reactionTrigger.required = false;
+          els.reactionTrigger.value = '';
+        }
+        updateReactionUI();
+      }
+
       function showSections() {
         const type = els.type.value;
         const subType = type === 'action-check-utility' ? els.actionTypeCheckUtil.value : '';
@@ -391,6 +542,7 @@
         } else if (type === 'passive') {
             els.effectsPassive.hidden = false;
         }
+        updateActionFlagUI();
         updateAllPreviews();
       }
 
@@ -427,6 +579,62 @@
         }
       });
 
+      function syncTagPresetButtons() {
+        if (!els.tagPresetGroups) return;
+        $$('.tag-button', els.tagPresetGroups).forEach((btn) => {
+          const tagValue = btn.dataset.tag;
+          btn.classList.toggle('active', featureTags.includes(tagValue));
+        });
+      }
+
+      function renderTagPresets() {
+        if (!els.tagPresetGroups) return;
+        els.tagPresetGroups.innerHTML = TAG_PRESETS.map((group) => `
+          <div class="tag-group">
+            <span class="tag-group-title">${group.title}</span>
+            <div class="tag-buttons">
+              ${group.tags.map((tag) => `<button type="button" class="tag-button" data-tag="${tag.value}">${tag.label}</button>`).join('')}
+            </div>
+          </div>
+        `).join('');
+        syncTagPresetButtons();
+      }
+
+      function renderTagChips() {
+        if (!els.tag_chips) return;
+        els.tag_chips.innerHTML = featureTags.map((tag, index) => `<span class="chip">${tag}<button type="button" data-index="${index}" aria-label="remove">×</button></span>`).join('');
+        syncTagPresetButtons();
+      }
+
+      function addTag(tag) {
+        const value = typeof tag === 'string' ? tag.trim() : '';
+        if (!value) return;
+        if (!featureTags.includes(value)) {
+          featureTags.push(value);
+          renderTagChips();
+          updateAllPreviews();
+        }
+      }
+
+      function removeTag(tag) {
+        const idx = featureTags.indexOf(tag);
+        if (idx >= 0) {
+          featureTags.splice(idx, 1);
+          renderTagChips();
+          updateAllPreviews();
+        }
+      }
+
+      function toggleTag(tag) {
+        const value = typeof tag === 'string' ? tag.trim() : '';
+        if (!value) return;
+        if (featureTags.includes(value)) {
+          removeTag(value);
+        } else {
+          addTag(value);
+        }
+      }
+
       // ---------- DATA & JSON ----------
       function currentFeatureObject() {
         const base = {
@@ -438,6 +646,9 @@
         };
         if (requiredFeatures.length) {
           base.required = requiredFeatures.slice();
+        }
+        if (featureTags.length) {
+          base.tags = featureTags.slice();
         }
 
         const type = els.type.value;
@@ -489,6 +700,20 @@
         else if (type === 'passive') {
           base.effects = { text: els.passive_text.value.trim() };
         }
+
+        if (type === 'action-attack' || type === 'action-check-utility') {
+          if (els.flagReaction?.checked) {
+            base.isReaction = true;
+            const triggerText = els.reactionTrigger?.value.trim();
+            if (triggerText) base.reactionTrigger = triggerText;
+          }
+          if (els.flagLegendary?.checked) {
+            base.isLegendaryAction = true;
+          }
+          if (els.flagApex?.checked) {
+            base.isApexAction = true;
+          }
+        }
         return cleanObject(base);
       }
 
@@ -500,6 +725,18 @@
       function updateFormattedPreview() {
           const obj = currentFeatureObject();
           let out = '';
+          const appendFlags = () => {
+              if (!(obj.type === 'action-attack' || obj.type === 'action-check-utility')) return;
+              const parts = [];
+              if (obj.isReaction) {
+                  parts.push(`Reaction${obj.reactionTrigger ? ' — ' + obj.reactionTrigger : ''}`);
+              }
+              if (obj.isLegendaryAction) parts.push('Legendary Action');
+              if (obj.isApexAction) parts.push('Apex Action');
+              if (parts.length) {
+                  out += parts.join(' · ') + '\n';
+              }
+          };
           const baseDmg = Number(els.preview_base_dmg.value);
           const baseDc = Number(els.preview_base_dc.value);
 
@@ -509,6 +746,7 @@
 
           if (obj.type === 'action-attack' && obj.effects) {
               const e = obj.effects;
+              appendFlags();
               const dmgStrings = (e.damageSegments || []).map(seg => `${(seg.useBase ? baseDmg : 0) + seg.modifier} ${seg.type} damage`);
               out += `<strong>${obj.name || '...'} (${e.cost || 0} AP):</strong> ${obj.actionType || ''} vs ${e.targetDefense || ''} dealing ${dmgStrings.join(' and ') || 'no damage'}.\n`;
               if (e.target || e.range) out += `Target ${e.target || '...'} within ${e.range || '...'}.\n`;
@@ -523,6 +761,7 @@
           }
           else if (obj.type === 'action-check-utility' && obj.effects) {
               const e = obj.effects;
+              appendFlags();
               if (obj.actionType?.includes('Check')) {
                   out += `<strong>${obj.name || '...'} (${e.cost || 0} AP):</strong> ${obj.actionType || ''} DC ${e.check?.dc || '...'}.\n`;
                   if (e.target || e.range) out += `Target ${e.target || '...'} within ${e.range || '...'}.\n`;
@@ -546,12 +785,21 @@
 
       // ---------- COLLECTION & PERSISTENCE ----------
       function renderList(){
-        els.list.innerHTML = collection.map((item, idx) => `
+        els.list.innerHTML = collection.map((item, idx) => {
+          const flags = [];
+          if (item.isReaction) flags.push('Reaction');
+          if (item.isLegendaryAction) flags.push('Legendary');
+          if (item.isApexAction) flags.push('Apex');
+          const flagText = flags.length ? ` · ${flags.join(' · ')}` : '';
+          const requiresText = item.required && item.required.length ? ` · requires ${item.required.join(', ')}` : '';
+          const tagsText = item.tags && item.tags.length ? ` · tags ${item.tags.join(', ')}` : '';
+          return `
           <div class="item">
-            <div><strong>${item.name}</strong> <span class="meta">(${item.id}) · <em>${item.type}</em> · cost ${item.featureCost || 0}${item.required && item.required.length ? ` · requires ${item.required.join(', ')}` : ''}</span></div>
+            <div><strong>${item.name}</strong> <span class="meta">(${item.id}) · <em>${item.type}</em> · cost ${item.featureCost || 0}${requiresText}${flagText}${tagsText}</span></div>
             <button type="button" class="btn" data-idx="${idx}">Edit</button>
             <button type="button" class="btn danger" data-idx="${idx}">Delete</button>
-          </div>`).join('');
+          </div>`;
+        }).join('');
       }
       const renderOutput = () => { els.outputJson.textContent = JSON.stringify(collection, null, 2); };
       const persist = () => { try{ localStorage.setItem('feature-json-builder', JSON.stringify(collection)); }catch(e){ console.warn(e); } };
@@ -568,6 +816,12 @@
         renderRequiredChips();
         resistancesDamage = [];
         renderResistChips();
+        featureTags = [];
+        renderTagChips();
+        if (els.flagReaction) els.flagReaction.checked = false;
+        if (els.flagLegendary) els.flagLegendary.checked = false;
+        if (els.flagApex) els.flagApex.checked = false;
+        if (els.reactionTrigger) els.reactionTrigger.value = '';
         idTouched = false;
         editingIndex = null;
         addDamageRow({useBase:true, modifier:0, type:'Piercing'});
@@ -585,6 +839,13 @@
         els.featureCost.value = obj.featureCost ?? 0;
         requiredFeatures = Array.isArray(obj.required) ? obj.required.map(v => (typeof v === 'string' ? v.trim() : '')).filter(Boolean) : [];
         renderRequiredChips();
+        featureTags = Array.isArray(obj.tags) ? obj.tags.map((tag) => (typeof tag === 'string' ? tag.trim() : '')).filter(Boolean) : [];
+        renderTagChips();
+        if (els.flagReaction) els.flagReaction.checked = Boolean(obj.isReaction);
+        if (els.reactionTrigger) els.reactionTrigger.value = obj.reactionTrigger ? String(obj.reactionTrigger).trim() : '';
+        if (els.flagLegendary) els.flagLegendary.checked = Boolean(obj.isLegendaryAction);
+        if (els.flagApex) els.flagApex.checked = Boolean(obj.isApexAction);
+        showSections();
 
         if (obj.type === 'action-attack') {
           els.actionTypeAttack.value = obj.actionType || 'Melee Martial Attack';
@@ -607,6 +868,7 @@
         }
         else if (obj.type === 'action-check-utility') {
           els.actionTypeCheckUtil.value = obj.actionType || 'Martial Check';
+          showSections();
           if(obj.effects){
             els.eff_acu_cost.value = obj.effects.cost ?? 1;
             els.eff_acu_target.value = obj.effects.target || '';
@@ -648,6 +910,16 @@
       // Type dropdowns control visibility
       els.type.addEventListener('change', showSections);
       els.actionTypeCheckUtil.addEventListener('change', showSections);
+      if (els.flagReaction) {
+        els.flagReaction.addEventListener('change', () => {
+          updateReactionUI();
+          updateAllPreviews();
+        });
+      }
+      [els.flagLegendary, els.flagApex].forEach((input) => {
+        if (!input) return;
+        input.addEventListener('change', updateAllPreviews);
+      });
       // Dynamic rows
       els.btnAddDamage.addEventListener('click', () => { addDamageRow(); updateAllPreviews(); });
       // Resistances
@@ -666,6 +938,36 @@
         updateAllPreviews();
       });
       els.required_input.addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); els.btnAddRequired.click(); }});
+      if (els.tag_chips) {
+        els.tag_chips.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON') {
+            const idx = Number(e.target.dataset.index);
+            const tag = featureTags[idx];
+            if (tag) removeTag(tag);
+          }
+        });
+      }
+      if (els.btnAddTag) {
+        els.btnAddTag.addEventListener('click', () => {
+          addTag(els.tag_input?.value || '');
+          if (els.tag_input) els.tag_input.value = '';
+        });
+      }
+      if (els.tag_input) {
+        els.tag_input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            els.btnAddTag?.click();
+          }
+        });
+      }
+      if (els.tagPresetGroups) {
+        els.tagPresetGroups.addEventListener('click', (e) => {
+          const btn = e.target.closest('button.tag-button');
+          if (!btn) return;
+          toggleTag(btn.dataset.tag || '');
+        });
+      }
       // Form/Collection buttons
       form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -694,7 +996,37 @@
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       });
 
+      const uploadFeature = async () => {
+        const rawFeature = currentFeatureObject();
+        if (!rawFeature.name || !rawFeature.id) {
+          alert('Please provide both a name and an id before uploading.');
+          return;
+        }
+        const feature = cleanObject(rawFeature);
+        const button = els.btnUpload;
+        try {
+          if (button) button.disabled = true;
+          await setDoc(
+            doc(db, 'VanillaFeatures', feature.id),
+            { ...feature, uploadedAt: serverTimestamp() },
+            { merge: true }
+          );
+          alert(`Feature "${feature.name}" uploaded to Firestore.`);
+        } catch (error) {
+          console.error('Upload failed', error);
+          alert(`Failed to upload feature: ${error.message}`);
+        } finally {
+          if (button) button.disabled = false;
+        }
+      };
+
+      if (els.btnUpload) {
+        els.btnUpload.addEventListener('click', uploadFeature);
+      }
+
       // ---------- INIT ----------
+      renderTagPresets();
+      renderTagChips();
       restore();
       renderList();
       renderOutput();
