@@ -37,6 +37,7 @@ const dom = {
   saveStatus: document.querySelector('#saveStatus'),
   logoutButton: document.querySelector('#logoutButton'),
   resetInputsButton: document.querySelector('#resetInputsButton'),
+  copyObsidianButton: document.querySelector('#copyObsidianButton'),
   recommendationsPanel: document.querySelector('#recommendationsPanel'),
 };
 

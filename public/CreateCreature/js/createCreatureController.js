@@ -49,6 +49,7 @@ import {
   toggleFeatureSelection,
 } from './createCreatureFeatures.js';
 import { fetchCreatureDocument, saveCreatureDocument } from './createCreatureFirebase.js';
+import { generateObsidianYAML } from './createCreatureExport.js';
 
 /**
  * Convert arbitrary text into title case for display.
@@ -823,6 +824,19 @@ function initializeEventHandlers() {
   if (dom.saveToFirebaseButton) {
     dom.saveToFirebaseButton.addEventListener('click', () => {
       saveToFirebase().catch(() => {});
+    });
+  }
+
+  if (dom.copyObsidianButton) {
+    dom.copyObsidianButton.addEventListener('click', async () => {
+      updateStatblock();
+      const yaml = generateObsidianYAML();
+      try {
+        await navigator.clipboard.writeText(yaml);
+        setSaveStatus('Copied Obsidian statblock to clipboard!', 'success', { sticky: false });
+      } catch {
+        setSaveStatus('Could not write to clipboard.', 'error', { sticky: false });
+      }
     });
   }
 
