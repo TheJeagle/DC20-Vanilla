@@ -272,6 +272,7 @@ function renderFeatureControls() {
 
   const visibleIds = baseIds.filter((id) => {
     if (featureState.selectedIds.includes(id)) return true;
+    if (featureState.searchTerm) return true;
     const feature = featureState.byId[id];
     return featureMatchesCurrentCreature(feature);
   });
