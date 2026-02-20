@@ -679,8 +679,8 @@ function renderRecommendations() {
         const seg = document.createElement('div');
         seg.className = `hc-segment hc-${key}`;
         seg.style.flex = String(flex);
-        seg.textContent = text;
         seg.title = text;
+        seg.textContent = flex >= 15 ? text : `${flex}%`;
         bar.appendChild(seg);
       });
       row.appendChild(bar);
