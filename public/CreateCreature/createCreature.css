@@ -20,7 +20,7 @@ body{
 }
 
 .page-col--left  { flex: 3; display: flex; flex-direction: column; gap: var(--gap); }
-.page-col--center{ flex: 4; }
+.page-col--center{ flex: 4; display: flex; flex-direction: column; gap: var(--gap); }
 .page-col--right { flex: 1; display: flex; flex-direction: column; gap: var(--gap); }
 
 /* Input */

@@ -582,7 +582,16 @@ function renderRecommendations() {
     : 0;
   const turnsToKillDisplay = Number.isFinite(turnsToKill) ? toDisplayInteger(turnsToKill) : 'ƒ?"';
 
+  const allActions = [
+    ...(Array.isArray(creature.featureActions) ? creature.featureActions : []),
+    ...(Array.isArray(creature.featureReactions) ? creature.featureReactions : []),
+  ];
+  const targetedDefenses = [...new Set(allActions.map((a) => a.targetDefense).filter(Boolean))];
+  const targetsBothDefenses = targetedDefenses.includes('PD') && targetedDefenses.includes('AD');
+  const attackTargetsDisplay = targetedDefenses.length ? targetedDefenses.join(', ') : 'None';
+
   const lines = [
+    { label: 'Attack targets: ', value: attackTargetsDisplay },
     { label: 'To Hit chance vs PD: ', value: `${chanceVsPD}%` },
     { label: ' - Hit: ', value: `${chanceVsPD - chanceVsPDHeavy}%` },
     { label: ' - Heavy: ', value: `${chanceVsPDHeavy - chanceVsPDBrutal}%` },
@@ -607,6 +616,10 @@ function renderRecommendations() {
   ];
 
   const warnings = [];
+  if (targetsBothDefenses) {
+    warnings.push('Targets both PD and AD — players cannot mitigate all attacks by specialising in one defense.');
+  }
+
   if (chanceVsPD < 45 || chanceVsAD < 45) {
     warnings.push(`Low player hit chance: PD ${chanceVsPD}%, AD ${chanceVsAD}%.`);
   }
