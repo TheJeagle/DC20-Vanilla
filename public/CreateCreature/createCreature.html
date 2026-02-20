@@ -19,6 +19,9 @@
       <button class="nav-button nav-button--danger" type="button" id="logoutButton">Logout</button>
     </nav>
 
+    <div class="page-columns">
+
+    <div class="page-col page-col--left">
     <div id="inputPanel">
       <h2>Inputs</h2>
       <div id="creatureInputs">
@@ -186,6 +189,16 @@
       </div>
     </div>
 
+    <div id="featurePanel">
+      <h2>Features</h2>
+      <div id="featureSearchRow">
+        <input type="search" id="featureSearch" placeholder="Search features" autocomplete="off">
+      </div>
+      <div id="featureControls"></div>
+    </div>
+    </div><!-- end page-col--left -->
+
+    <div class="page-col page-col--center">
     <div id="statblockPanel">
       <div class="statblock">
         <div id="statblockName">Creature Name</div>
@@ -276,6 +289,9 @@
       </div>
     </div>
 
+    </div><!-- end page-col--center -->
+
+    <div class="page-col page-col--right">
     <div id="savePanel">
       <h2>Save</h2>
       <p class="save-note">Need to tweak numbers after generation? Open the editor to adjust deltas without losing the baseline.</p>
@@ -285,17 +301,12 @@
       <div id="saveStatus" class="save-status" aria-live="polite"></div>
     </div>
 
-    <div id="featurePanel">
-      <h2>Features</h2>
-      <div id="featureSearchRow">
-        <input type="search" id="featureSearch" placeholder="Search features" autocomplete="off">
-      </div>
-      <div id="featureControls"></div>
-    </div>
-
     <div id="recommendationsPanel">
       <h2>Recommendations</h2>
     </div>
+    </div><!-- end page-col--right -->
+
+    </div><!-- end page-columns -->
     <script type="module" src="createCreature.js"></script>
   </body>
 </html>
