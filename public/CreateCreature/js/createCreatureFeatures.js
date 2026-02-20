@@ -236,10 +236,22 @@ function toggleFeatureSelection(id, isSelected) {
   if (isSelected) {
     selectFeatureWithDependencies(normalizedId);
   } else {
-    const index = featureState.selectedIds.indexOf(normalizedId);
-    if (index !== -1) {
-      featureState.selectedIds.splice(index, 1);
-    }
+    const removedDeps = collectRequiredFeatureIds(
+      normalizedId,
+      createDependencyCollectionContext(normalizedId)
+    );
+    const remaining = featureState.selectedIds.filter((id) => id !== normalizedId);
+    const stillRequired = new Set();
+    remaining.forEach((otherId) => {
+      collectRequiredFeatureIds(otherId, createDependencyCollectionContext(otherId)).forEach((dep) =>
+        stillRequired.add(dep)
+      );
+    });
+    const toRemove = new Set([
+      normalizedId,
+      ...removedDeps.filter((dep) => !stillRequired.has(dep)),
+    ]);
+    featureState.selectedIds = featureState.selectedIds.filter((id) => !toRemove.has(id));
   }
 
   onSelectionChange(featureState.selectedIds);
@@ -280,17 +292,9 @@ function renderFeatureControls() {
     card.className = 'feature-card';
     card.dataset.featureId = feature.id;
     const isSelected = featureState.selectedIds.includes(feature.id);
-    const isEligible = featureMatchesCurrentCreature(feature);
 
     if (isSelected) {
       card.classList.add('selected');
-    }
-
-    if (!isEligible) {
-      card.dataset.restricted = 'true';
-      card.title = 'This feature is tied to a different role or creature type.';
-    } else {
-      delete card.dataset.restricted;
     }
 
     const name = document.createElement('div');
@@ -303,6 +307,30 @@ function renderFeatureControls() {
     desc.textContent = cardSummary || 'No description available.';
 
     card.append(name, desc);
+
+    const depIds = getRequiredFeatureIds(feature);
+    if (depIds.length) {
+      const depNames = depIds
+        .map((depId) => featureState.byId[depId]?.name ?? depId)
+        .join(', ');
+      const depLine = document.createElement('div');
+      depLine.className = 'feature-card-meta';
+      depLine.textContent = `Requires: ${depNames}`;
+      card.appendChild(depLine);
+    }
+
+    const requiredBy = featureState.selectedIds
+      .filter((otherId) => otherId !== feature.id)
+      .filter((otherId) => getRequiredFeatureIds(featureState.byId[otherId]).includes(feature.id));
+    if (requiredBy.length) {
+      const parentNames = requiredBy
+        .map((otherId) => featureState.byId[otherId]?.name ?? otherId)
+        .join(', ');
+      const reqByLine = document.createElement('div');
+      reqByLine.className = 'feature-card-meta';
+      reqByLine.textContent = `Required by: ${parentNames}`;
+      card.appendChild(reqByLine);
+    }
 
     card.addEventListener('click', () => {
       const selected = featureState.selectedIds.includes(feature.id);

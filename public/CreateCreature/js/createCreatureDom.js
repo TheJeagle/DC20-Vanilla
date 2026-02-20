@@ -37,7 +37,7 @@ const dom = {
   saveStatus: document.querySelector('#saveStatus'),
   logoutButton: document.querySelector('#logoutButton'),
   resetInputsButton: document.querySelector('#resetInputsButton'),
-  recommendationsPanel: document.querySelector('#recomendationsPanel'),
+  recommendationsPanel: document.querySelector('#recommendationsPanel'),
 };
 
 export default dom;

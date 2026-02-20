@@ -716,10 +716,21 @@ body{
 .feature-card.selected .feature-card-description{
     color: #f2e7ff;
 }
+
+.feature-card-meta{
+    font-size: 0.78rem;
+    color: #9b8aac;
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+.feature-card.selected .feature-card-meta{
+    color: #c9a8e8;
+}
 /* Features End */
 
-/* Recomendations */
-#recomendationsPanel{
+/* Recommendations */
+#recommendationsPanel{
     grid-area: rec;
     background-color: #ffffff;
     border-radius: var(--gap);
@@ -731,7 +742,7 @@ body{
     color: #2d1f3b;
 }
 
-#recomendationsPanel > h2{
+#recommendationsPanel > h2{
     margin: 0;
     font-size: 1.35rem;
     font-weight: 700;
@@ -797,4 +808,4 @@ body{
 .warning-item{
     line-height: 1.3;
 }
-/* Recomendations End */
+/* Recommendations End */

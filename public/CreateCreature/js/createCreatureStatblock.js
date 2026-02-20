@@ -288,8 +288,6 @@ function createActionCardElement(action, { showTrigger = false } = {}) {
 
   if (action.save) {
     if (action.save.attribute) {
-      console.log(action);
-      
       const saveLine = document.createElement('div');
       appendField(saveLine, action.save.attribute, 'saveAttribute');
       appendText(saveLine, ' Save, DC: ');
@@ -575,7 +573,7 @@ function renderRecommendations() {
     });
   }
 
-  recommendationsPanel.innerHTML = '<h2>Recomendations</h2>';
+  recommendationsPanel.innerHTML = '<h2>Recommendations</h2>';
   recommendationsPanel.appendChild(wrapper);
   if (warnings.length) {
     recommendationsPanel.appendChild(warningsBox);
