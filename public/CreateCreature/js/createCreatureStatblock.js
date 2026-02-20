@@ -10,6 +10,27 @@ export function setFeatureReorderHandler(cb) {
   onFeatureReorder = typeof cb === 'function' ? cb : () => {};
 }
 
+let onFeatureRemove = () => {};
+export function setFeatureRemoveHandler(cb) {
+  onFeatureRemove = typeof cb === 'function' ? cb : () => {};
+}
+
+export function initStatblockSectionToggles() {
+  const featureSection = dom.statblockFeatures?.closest('.statblock-feature-section');
+  const featureHeading = featureSection?.querySelector('.statblock-feature-heading');
+  const actionsSection = dom.statblockActionsHeading?.closest('.statblock-actions-section');
+  const reactionsHeading = dom.statblockReactionsSection?.querySelector('.statblock-actions-heading');
+
+  [
+    { heading: featureHeading,            section: featureSection },
+    { heading: dom.statblockActionsHeading, section: actionsSection },
+    { heading: reactionsHeading,           section: dom.statblockReactionsSection },
+  ].forEach(({ heading, section }) => {
+    if (!heading || !section) return;
+    heading.addEventListener('click', () => section.classList.toggle('is-collapsed'));
+  });
+}
+
 function reorderFeatureById(dragId, dropId) {
   const ids = featureState.selectedIds;
   const from = ids.indexOf(dragId);
@@ -213,7 +234,14 @@ function renderFeatureSummary() {
     const summary = getFeatureSummary(feature);
     description.textContent = summary || 'No description provided.';
 
-    wrapper.append(handle, name, description);
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'statblock-remove-btn';
+    removeBtn.title = 'Remove feature';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(feature.id); });
+
+    wrapper.append(handle, name, description, removeBtn);
     statblockFeatures.appendChild(wrapper);
   });
 }
@@ -275,6 +303,13 @@ function createActionCardElement(action, { showTrigger = false } = {}) {
       description.textContent = action.description;
       wrapper.appendChild(description);
     }
+    const utilRemoveBtn = document.createElement('button');
+    utilRemoveBtn.type = 'button';
+    utilRemoveBtn.className = 'statblock-remove-btn';
+    utilRemoveBtn.title = 'Remove feature';
+    utilRemoveBtn.textContent = '×';
+    utilRemoveBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(action.id); });
+    wrapper.appendChild(utilRemoveBtn);
     return wrapper;
   }
 
@@ -407,6 +442,15 @@ function createActionCardElement(action, { showTrigger = false } = {}) {
   }
 
   wrapper.appendChild(summary);
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'statblock-remove-btn';
+  removeBtn.title = 'Remove feature';
+  removeBtn.textContent = '×';
+  removeBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(action.id); });
+  wrapper.appendChild(removeBtn);
+
   return wrapper;
 }
 

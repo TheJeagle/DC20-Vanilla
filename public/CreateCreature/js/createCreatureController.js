@@ -39,13 +39,14 @@ import {
   arraysEqual,
   ATTRIBUTE_KEYS,
 } from './createCreatureStats.js';
-import { renderCreatureStatblock, setFeatureReorderHandler } from './createCreatureStatblock.js';
+import { renderCreatureStatblock, setFeatureReorderHandler, setFeatureRemoveHandler, initStatblockSectionToggles } from './createCreatureStatblock.js';
 import {
   renderFeatureControls,
   ensureSelectedFeatureDependencies,
   applyFeatureSearch,
   setFeatureSelectionChangeHandler,
   refreshFeatureFiltersForCurrentCreature,
+  toggleFeatureSelection,
 } from './createCreatureFeatures.js';
 import { fetchCreatureDocument, saveCreatureDocument } from './createCreatureFirebase.js';
 
@@ -859,6 +860,13 @@ function initializeEventHandlers() {
   setFeatureReorderHandler(() => {
     updateStatblock();
   });
+
+  setFeatureRemoveHandler((featureId) => {
+    toggleFeatureSelection(featureId, false);
+    renderFeatureControls();
+  });
+
+  initStatblockSectionToggles();
 
   window.SaveToFirebase = saveToFirebase;
 }
