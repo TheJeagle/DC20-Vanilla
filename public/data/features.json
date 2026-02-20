@@ -2,7 +2,8 @@
   {
     "id": "common-ranged-attack",
     "type": "action-attack",
-    "name": "Common Ranged Attack",
+    "name": "Ranged Attack",
+    "description": "A basic ranged attack.",
     "featureCost": 0,
     "actionType": "Ranged Martial Attack",
     "effects": {
@@ -594,17 +595,6 @@
       "text": "Your ranged attacks ignore cover bonuses to PD and AD. When your ranged attack deals damage, the target gains the Bleeding condition."
     },
     "tags": ["role/artillerist", "feature-cost/1", "status/bleeding"]
-  },
-  {
-    "id": "siege-trained",
-    "type": "passive",
-    "name": "Siege Trained",
-    "description": "This creature's area attacks cover greater ground.",
-    "featureCost": 1,
-    "effects": {
-      "text": "Area attacks made by this creature increase their area by 1 Space in each dimension (e.g. a 3 Space Cube becomes a 4 Space Cube)."
-    },
-    "tags": ["role/artillerist", "feature-cost/1"]
   },
   {
     "id": "sniper-shot",

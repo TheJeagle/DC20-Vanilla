@@ -5,7 +5,7 @@ import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
 import fetch from 'node-fetch';
 
 import firebaseConfig from '../src/firebase/config.mjs';
@@ -43,6 +43,17 @@ async function uploadFeatures(db, features) {
   }
 }
 
+async function syncFeatures(db, features) {
+  const localIds = new Set(features.map((f) => f.id).filter(Boolean));
+  const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+  for (const docSnap of snapshot.docs) {
+    if (!localIds.has(docSnap.id)) {
+      await deleteDoc(doc(db, COLLECTION_NAME, docSnap.id));
+      console.log(`Deleted ${docSnap.id}`);
+    }
+  }
+}
+
 async function main() {
   const fileFlagIndex = process.argv.findIndex((arg) => arg === '--file');
   const filePath = fileFlagIndex !== -1 ? process.argv[fileFlagIndex + 1] : DEFAULT_FEATURE_FILE;
@@ -50,10 +61,12 @@ async function main() {
     console.error('Missing path after --file flag.');
     process.exit(1);
   }
+  const doSync = process.argv.includes('--sync');
 
   const features = await loadFeatures(filePath);
   console.log(`Loaded ${features.length} feature(s) from ${filePath}`);
   const db = initDb();
+  if (doSync) await syncFeatures(db, features);
   await uploadFeatures(db, features);
   console.log('Done.');
 }

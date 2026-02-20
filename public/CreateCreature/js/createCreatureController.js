@@ -868,7 +868,12 @@ function initializeFeatureLoading(requestedCreatureId) {
   loadFeatures()
     .then((featuresById) => {
       featureState.byId = featuresById;
-      featureState.allIds = Object.keys(featuresById);
+      const PINNED_IDS = ['common-melee', 'common-ranged-attack'];
+      const allKeys = Object.keys(featuresById);
+      featureState.allIds = [
+        ...PINNED_IDS.filter((id) => featuresById[id]),
+        ...allKeys.filter((id) => !PINNED_IDS.includes(id)),
+      ];
       setFeaturesLoaded(true);
 
       ensureSelectedFeatureDependencies();
