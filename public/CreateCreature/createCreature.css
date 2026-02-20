@@ -999,4 +999,38 @@ body{
 .warning-item{
     line-height: 1.3;
 }
+/* Hit chance bars */
+.recommendations-row--bar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.hit-chance-bar {
+  display: flex;
+  border-radius: 0.4rem;
+  overflow: hidden;
+  height: 1.75rem;
+}
+
+.hc-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ffffff;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 0.25rem;
+  min-width: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.hc-miss   { background: #7a2e2e; }
+.hc-hit    { background: #2e7a52; }
+.hc-heavy  { background: #1e5c9e; }
+.hc-brutal { background: #9e6e10; }
+/* Hit chance bars End */
+
 /* Recommendations End */

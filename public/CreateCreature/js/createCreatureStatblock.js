@@ -587,19 +587,33 @@ function renderRecommendations() {
     ...(Array.isArray(creature.featureReactions) ? creature.featureReactions : []),
   ];
   const targetedDefenses = [...new Set(allActions.map((a) => a.targetDefense).filter(Boolean))];
-  const targetsBothDefenses = targetedDefenses.includes('PD') && targetedDefenses.includes('AD');
   const attackTargetsDisplay = targetedDefenses.length ? targetedDefenses.join(', ') : 'None';
+
+  const missPD   = 100 - chanceVsPD;
+  const hitPD    = chanceVsPD - chanceVsPDHeavy;
+  const heavyPD  = chanceVsPDHeavy - chanceVsPDBrutal;
+  const brutalPD = chanceVsPDBrutal;
+
+  const missAD   = 100 - chanceVsAD;
+  const hitAD    = chanceVsAD - chanceVsADHeavy;
+  const heavyAD  = chanceVsADHeavy - chanceVsADBrutal;
+  const brutalAD = chanceVsADBrutal;
+
+  const makeBar = (label, miss, hit, heavy, brutal) => ({
+    type: 'bar',
+    label,
+    segments: [
+      { key: 'miss',   text: `${miss}% Miss`,   flex: miss },
+      { key: 'hit',    text: `${hit}% Hit`,     flex: hit },
+      { key: 'heavy',  text: `${heavy}% Heavy`, flex: heavy },
+      { key: 'brutal', text: `${brutal}% Brutal`, flex: brutal },
+    ],
+  });
 
   const lines = [
     { label: 'Attack targets: ', value: attackTargetsDisplay },
-    { label: 'To Hit chance vs PD: ', value: `${chanceVsPD}%` },
-    { label: ' - Hit: ', value: `${chanceVsPD - chanceVsPDHeavy}%` },
-    { label: ' - Heavy: ', value: `${chanceVsPDHeavy - chanceVsPDBrutal}%` },
-    { label: ' - Brutal: ', value: `${chanceVsPDBrutal}%` },
-    { label: 'Hit chance vs AD: ', value: `${chanceVsAD}%` },
-    { label: ' - Hit: ', value: `${chanceVsAD - chanceVsADHeavy}%` },
-    { label: ' - Heavy: ', value: `${chanceVsADHeavy - chanceVsADBrutal}%` },
-    { label: ' - Brutal: ', value: `${chanceVsADBrutal}%` },
+    makeBar('Player hit vs PD (equal level):', missPD, hitPD, heavyPD, brutalPD),
+    makeBar('Player hit vs AD (equal level):', missAD, hitAD, heavyAD, brutalAD),
     {
       label: 'Est. PD damage per player per round: ',
       value: `${expectedDamageVsPDPerRoundDisplay}`,
@@ -616,8 +630,11 @@ function renderRecommendations() {
   ];
 
   const warnings = [];
-  if (targetsBothDefenses) {
-    warnings.push('Targets both PD and AD — players cannot mitigate all attacks by specialising in one defense.');
+  if (targetedDefenses.length > 0 && !targetedDefenses.includes('PD')) {
+    warnings.push('No attacks target PD — characters who invest in Precision Defense gain no benefit against this creature.');
+  }
+  if (targetedDefenses.length > 0 && !targetedDefenses.includes('AD')) {
+    warnings.push('No attacks target AD — characters who invest in Area Defense gain no benefit against this creature.');
   }
 
   if (chanceVsPD < 45 || chanceVsAD < 45) {
@@ -644,16 +661,39 @@ function renderRecommendations() {
 
   const list = document.createElement('div');
   list.className = 'recommendations-list';
-  lines.forEach(({ label, value }) => {
+  lines.forEach(({ type, label, value, segments }) => {
     const row = document.createElement('div');
     row.className = 'recommendations-row';
-    const l = document.createElement('span');
-    l.className = 'recommendations-label';
-    l.textContent = label;
-    const v = document.createElement('span');
-    v.className = 'recommendations-value';
-    v.textContent = value;
-    row.append(l, v);
+
+    if (type === 'bar') {
+      row.classList.add('recommendations-row--bar');
+      const l = document.createElement('span');
+      l.className = 'recommendations-label';
+      l.textContent = label;
+      row.appendChild(l);
+
+      const bar = document.createElement('div');
+      bar.className = 'hit-chance-bar';
+      segments.forEach(({ key, text, flex }) => {
+        if (flex <= 0) return;
+        const seg = document.createElement('div');
+        seg.className = `hc-segment hc-${key}`;
+        seg.style.flex = String(flex);
+        seg.textContent = text;
+        seg.title = text;
+        bar.appendChild(seg);
+      });
+      row.appendChild(bar);
+    } else {
+      const l = document.createElement('span');
+      l.className = 'recommendations-label';
+      l.textContent = label;
+      const v = document.createElement('span');
+      v.className = 'recommendations-value';
+      v.textContent = value;
+      row.append(l, v);
+    }
+
     list.appendChild(row);
   });
   wrapper.appendChild(list);
