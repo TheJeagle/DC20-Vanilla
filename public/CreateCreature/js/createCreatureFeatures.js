@@ -298,16 +298,29 @@ function renderFeatureControls() {
       card.classList.add('selected');
     }
 
-    const name = document.createElement('div');
-    name.className = 'feature-card-name';
-    name.textContent = feature.name;
+    // PD / AD border accent
+    const targetDefense = feature.effects?.targetDefense;
+    if (targetDefense === 'PD') card.classList.add('feature-card--target-pd');
+    else if (targetDefense === 'AD') card.classList.add('feature-card--target-ad');
+
+    // Header: name + cost badge
+    const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+    const header = document.createElement('div');
+    header.className = 'feature-card-header';
+    const nameEl = document.createElement('span');
+    nameEl.className = 'feature-card-name';
+    nameEl.textContent = feature.name;
+    const costEl = document.createElement('span');
+    costEl.className = 'feature-card-cost';
+    costEl.textContent = feature.featureCost ?? 0;
+    header.append(nameEl, costEl);
 
     const desc = document.createElement('div');
     desc.className = 'feature-card-description';
     const cardSummary = getFeatureSummary(feature);
     desc.textContent = cardSummary || 'No description available.';
 
-    card.append(name, desc);
+    card.append(header, desc);
 
     const depIds = getRequiredFeatureIds(feature);
     if (depIds.length) {
@@ -331,6 +344,43 @@ function renderFeatureControls() {
       reqByLine.className = 'feature-card-meta';
       reqByLine.textContent = `Required by: ${parentNames}`;
       card.appendChild(reqByLine);
+    }
+
+    // Footer: reaction chip + source pills
+    const tags = Array.isArray(feature.tags) ? feature.tags : [];
+    const roleSources = tags.filter(t => t.startsWith('role/')).map(t => capitalize(t.slice(5)));
+    const typeSources = tags.filter(t => t.startsWith('creature/')).map(t => capitalize(t.slice(9)));
+
+    if (feature.isReaction || roleSources.length || typeSources.length) {
+      const footer = document.createElement('div');
+      footer.className = 'feature-card-footer';
+
+      if (feature.isReaction) {
+        const reactionEl = document.createElement('span');
+        reactionEl.className = 'feature-card-reaction';
+        reactionEl.textContent = 'Reaction';
+        footer.appendChild(reactionEl);
+      }
+
+      if (roleSources.length || typeSources.length) {
+        const sourcesEl = document.createElement('div');
+        sourcesEl.className = 'feature-card-sources';
+        for (const role of roleSources) {
+          const pill = document.createElement('span');
+          pill.className = 'feature-card-source feature-card-source--role';
+          pill.textContent = role;
+          sourcesEl.appendChild(pill);
+        }
+        for (const type of typeSources) {
+          const pill = document.createElement('span');
+          pill.className = 'feature-card-source feature-card-source--type';
+          pill.textContent = type;
+          sourcesEl.appendChild(pill);
+        }
+        footer.appendChild(sourcesEl);
+      }
+
+      card.appendChild(footer);
     }
 
     card.addEventListener('click', () => {

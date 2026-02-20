@@ -722,6 +722,105 @@ body{
 .feature-card.selected .feature-card-meta{
     color: #c9a8e8;
 }
+
+/* PD / AD border accents */
+.feature-card--target-pd { border-left: 3px solid #5b9bd5; }
+.feature-card--target-ad { border-left: 3px solid #d47c3a; }
+
+/* Feature card header */
+.feature-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Feature cost badge */
+.feature-card-cost {
+    flex-shrink: 0;
+    min-width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    background: rgba(142, 68, 173, 0.35);
+    color: #d4b8f0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.4rem;
+    padding: 0 0.2rem;
+}
+
+.feature-card.selected .feature-card-cost {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+/* Feature card footer */
+.feature-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+/* Reaction chip */
+.feature-card-reaction {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #d4a017;
+    background: rgba(212, 160, 23, 0.18);
+    border: 1px solid rgba(212, 160, 23, 0.4);
+    border-radius: 0.9rem;
+    padding: 0.1rem 0.45rem;
+}
+
+.feature-card.selected .feature-card-reaction {
+    color: #ffe082;
+    background: rgba(255, 224, 130, 0.2);
+    border-color: rgba(255, 224, 130, 0.5);
+}
+
+/* Source pills */
+.feature-card-sources {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+.feature-card-source {
+    font-size: 0.68rem;
+    font-weight: 600;
+    border-radius: 0.9rem;
+    padding: 0.1rem 0.45rem;
+}
+
+.feature-card-source--role {
+    color: #c4a0e8;
+    background: rgba(142, 68, 173, 0.25);
+    border: 1px solid rgba(142, 68, 173, 0.45);
+}
+
+.feature-card.selected .feature-card-source--role {
+    color: #f0d8ff;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.feature-card-source--type {
+    color: #7ecbcb;
+    background: rgba(38, 166, 154, 0.2);
+    border: 1px solid rgba(38, 166, 154, 0.4);
+}
+
+.feature-card.selected .feature-card-source--type {
+    color: #b2f0f0;
+    background: rgba(178, 240, 240, 0.15);
+    border-color: rgba(178, 240, 240, 0.35);
+}
 /* Features End */
 
 /* Recommendations */
