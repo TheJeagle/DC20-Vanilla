@@ -629,12 +629,11 @@ function renderRecommendations() {
     { label: 'Avg. damage before death: ', value: `${expectedDamageDealt}` },
   ];
 
-  const hasAnyActions = allActions.length > 0;
   const warnings = [];
-  if (hasAnyActions && !targetedDefenses.includes('PD')) {
+  if (!targetedDefenses.includes('PD')) {
     warnings.push('No attacks target PD — characters who invest in Precision Defense gain no benefit against this creature.');
   }
-  if (hasAnyActions && !targetedDefenses.includes('AD')) {
+  if (!targetedDefenses.includes('AD')) {
     warnings.push('No attacks target AD — characters who invest in Area Defense gain no benefit against this creature.');
   }
 
