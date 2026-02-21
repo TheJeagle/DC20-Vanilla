@@ -14,6 +14,8 @@ import {
   orderBy,
   limit,
 } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+// NOTE: avoid combining where() + orderBy() on different fields — that requires
+// a composite Firestore index that isn't provisioned. Filter client-side instead.
 import { db } from '../../firebaseClient.js';
 import { slugify } from '../../utils/firestore.js';
 
@@ -103,13 +105,14 @@ export async function saveParty(uid, name, members) {
  * @returns {Promise<Array>}
  */
 export async function loadUserParties(uid) {
+  // No orderBy — avoids needing a composite index; sort client-side
   const q = query(
     collection(db, PARTIES_COL),
-    where('ownerId', '==', uid),
-    orderBy('savedAt', 'desc')
+    where('ownerId', '==', uid)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const parties = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return parties.sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
 }
 
 // ── Creatures ─────────────────────────────────────────────────────────────────
@@ -120,13 +123,14 @@ export async function loadUserParties(uid) {
  * @returns {Promise<Array>}
  */
 export async function loadMyCreatures(uid) {
+  // No orderBy — matches myCreatures.js pattern; avoids composite index
   const q = query(
     collection(db, CREATURES_COL),
-    where('ownerId', '==', uid),
-    orderBy('savedAt', 'desc')
+    where('ownerId', '==', uid)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const creatures = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return creatures.sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
 }
 
 /**
@@ -134,12 +138,15 @@ export async function loadMyCreatures(uid) {
  * @returns {Promise<Array>}
  */
 export async function loadPublicCreatures() {
+  // No isPublic filter in query — matches viewAllCreatures.js pattern; avoids
+  // composite index. Filter isPublic client-side in encounterMonsters.js.
   const q = query(
     collection(db, CREATURES_COL),
-    where('isPublic', '==', true),
     orderBy('savedAt', 'desc'),
     limit(200)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(c => c.isPublic !== false);
 }
