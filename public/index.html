@@ -111,7 +111,6 @@
         display: inline-flex;
         flex-wrap: wrap;
         gap: 16px;
-        justify-content: center;
         margin-top: 12px;
         justify-content: flex-start;
       }
@@ -431,6 +430,46 @@
         background: none;
         padding: 0;
         color: #5d4a77;
+      }
+
+      .statblock-feature-section {
+        display: grid;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        border-bottom: 4px solid #5b2c6f;
+        border-radius: 4px;
+      }
+
+      .statblock-feature-heading {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #432458;
+      }
+
+      .statblock-feature-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .statblock-feature-item {
+        background-color: #f5f0ff;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .feature-name {
+        font-weight: 600;
+        color: #2d1f3b;
+      }
+
+      .feature-description {
+        color: #3a2c4b;
+        line-height: 1.35;
       }
 
       .statblock-actions-section {
@@ -755,7 +794,7 @@
           </ul>
           <div class="cta-group">
             <a class="cta-primary" href="./CreateCreature/createCreature.html">Try it yourself — build a creature</a>
-            <a class="cta-secondary" href="./MyCreatures/myCreatures.html">Browse all community creatures</a>
+            <a class="cta-secondary" href="./AllCreatures/viewAllCreatures.html">Browse all community creatures</a>
           </div>
         </div>
         <aside class="hero-aside">
@@ -773,7 +812,7 @@
         <div>
           <h2 id="featuredHeading">Featured Creature of the Week</h2>
           <p style="color: var(--muted); margin: 6px 0 0;">
-            Highlighting community favourites based on likes and encounters logged this week.
+            Highlighting community favourites based on likes this week.
           </p>
         </div>
         <div class="featured-layout">
@@ -836,6 +875,11 @@
                 <span class="statblock-trait-values" id="featuredSenses"></span>
               </div>
             </div>
+            <div class="statblock-feature-section" id="featuredFeaturesSection" hidden>
+              <div class="statblock-feature-heading">Features</div>
+              <div id="featuredFeaturesList" class="statblock-feature-list"></div>
+            </div>
+
             <div class="statblock-actions-section">
               <div class="statblock-actions-heading" id="featuredActionsHeading">Actions (0)</div>
               <div class="statblock-actions-bar" id="featuredActionsInfo"></div>
@@ -881,7 +925,7 @@
       </section>
 
       <section class="newest-section" id="newestSection">
-        <h2>Meet our newest creature</h2>
+        <h2>Latest Community Addition</h2>
         <article class="newest-card is-loading" id="newestCard">
           <div class="newest-header">
             <h3 id="newestName">Loading…</h3>
@@ -906,7 +950,7 @@
     </main>
 
     <footer>
-      <div>&copy; <span id="footerYear"></span> <a href="data/featureBuilder.html" style="text-decoration: none;">DC20 Creature Creator</a></div>
+      <div>&copy; <span id="footerYear"></span> DC20 Creature Creator</div>
       <nav>
         <a href="https://www.dc20rpg.com" target="_blank" rel="noopener noreferrer">Official DC20</a>
         <a href="https://discord.gg/dc20rpg" target="_blank" rel="noopener noreferrer">DC20 Discord</a>

@@ -59,6 +59,8 @@ const featuredEls = {
   actionsList: document.getElementById('featuredActionsList'),
   reactionsSection: document.getElementById('featuredReactionsSection'),
   reactionsList: document.getElementById('featuredReactionsList'),
+  featuresSection: document.getElementById('featuredFeaturesSection'),
+  featuresList: document.getElementById('featuredFeaturesList'),
   likeButton: document.getElementById('featuredLikeButton'),
   link: document.getElementById('featuredLink'),
 };
@@ -766,6 +768,9 @@ function renderFeatured(creature) {
     renderTraitList(featuredEls.traits.skills, []);
     renderTraitList(featuredEls.traits.senses, []);
 
+    if (featuredEls.featuresSection) featuredEls.featuresSection.hidden = true;
+    if (featuredEls.featuresList) clearElement(featuredEls.featuresList);
+
     if (featuredEls.actionsHeading) {
       featuredEls.actionsHeading.textContent = 'Actions (0)';
     }
@@ -872,6 +877,32 @@ function renderFeatured(creature) {
     creature.base?.senses ||
     [];
   renderTraitList(featuredEls.traits.senses, senseValues);
+
+  if (featuredEls.featuresSection && featuredEls.featuresList) {
+    clearElement(featuredEls.featuresList);
+    const passives = Array.isArray(creature.featurePassives) ? creature.featurePassives : [];
+    if (!passives.length) {
+      featuredEls.featuresSection.hidden = true;
+    } else {
+      featuredEls.featuresSection.hidden = false;
+      passives.forEach((feature) => {
+        const item = document.createElement('div');
+        item.className = 'statblock-feature-item';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'feature-name';
+        nameEl.textContent = feature.name || '';
+        item.appendChild(nameEl);
+        const desc = feature.description || '';
+        if (desc) {
+          const descEl = document.createElement('div');
+          descEl.className = 'feature-description';
+          descEl.textContent = desc;
+          item.appendChild(descEl);
+        }
+        featuredEls.featuresList.appendChild(item);
+      });
+    }
+  }
 
   const apValue = stats.AP ?? creature.AP ?? 0;
   if (featuredEls.actionsHeading) {
