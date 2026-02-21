@@ -13,6 +13,42 @@ body {
   margin-bottom: var(--gap);
 }
 
+/* ── Top bar ─────────────────────────────────────────────── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: #ffffff;
+  border-radius: var(--gap);
+  padding: 0.85rem 1.25rem;
+  margin-bottom: var(--gap);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  flex-wrap: wrap;
+}
+
+.top-bar-budget {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.top-bar-save {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.top-bar-save .save-action {
+  width: auto;
+  padding: 0.6rem 1.25rem;
+  white-space: nowrap;
+}
+
 /* ── Page layout ─────────────────────────────────────────── */
 .page-columns {
   display: flex;
@@ -20,9 +56,8 @@ body {
   gap: var(--gap);
 }
 
-.page-col--left  { flex: 3; display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
-.page-col--center{ flex: 4; display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
-.page-col--right { flex: 2; display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
+.page-col--left  { flex: 2; display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
+.page-col--right { flex: 3; display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
 
 /* ── Panel ───────────────────────────────────────────────── */
 .enc-panel {
@@ -42,12 +77,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #2d1f3b;
-}
-
-.enc-panel--center {
-  padding: 1.25rem;
-  gap: 1.25rem;
-  min-height: 300px;
 }
 
 /* ── Generic controls ────────────────────────────────────── */
@@ -365,6 +394,24 @@ body {
   gap: 0.6rem;
 }
 
+/* ── Metadata grid ───────────────────────────────────────── */
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.meta-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.meta-field--full {
+  grid-column: 1 / -1;
+}
+
+/* ── Center slot canvas ──────────────────────────────────── */
 .slot-section-heading {
   margin: 0;
   font-size: 0.8rem;
@@ -618,17 +665,14 @@ body {
 
 .group-remove-btn:hover { background: rgba(192,57,43,0.15); }
 
-/* ── Budget panel ────────────────────────────────────────── */
-.budget-bar-wrap {
-  padding: 0.1rem 0;
-}
-
+/* ── Budget (top bar) ────────────────────────────────────── */
 .budget-bar {
-  height: 1.5rem;
+  height: 1.25rem;
+  min-width: 140px;
+  flex: 1 1 140px;
   border-radius: 0.75rem;
   background: #e8e0f5;
   overflow: hidden;
-  position: relative;
 }
 
 .budget-fill {
@@ -645,17 +689,17 @@ body {
 
 .budget-labels {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 0.88rem;
+  gap: 0.5rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  margin-top: 0.25rem;
+  white-space: nowrap;
 }
 
 .budget-difficulty {
-  padding: 0.15rem 0.65rem;
+  padding: 0.12rem 0.55rem;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -668,22 +712,23 @@ body {
 
 #budgetNumbers {
   color: #5b3d7a;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
 .budget-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 0.75rem;
-  font-size: 0.72rem;
+  gap: 0.2rem 0.6rem;
+  font-size: 0.7rem;
   color: #6b4e8a;
   align-items: center;
+  white-space: nowrap;
 }
 
 .legend-swatch {
   display: inline-block;
-  width: 0.65rem;
-  height: 0.65rem;
+  width: 0.55rem;
+  height: 0.55rem;
   border-radius: 50%;
   vertical-align: middle;
 }
@@ -693,19 +738,16 @@ body {
 .legend-swatch--hard   { background: #e67e22; }
 .legend-swatch--deadly { background: #c0392b; }
 
-/* ── Save panel ──────────────────────────────────────────── */
-#savePanel {
-  gap: 0.65rem;
-}
-
+/* ── Save (top bar) ──────────────────────────────────────── */
 .enc-checkbox-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: #3d2c5c;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .save-action {
@@ -733,9 +775,9 @@ body {
 }
 
 .save-status {
-  font-size: 0.88rem;
-  min-height: 1.2rem;
+  font-size: 0.85rem;
   color: #3d2c5c;
+  white-space: nowrap;
 }
 
 .save-status[data-tone="success"] { color: #1e8449; }
