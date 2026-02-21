@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Encounter Builder • DC20 Creature Creator</title>
+    <link rel="stylesheet" href="../reset.css">
+    <link rel="stylesheet" href="../site.css">
+    <link rel="stylesheet" href="encounters.css">
+  </head>
+  <body>
+    <nav class="site-nav">
+      <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
+      <div class="site-nav-links">
+        <a class="nav-link" href="../CreateCreature/createCreature.html">Create</a>
+        <a class="nav-link" href="../MyCreatures/myCreatures.html">My Creatures</a>
+        <a class="nav-link is-active" href="./encounters.html">Encounters</a>
+        <a class="nav-link" href="../AllCreatures/viewAllCreatures.html">All Creatures</a>
+        <a class="nav-link" href="../Auth/auth.html">Account</a>
+      </div>
+      <button class="nav-button nav-button--danger" type="button" id="logoutButton">Logout</button>
+    </nav>
+
+    <div class="page-columns">
+
+      <!-- LEFT COLUMN: Party + Monster Library -->
+      <div class="page-col page-col--left">
+
+        <div class="enc-panel" id="partyPanel">
+          <h2>Party</h2>
+          <div id="partyRows"></div>
+          <div class="party-actions">
+            <button type="button" class="enc-btn enc-btn--secondary" id="addPlayerBtn">+ Add Player</button>
+            <div class="party-load-row">
+              <select id="partySelect" class="enc-select">
+                <option value="">Load Party…</option>
+              </select>
+              <button type="button" class="enc-btn enc-btn--secondary" id="loadPartyBtn">Load</button>
+            </div>
+            <button type="button" class="enc-btn enc-btn--secondary" id="savePartyBtn">Save Party</button>
+          </div>
+        </div>
+
+        <div class="enc-panel" id="monsterLibraryPanel">
+          <h2>Monster Library</h2>
+
+          <div class="monster-source-tabs">
+            <button type="button" class="source-tab is-active" data-source="mine" id="tabMine">My Creatures</button>
+            <button type="button" class="source-tab" data-source="community" id="tabCommunity">Community</button>
+          </div>
+
+          <div class="monster-filters">
+            <input type="search" id="monsterSearch" class="enc-input" placeholder="Search monsters…" autocomplete="off">
+
+            <div class="filter-row">
+              <label class="filter-mini-label">Level</label>
+              <input type="number" id="monsterLevelMin" class="enc-input enc-input--mini" min="0" max="10" placeholder="0">
+              <span>–</span>
+              <input type="number" id="monsterLevelMax" class="enc-input enc-input--mini" min="0" max="10" placeholder="10">
+            </div>
+
+            <div class="filter-row">
+              <label class="filter-mini-label">Role</label>
+              <div class="filter-pill-row" id="monsterRoleFilter">
+                <input type="radio" name="mRole" id="mRoleAny" value="" checked>
+                <label class="filter-pill" for="mRoleAny">Any</label>
+                <input type="radio" name="mRole" id="mRoleArtillerist" value="artillerist">
+                <label class="filter-pill" for="mRoleArtillerist">Artillerist</label>
+                <input type="radio" name="mRole" id="mRoleBrute" value="brute">
+                <label class="filter-pill" for="mRoleBrute">Brute</label>
+                <input type="radio" name="mRole" id="mRoleController" value="controller">
+                <label class="filter-pill" for="mRoleController">Controller</label>
+                <input type="radio" name="mRole" id="mRoleDefender" value="defender">
+                <label class="filter-pill" for="mRoleDefender">Defender</label>
+                <input type="radio" name="mRole" id="mRoleLeader" value="leader">
+                <label class="filter-pill" for="mRoleLeader">Leader</label>
+                <input type="radio" name="mRole" id="mRoleLurker" value="lurker">
+                <label class="filter-pill" for="mRoleLurker">Lurker</label>
+                <input type="radio" name="mRole" id="mRoleSkirmisher" value="skirmisher">
+                <label class="filter-pill" for="mRoleSkirmisher">Skirmisher</label>
+                <input type="radio" name="mRole" id="mRoleSupport" value="support">
+                <label class="filter-pill" for="mRoleSupport">Support</label>
+                <input type="radio" name="mRole" id="mRoleCaster" value="caster">
+                <label class="filter-pill" for="mRoleCaster">Caster</label>
+                <input type="radio" name="mRole" id="mRoleNone" value="none">
+                <label class="filter-pill" for="mRoleNone">None</label>
+              </div>
+            </div>
+
+            <div class="filter-row">
+              <label class="filter-mini-label">Power</label>
+              <div class="filter-pill-row" id="monsterPowerFilter">
+                <input type="radio" name="mPower" id="mPowerAny" value="" checked>
+                <label class="filter-pill" for="mPowerAny">Any</label>
+                <input type="radio" name="mPower" id="mPowerMinion" value="minion">
+                <label class="filter-pill" for="mPowerMinion">Minion</label>
+                <input type="radio" name="mPower" id="mPowerWeak" value="weak">
+                <label class="filter-pill" for="mPowerWeak">Weak</label>
+                <input type="radio" name="mPower" id="mPowerNormal" value="normal">
+                <label class="filter-pill" for="mPowerNormal">Normal</label>
+                <input type="radio" name="mPower" id="mPowerApex" value="apex">
+                <label class="filter-pill" for="mPowerApex">Apex</label>
+                <input type="radio" name="mPower" id="mPowerLegendary" value="legendary">
+                <label class="filter-pill" for="mPowerLegendary">Legendary</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="monsterLibraryList" class="monster-library-list">
+            <p class="enc-empty" id="monsterLibraryEmpty">Sign in to load creatures.</p>
+          </div>
+        </div>
+
+      </div><!-- end page-col--left -->
+
+      <!-- CENTER COLUMN: Slot canvas -->
+      <div class="page-col page-col--center">
+
+        <div class="enc-panel enc-panel--center" id="slotCanvas">
+          <section class="slot-section" id="partySlotSection">
+            <h3 class="slot-section-heading">Party</h3>
+            <div id="partySlots" class="slot-row slot-row--party"></div>
+            <p class="enc-empty" id="partySlotsEmpty">Add players in the left panel.</p>
+          </section>
+
+          <div class="slot-divider"></div>
+
+          <section class="slot-section" id="monsterSlotSection">
+            <h3 class="slot-section-heading">Monsters</h3>
+            <div id="monsterSlots" class="slot-row slot-row--monsters"></div>
+            <p class="enc-empty" id="monsterSlotsEmpty">Pick monsters from the library.</p>
+          </section>
+        </div>
+
+      </div><!-- end page-col--center -->
+
+      <!-- RIGHT COLUMN: Metadata + Budget + Save -->
+      <div class="page-col page-col--right">
+
+        <div class="enc-panel" id="metaPanel">
+          <h2>Encounter</h2>
+
+          <label class="enc-label" for="encounterName">Name <span class="enc-required">*</span></label>
+          <input type="text" id="encounterName" class="enc-input" placeholder="Encounter name">
+
+          <label class="enc-label" for="encounterDescription">Description</label>
+          <textarea id="encounterDescription" class="enc-input enc-textarea" rows="2" placeholder="Short description for the encounter list…"></textarea>
+
+          <label class="enc-label" for="encounterInfo">GM Notes</label>
+          <textarea id="encounterInfo" class="enc-input enc-textarea" rows="3" placeholder="Tactics, environment, secrets…"></textarea>
+
+          <label class="enc-label" for="encounterRewards">Rewards</label>
+          <textarea id="encounterRewards" class="enc-input enc-textarea" rows="2" placeholder="XP, loot, story hooks…"></textarea>
+        </div>
+
+        <div class="enc-panel" id="budgetPanel">
+          <h2>Budget</h2>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" id="budgetBar">
+              <div class="budget-fill" id="budgetFill" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="budget-labels" id="budgetLabels">
+            <span id="budgetDifficulty" class="budget-difficulty budget-difficulty--easy">Easy</span>
+            <span id="budgetNumbers">0 / 0 (0%)</span>
+          </div>
+          <div class="budget-legend">
+            <span class="legend-swatch legend-swatch--easy"></span>Easy &lt;75%
+            <span class="legend-swatch legend-swatch--fair"></span>Fair 75–125%
+            <span class="legend-swatch legend-swatch--hard"></span>Hard 125–175%
+            <span class="legend-swatch legend-swatch--deadly"></span>Deadly ≥175%
+          </div>
+        </div>
+
+        <div class="enc-panel" id="savePanel">
+          <label class="enc-checkbox-row">
+            <input type="checkbox" id="encounterPublic" checked>
+            <span>Make public</span>
+          </label>
+          <button type="button" class="save-action" id="saveEncounterBtn" disabled>Save Encounter</button>
+          <div id="saveStatus" class="save-status" aria-live="polite"></div>
+        </div>
+
+      </div><!-- end page-col--right -->
+
+    </div><!-- end page-columns -->
+
+    <!-- Save Party Modal -->
+    <dialog id="savePartyDialog" class="enc-dialog">
+      <form method="dialog">
+        <h3>Save Party</h3>
+        <label class="enc-label" for="savePartyName">Party name</label>
+        <input type="text" id="savePartyName" class="enc-input" placeholder="e.g. Tuesday Night Crew">
+        <div class="dialog-actions">
+          <button type="submit" id="savePartyConfirm" class="save-action">Save</button>
+          <button type="button" id="savePartyCancel" class="enc-btn enc-btn--secondary">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="encounters.js"></script>
+  </body>
+</html>
