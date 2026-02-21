@@ -17,7 +17,6 @@ const dom = {
   monsterLevelMin:  () => document.getElementById('monsterLevelMin'),
   monsterLevelMax:  () => document.getElementById('monsterLevelMax'),
   monsterLibList:   () => document.getElementById('monsterLibraryList'),
-  monsterLibEmpty:  () => document.getElementById('monsterLibraryEmpty'),
 
   // Center column — slots
   partySlots:          () => document.getElementById('partySlots'),

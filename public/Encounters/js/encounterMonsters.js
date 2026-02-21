@@ -36,33 +36,29 @@ export function applyFilters() {
 // ── Rendering ─────────────────────────────────────────────────────────────────
 
 export function renderMonsterLibrary() {
-  const list  = dom.monsterLibList();
-  const empty = dom.monsterLibEmpty();
+  const list = dom.monsterLibList();
   if (!list) return;
 
   list.innerHTML = '';
 
-  const source = ui.monsterSource === 'mine' ? ui.myCreatures : ui.communityCreatures;
+  const source   = ui.monsterSource === 'mine' ? ui.myCreatures : ui.communityCreatures;
   const filtered = applyClientFilters(source);
 
   if (filtered.length === 0) {
-    if (empty) {
-      empty.hidden = false;
-      if (!ui.currentUser && ui.monsterSource === 'mine') {
-        empty.textContent = 'Sign in to load your creatures.';
-      } else {
-        empty.textContent = 'No creatures match your filters.';
-      }
-      list.appendChild(empty);
+    // Build empty message fresh each time — the static DOM node gets detached by
+    // innerHTML='' and getElementById can't find detached nodes on the next render.
+    const msg = document.createElement('p');
+    msg.className = 'enc-empty';
+    if (!ui.currentUser && ui.monsterSource === 'mine') {
+      msg.textContent = 'Sign in to load your creatures.';
+    } else {
+      msg.textContent = 'No creatures match your filters.';
     }
+    list.appendChild(msg);
     return;
   }
 
-  if (empty) empty.hidden = true;
-
-  filtered.forEach(c => {
-    list.appendChild(buildLibCard(c));
-  });
+  filtered.forEach(c => list.appendChild(buildLibCard(c)));
 }
 
 function applyClientFilters(creatures) {
