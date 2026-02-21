@@ -748,10 +748,15 @@ body {
   padding: 1.5rem;
   box-shadow: 0 24px 56px rgba(0,0,0,0.18);
   min-width: 280px;
+  background: #ffffff;
+}
+
+/* display:flex only when open — avoids overriding the browser's display:none
+   for a closed <dialog>, which would make it visible on page load */
+.enc-dialog[open] {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: #ffffff;
 }
 
 .enc-dialog h3 {
