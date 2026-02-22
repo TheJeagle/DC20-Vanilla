@@ -359,9 +359,11 @@ function buildTurnControls(container, refreshBench) {
     nextBtn.className = 'combat-turn-btn combat-turn-btn--next';
     nextBtn.textContent = 'Next Turn →';
     nextBtn.addEventListener('click', () => {
-      resetCombatantAp(state.combat[state.currentTurnIdx]); // refill outgoing combatant
+      const outgoing = state.combat[state.currentTurnIdx];
+      resetCombatantAp(outgoing);
+      if (outgoing?.type === 'monster') outgoing.expanded = false;
       state.currentTurnIdx = (state.currentTurnIdx + 1) % state.combat.length;
-      resetCombatantAp(state.combat[state.currentTurnIdx]); // reset incoming combatant
+      resetCombatantAp(state.combat[state.currentTurnIdx]);
       renderCombat(container, refreshBench);
     });
     bar.appendChild(nextBtn);
