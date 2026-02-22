@@ -271,8 +271,12 @@ function buildCombatCard(combatant, index, container, refreshBench) {
       card.appendChild(apRowObj.el);
 
       const onApSpend = (cost) => {
-        combatant.currentAp = Math.max(0, combatant.currentAp - cost);
-        apRowObj.update();
+        if (combatant.currentAp >= cost) {
+          combatant.currentAp -= cost;
+          apRowObj.update();
+        } else {
+          apRowObj.flash();
+        }
       };
 
       const toggleBtn = document.createElement('button');
@@ -338,8 +342,9 @@ function buildTurnControls(container, refreshBench) {
     nextBtn.className = 'combat-turn-btn combat-turn-btn--next';
     nextBtn.textContent = 'Next Turn →';
     nextBtn.addEventListener('click', () => {
+      resetCombatantAp(state.combat[state.currentTurnIdx]); // refill outgoing combatant
       state.currentTurnIdx = (state.currentTurnIdx + 1) % state.combat.length;
-      resetCombatantAp(state.combat[state.currentTurnIdx]);
+      resetCombatantAp(state.combat[state.currentTurnIdx]); // reset incoming combatant
       renderCombat(container, refreshBench);
     });
     bar.appendChild(nextBtn);
@@ -387,12 +392,26 @@ function buildApRow(combatant) {
     for (let i = 0; i < max; i++) {
       const pip = document.createElement('span');
       pip.className = 'combat-ap-pip' + (i < cur ? ' combat-ap-pip--filled' : '');
+      pip.title = `Set AP to ${i + 1}`;
+      pip.addEventListener('click', () => {
+        combatant.currentAp = i + 1;
+        update();
+      });
       pipsEl.appendChild(pip);
     }
   }
 
+  function flash() {
+    pipsEl.classList.remove('combat-ap-pips--flash');
+    void pipsEl.offsetWidth; // force reflow to restart animation
+    pipsEl.classList.add('combat-ap-pips--flash');
+    pipsEl.addEventListener('animationend', () => {
+      pipsEl.classList.remove('combat-ap-pips--flash');
+    }, { once: true });
+  }
+
   update();
-  return { el: row, update };
+  return { el: row, update, flash };
 }
 
 // ── HP slider + number input (synced) ─────────────────────────────────────────

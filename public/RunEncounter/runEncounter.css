@@ -799,6 +799,21 @@ details[open] .run-accordion-summary::before {
   border-color: var(--enc-accent);
 }
 
+.combat-ap-pip {
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.combat-ap-pip:hover { transform: scale(1.25); }
+
+@keyframes ap-flash-red {
+  0%, 100% { background: transparent; }
+  40%       { background: rgba(220, 53, 69, 0.45); border-radius: 0.4rem; }
+}
+
+.combat-ap-pips--flash {
+  animation: ap-flash-red 0.45s ease;
+}
+
 /* ── Clickable actions (combat mode) ─────────────────────── */
 .statblock-action-item.action-clickable {
   cursor: pointer;
