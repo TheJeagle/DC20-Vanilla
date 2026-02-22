@@ -6,6 +6,7 @@
 import { state } from './runState.js';
 import { getDragId } from './runBench.js';
 import { buildStatblockEl } from './runStatblock.js';
+import { computeScaledStats, applyNumericDeltas } from '../../CreateCreature/js/createCreatureStats.js';
 
 // ── Module-level drag state ───────────────────────────────────────────────────
 
@@ -142,6 +143,69 @@ function reorderCombat(fromIdx, toIdx) {
   state.combat.splice(dest, 0, moved);
 }
 
+// ── Level scaling ─────────────────────────────────────────────────────────────
+
+/**
+ * Return a deep-cloned creature with all stats recomputed at targetLevel.
+ * applyNumericDeltas operates on top-level fields, so we use a flat proxy
+ * object and then assemble creature.stats from the result.
+ */
+function rescaleCreature(creature, targetLevel) {
+  const c  = JSON.parse(JSON.stringify(creature)); // deep clone — never mutate state.creatures
+  const cm = Math.ceil(targetLevel / 2);
+
+  const scaled = computeScaledStats({
+    level:         targetLevel,
+    role:          c.role,
+    power:         c.power,
+    size:          c.size,
+    type:          c.type,
+    deltas:        c.deltas,
+    combatMastery: cm,
+  });
+
+  // applyNumericDeltas reads/writes top-level fields (HP, PD, …) so use a flat proxy
+  const flat = {
+    HP:     scaled.HP,
+    PD:     scaled.PD,
+    AD:     scaled.AD,
+    damage: scaled.damage,
+    check:  scaled.check,
+    saveDC: scaled.saveDC,
+    AP:     scaled.AP,
+    speed:  scaled.speed,
+    deltas: scaled.deltas,
+  };
+  applyNumericDeltas(flat);
+
+  const pd = flat.PD;
+  const ad = flat.AD;
+  c.level = targetLevel;
+  c.stats = {
+    HP:       flat.HP,
+    PD:       pd,
+    PDHeavy:  pd + 5,
+    PDBrutal: pd + 10,
+    AD:       ad,
+    ADHeavy:  ad + 5,
+    ADBrutal: ad + 10,
+    damage:   flat.damage,
+    check:    flat.check,
+    saveDC:   flat.saveDC,
+    AP:       flat.AP,
+    speed:    flat.speed,
+    CM:       cm,
+  };
+  c.attributes = {
+    values:         scaled.attributes,
+    saves:          scaled.attributeSaves,
+    priority:       scaled.attributePriority,
+    primeAttribute: scaled.primeAttribute,
+  };
+  // featureActions/featureReactions/featurePassives remain as stored
+  return c;
+}
+
 // ── Add combatant from bench ──────────────────────────────────────────────────
 
 function addCombatant(benchItem) {
@@ -158,9 +222,16 @@ function addCombatant(benchItem) {
       sourceData: p,
     });
   } else {
-    const members  = benchItem.isGroup ? benchItem.sourceData : [benchItem.sourceData];
-    const first    = members[0];
-    const creature = state.creatures[first.creatureId] || null;
+    const members = benchItem.isGroup ? benchItem.sourceData : [benchItem.sourceData];
+    const first   = members[0];
+    let creature  = state.creatures[first.creatureId] || null;
+    if (creature) {
+      const baseLevel      = creature.level ?? 0;
+      const effectiveLevel = Math.max(0, (first.baseLevel ?? baseLevel) + (first.levelDelta ?? 0));
+      if (effectiveLevel !== baseLevel) {
+        creature = rescaleCreature(creature, effectiveLevel);
+      }
+    }
     const stats    = creature?.stats             || {};
     const attrVals = creature?.attributes?.values || {};  // keys: Mig, Agi, Cha, Int
     const maxHp    = stats.HP ?? 0;
@@ -185,6 +256,7 @@ function addCombatant(benchItem) {
       expanded:   true,
       sourceData: benchItem.sourceData,
       creatureId: first.creatureId,
+      creature,         // rescaled (or original) creature doc for statblock rendering
     });
   }
 }
@@ -269,7 +341,7 @@ function buildCombatCard(combatant, index, container, refreshBench) {
 
     card.appendChild(buildHpRow(combatant));
 
-    const creature = state.creatures[combatant.creatureId];
+    const creature = combatant.creature ?? state.creatures[combatant.creatureId];
     if (creature) {
       // AP pips — always visible so GM can track spending during the turn
       const apRowObj = buildApRow(combatant);
