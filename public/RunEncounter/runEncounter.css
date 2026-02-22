@@ -857,6 +857,27 @@ details[open] .run-accordion-summary::before {
   box-shadow: 0 0 0 2px #f0a500, 0 4px 16px rgba(240,165,0,0.18);
 }
 
+.combat-card-next-btn {
+  appearance: none;
+  border: none;
+  border-radius: 0.65rem;
+  padding: 0.6rem 1rem;
+  width: 100%;
+  background: linear-gradient(135deg, #f0a500, #c88400);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(240,165,0,0.3);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  margin-top: 0.25rem;
+}
+
+.combat-card-next-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(240,165,0,0.4);
+}
+
 /* ── AP pips ─────────────────────────────────────────────── */
 .combat-ap-row {
   display: flex;

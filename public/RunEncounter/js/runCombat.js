@@ -95,6 +95,12 @@ export function renderCombat(container, refreshBench) {
     const card = buildCombatCard(combatant, i, container, refreshBench);
     if (state.combatActive && i === state.currentTurnIdx) {
       card.classList.add('is-active-turn');
+      const cardNextBtn = document.createElement('button');
+      cardNextBtn.type = 'button';
+      cardNextBtn.className = 'combat-card-next-btn';
+      cardNextBtn.textContent = 'Next Turn →';
+      cardNextBtn.addEventListener('click', () => advanceTurn(container, refreshBench));
+      card.appendChild(cardNextBtn);
     }
     container.appendChild(card);
   });
@@ -106,6 +112,19 @@ export function renderCombat(container, refreshBench) {
         ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
   }
+}
+
+// ── Turn advancement ──────────────────────────────────────────────────────────
+
+function advanceTurn(container, refreshBench) {
+  const outgoing = state.combat[state.currentTurnIdx];
+  resetCombatantAp(outgoing);
+  if (outgoing?.type === 'monster') outgoing.expanded = false;
+  state.currentTurnIdx = (state.currentTurnIdx + 1) % state.combat.length;
+  const incoming = state.combat[state.currentTurnIdx];
+  resetCombatantAp(incoming);
+  if (incoming?.type === 'monster') { incoming.expanded = true; incoming.dodgeState = 0; }
+  renderCombat(container, refreshBench);
 }
 
 // ── Reorder helpers ───────────────────────────────────────────────────────────
@@ -432,16 +451,7 @@ function buildTurnControls(container, refreshBench) {
     nextBtn.type = 'button';
     nextBtn.className = 'combat-turn-btn combat-turn-btn--next';
     nextBtn.textContent = 'Next Turn →';
-    nextBtn.addEventListener('click', () => {
-      const outgoing = state.combat[state.currentTurnIdx];
-      resetCombatantAp(outgoing);
-      if (outgoing?.type === 'monster') outgoing.expanded = false;
-      state.currentTurnIdx = (state.currentTurnIdx + 1) % state.combat.length;
-      const incoming = state.combat[state.currentTurnIdx];
-      resetCombatantAp(incoming);
-      if (incoming?.type === 'monster') { incoming.expanded = true; incoming.dodgeState = 0; }
-      renderCombat(container, refreshBench);
-    });
+    nextBtn.addEventListener('click', () => advanceTurn(container, refreshBench));
     bar.appendChild(nextBtn);
 
     const endBtn = document.createElement('button');
