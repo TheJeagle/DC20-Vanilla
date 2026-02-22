@@ -181,6 +181,7 @@ function addCombatant(benchItem) {
       currentInt: attrVals.Int ?? 0,
       maxAp,
       currentAp:  maxAp,
+      dodgeState: 0,   // 0 = none, 1 = dodging, 2 = full dodge
       expanded:   true,
       sourceData: benchItem.sourceData,
       creatureId: first.creatureId,
@@ -262,6 +263,10 @@ function buildCombatCard(combatant, index, container, refreshBench) {
 
   // ── Monster ──────────────────────────────────────────────
   } else {
+    // Dodge status banner — sits between header and HP row
+    const dodgeObj = buildDodgeIndicator(combatant);
+    card.appendChild(dodgeObj.el);
+
     card.appendChild(buildHpRow(combatant));
 
     const creature = state.creatures[combatant.creatureId];
@@ -279,6 +284,18 @@ function buildCombatCard(combatant, index, container, refreshBench) {
         }
       };
 
+      // Dodge cycles 0→1→2→0; costs 1 AP each activation step
+      const onDodge = () => {
+        if (combatant.currentAp >= 1) {
+          combatant.currentAp -= 1;
+          apRowObj.update();
+          combatant.dodgeState = combatant.dodgeState >= 2 ? 0 : combatant.dodgeState + 1;
+          dodgeObj.update();
+        } else {
+          apRowObj.flash();
+        }
+      };
+
       const toggleBtn = document.createElement('button');
       toggleBtn.type = 'button';
       toggleBtn.className = 'combat-expand-btn';
@@ -290,7 +307,7 @@ function buildCombatCard(combatant, index, container, refreshBench) {
 
       const buildSb = () => {
         sbWrapper.innerHTML = '';
-        sbWrapper.appendChild(buildStatblockEl(creature, combatant, { onApSpend }));
+        sbWrapper.appendChild(buildStatblockEl(creature, combatant, { onApSpend, onDodge }));
       };
 
       if (combatant.expanded) buildSb();
@@ -366,8 +383,44 @@ function buildTurnControls(container, refreshBench) {
 
 function resetCombatantAp(combatant) {
   if (combatant?.type === 'monster') {
-    combatant.currentAp = combatant.maxAp;
+    combatant.currentAp  = combatant.maxAp;
+    combatant.dodgeState = 0; // auto-clear dodge at the start of their turn
   }
+}
+
+// ── Dodge status indicator ─────────────────────────────────────────────────────
+
+const DODGE_MESSAGES = [
+  null,
+  'Dodging! Next attack against me has DisAdvantage!',
+  'Full Dodge! All attacks against me have DisAdvantage!',
+];
+
+function buildDodgeIndicator(combatant) {
+  const el = document.createElement('div');
+  el.className = 'combat-dodge-indicator';
+  el.title = 'Click to dismiss';
+
+  function update() {
+    const msg = DODGE_MESSAGES[combatant.dodgeState] ?? null;
+    if (!msg) {
+      el.hidden = true;
+      el.textContent = '';
+      el.removeAttribute('data-state');
+    } else {
+      el.hidden = false;
+      el.textContent = msg;
+      el.dataset.state = combatant.dodgeState;
+    }
+  }
+
+  el.addEventListener('click', () => {
+    combatant.dodgeState = 0;
+    update();
+  });
+
+  update();
+  return { el, update };
 }
 
 // ── AP pip row ─────────────────────────────────────────────────────────────────

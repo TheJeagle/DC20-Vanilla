@@ -22,7 +22,7 @@ const ATTR_DEFS = [
  * @param {object|null} combatant - run-encounter combatant state (optional)
  * @returns {HTMLDivElement}
  */
-export function buildStatblockEl(creature, combatant = null, { onApSpend = null } = {}) {
+export function buildStatblockEl(creature, combatant = null, { onApSpend = null, onDodge = null } = {}) {
   const stats    = creature.stats     || {};
   const attrVals = creature.attributes?.values || {}; // keys: Mig, Agi, Cha, Int
   const saves    = creature.attributes?.saves  || {}; // keys: Mig, Agi, Cha, Int
@@ -209,7 +209,7 @@ export function buildStatblockEl(creature, combatant = null, { onApSpend = null 
 
   // ── Actions ─────────────────────────────────────────────
   if (actions.length > 0) {
-    el.appendChild(buildActionsSection('Actions', actions, onApSpend, stats.check ?? null));
+    el.appendChild(buildActionsSection('Actions', actions, onApSpend, stats.check ?? null, onDodge));
   }
 
   // ── Reactions ───────────────────────────────────────────
@@ -290,7 +290,7 @@ const COMMON_ACTIONS = ['Move', 'Advantage', 'Dodge', 'Grapple', 'Hide', 'Help',
 
 // ── Actions section ───────────────────────────────────────────────────────────
 
-function buildActionsSection(title, items, onApSpend, checkBonus = null) {
+function buildActionsSection(title, items, onApSpend, checkBonus = null, onDodge = null) {
   const sec = document.createElement('div');
   sec.className = 'statblock-actions-section';
 
@@ -320,7 +320,12 @@ function buildActionsSection(title, items, onApSpend, checkBonus = null) {
       btn.className = 'statblock-common-btn';
       btn.textContent = name;
       btn.title = '1 AP';
-      if (onApSpend) {
+      if (name === 'Dodge' && onDodge) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          onDodge();
+        });
+      } else if (onApSpend) {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           onApSpend(1);

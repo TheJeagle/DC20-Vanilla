@@ -799,6 +799,40 @@ details[open] .run-accordion-summary::before {
 }
 .combat-turn-btn--end:hover { background: rgba(192,57,43,0.1); }
 
+/* ── Dodge status indicator ──────────────────────────────── */
+@keyframes dodge-appear {
+  from { opacity: 0; transform: translateY(-5px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+.combat-dodge-indicator {
+  background: linear-gradient(135deg, rgba(243,156,18,0.18), rgba(243,156,18,0.08));
+  border: 1.5px solid rgba(243,156,18,0.65);
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-style: italic;
+  color: #7d4e00;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(243,156,18,0.18);
+  animation: dodge-appear 0.2s ease;
+  user-select: none;
+  transition: opacity 0.15s;
+}
+
+.combat-dodge-indicator:hover {
+  opacity: 0.7;
+}
+
+.combat-dodge-indicator[data-state="2"] {
+  background: linear-gradient(135deg, rgba(243,156,18,0.3), rgba(243,156,18,0.16));
+  border-color: rgba(243,156,18,0.9);
+  box-shadow: 0 3px 14px rgba(243,156,18,0.3);
+  color: #5c3600;
+}
+
 /* ── Active turn card highlight ──────────────────────────── */
 .combat-card.is-active-turn {
   background: #fffbef;
