@@ -416,7 +416,7 @@ function buildTurnControls(container, refreshBench) {
       state.currentTurnIdx = 0;
       const first = state.combat[0];
       resetCombatantAp(first);
-      if (first?.type === 'monster') first.expanded = true;
+      if (first?.type === 'monster') { first.expanded = true; first.dodgeState = 0; }
       renderCombat(container, refreshBench);
     });
     bar.appendChild(startBtn);
@@ -439,7 +439,7 @@ function buildTurnControls(container, refreshBench) {
       state.currentTurnIdx = (state.currentTurnIdx + 1) % state.combat.length;
       const incoming = state.combat[state.currentTurnIdx];
       resetCombatantAp(incoming);
-      if (incoming?.type === 'monster') incoming.expanded = true;
+      if (incoming?.type === 'monster') { incoming.expanded = true; incoming.dodgeState = 0; }
       renderCombat(container, refreshBench);
     });
     bar.appendChild(nextBtn);
@@ -461,8 +461,7 @@ function buildTurnControls(container, refreshBench) {
 
 function resetCombatantAp(combatant) {
   if (combatant?.type === 'monster') {
-    combatant.currentAp  = combatant.maxAp;
-    combatant.dodgeState = 0; // auto-clear dodge at the start of their turn
+    combatant.currentAp = combatant.maxAp;
   }
 }
 
