@@ -177,10 +177,6 @@ details[open] .run-accordion-summary::before {
   color: #4a2d6c;
 }
 
-#combatPanel{
-  height: 400px;
-}
-
 .run-bench-hint {
   margin: 0;
   font-size: 0.78rem;
@@ -304,14 +300,12 @@ details[open] .run-accordion-summary::before {
 }
 
 /* ── Combat panel ────────────────────────────────────────── */
-.run-panel--combat {
-  min-height: 480px;
-}
 
 .combat-panel {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-height: 480px;
 }
 
 .combat-panel.drag-over {
