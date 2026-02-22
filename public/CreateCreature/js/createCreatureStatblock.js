@@ -100,9 +100,11 @@ function formatDisplayValue(value, field) {
   return toDisplayInteger(value);
 }
 
-function hasHalfDamage(segments) {
+function hasHalfDamage(segments, baseDamage) {
   return segments.some((segment) => {
-    const amount = Number(segment?.amount);
+    const amount = segment.useBase !== undefined
+      ? (segment.useBase ? baseDamage : 0) + (Number(segment.modifier) || 0)
+      : Number(segment?.amount);
     if (!Number.isFinite(amount)) return false;
     const remainder = Math.abs(amount % 1);
     return Math.abs(remainder - 0.5) < 1e-9;
@@ -262,7 +264,7 @@ function createActionBadges(action) {
   return row;
 }
 
-function createActionCardElement(action, { showTrigger = false } = {}) {
+function createActionCardElement(action, { showTrigger = false, baseDamage = 0 } = {}) {
   const wrapper = document.createElement('div');
   wrapper.className = 'statblock-action-item';
   wrapper.dataset.featureId = action.id;
@@ -336,11 +338,14 @@ function createActionCardElement(action, { showTrigger = false } = {}) {
     const showHeavyHitBonus =
       actionTypeLabel.includes('attack') &&
       (actionTypeLabel.includes('melee') || actionTypeLabel.includes('ranged')) &&
-      hasHalfDamage(segments);
+      hasHalfDamage(segments, baseDamage);
     appendText(attackLine, ' ');
     segments.forEach((segment, index) => {
       if (index > 0) appendText(attackLine, ' + ');
-      appendBoldField(attackLine, segment.amount ?? 0, 'damageAmount');
+      const raw = segment.useBase !== undefined
+        ? (segment.useBase ? baseDamage : 0) + (Number(segment.modifier) || 0)
+        : Number(segment.amount) || 0;
+      appendBoldField(attackLine, Math.floor(raw), 'damageAmount');
       if (segment.type) {
         appendText(attackLine, ' ');
         appendBoldField(attackLine, segment.type, 'damageType');
@@ -454,7 +459,7 @@ function createActionCardElement(action, { showTrigger = false } = {}) {
   return wrapper;
 }
 
-function renderActionList(target, actions, { emptyMessage = 'No actions available.', showTrigger = false } = {}) {
+function renderActionList(target, actions, { emptyMessage = 'No actions available.', showTrigger = false, baseDamage = 0 } = {}) {
   if (!target) return;
   target.innerHTML = '';
 
@@ -467,7 +472,7 @@ function renderActionList(target, actions, { emptyMessage = 'No actions availabl
   }
 
   actions.forEach((action) => {
-    const card = createActionCardElement(action, { showTrigger });
+    const card = createActionCardElement(action, { showTrigger, baseDamage });
     if (card) target.appendChild(card);
   });
 }
@@ -506,6 +511,7 @@ function renderActionSummary() {
 
   renderActionList(statblockActionsList, creature.featureActions, {
     emptyMessage: 'No actions available.',
+    baseDamage,
   });
 
   if (statblockReactionsSection && statblockReactionsList) {
@@ -518,6 +524,7 @@ function renderActionSummary() {
       renderActionList(statblockReactionsList, reactions, {
         emptyMessage: 'No reactions available.',
         showTrigger: true,
+        baseDamage,
       });
     }
   }

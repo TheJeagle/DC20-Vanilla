@@ -495,10 +495,14 @@ function createActionCard(action, creatureContext, options = {}) {
 
   const segments = Array.isArray(action?.damage) ? action.damage : [];
   if (segments.length) {
+    const baseDmg = Number(creatureContext?.stats?.damage) || 0;
     appendText(attackLine, ' ');
     segments.forEach((segment, index) => {
       if (index > 0) appendText(attackLine, ' + ');
-      appendBoldField(attackLine, segment.amount ?? 0, 'damageAmount');
+      const raw = segment.useBase !== undefined
+        ? (segment.useBase ? baseDmg : 0) + (Number(segment.modifier) || 0)
+        : Number(segment.amount) || 0;
+      appendBoldField(attackLine, Math.floor(raw), 'damageAmount');
       if (segment.type) {
         appendText(attackLine, ' ');
         appendBoldField(attackLine, segment.type, 'damageType');

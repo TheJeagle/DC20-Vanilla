@@ -180,30 +180,24 @@ function buildAction(creature, feature) {
   const mappedSegments = segments.length
     ? segments
         .map((segment) => {
-          const type = segment.type ?? '';
-          let amount = 0;
-
-          if (segment.useBase) {
-            amount += baseDamage;
-          }
-
-          if (typeof segment.modifier === 'number') {
-            amount += segment.modifier;
-          }
-
+          // Explicit fixed amount (not relative to creature damage) — store as-is
           if (typeof segment.amount === 'number') {
-            amount = segment.amount;
+            return { amount: segment.amount, type: segment.type ?? '' };
           }
-
-          return { amount, type };
+          // Delta-based: preserve useBase + modifier so renderers compute from live stats
+          return {
+            useBase:  Boolean(segment.useBase),
+            modifier: typeof segment.modifier === 'number' ? segment.modifier : 0,
+            type:     segment.type ?? '',
+          };
         })
-        .filter((segment) => segment.amount !== 0 || segment.type)
+        .filter((seg) => seg.useBase || (seg.modifier ?? 0) !== 0 || seg.type || seg.amount != null)
     : [];
   const damage =
     mappedSegments.length > 0
       ? mappedSegments
       : isAttackType
-        ? [{ amount: baseDamage, type: effects.damageType ?? '' }]
+        ? [{ useBase: true, modifier: 0, type: effects.damageType ?? '' }]
         : [];
 
   const check = effects.check

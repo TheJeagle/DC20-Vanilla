@@ -420,13 +420,16 @@ function buildActionItem(action, onApSpend) {
       if (locationPart) parts.push(locationPart);
     }
 
-    // damage
-    const segments = Array.isArray(action.damage) ? action.damage.filter(d => d.amount) : [];
+    // damage — new format: {useBase, modifier, type}; old format fallback: {amount, type}
+    const segments = Array.isArray(action.damage) ? action.damage : [];
     if (segments.length) {
+      const baseDmg = Number(stats.damage) || 0;
       let heavyBonus = 0;
       const dmgStr = segments
         .map(d => {
-          const raw  = Number(d.amount) || 0;
+          const raw = d.useBase !== undefined
+            ? (d.useBase ? baseDmg : 0) + (Number(d.modifier) || 0)
+            : Number(d.amount) || 0;
           const base = Math.floor(raw);
           heavyBonus += Math.ceil(raw) - base;
           return d.type ? `${base} ${cap(d.type)}` : String(base);
