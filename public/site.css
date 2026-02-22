@@ -175,7 +175,7 @@
 .nav-dropdown-menu {
   display: none;
   position: absolute;
-  top: calc(100% + 10px);
+  top: 100%;
   right: 0;
   background: var(--nav-bg);
   border: 1px solid var(--nav-border);
@@ -183,6 +183,7 @@
   box-shadow: var(--nav-shadow);
   min-width: 175px;
   padding: 6px;
+  padding-top: 16px;
   z-index: 200;
   flex-direction: column;
 }
