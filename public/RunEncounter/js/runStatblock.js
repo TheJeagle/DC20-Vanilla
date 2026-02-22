@@ -67,7 +67,7 @@ export function buildStatblockEl(creature, combatant = null, { onApSpend = null,
     appendStaticVital(vitalsRow,  'Speed',   stats.speed   ?? '—');
     appendStaticVital(vitalsRow,  'AP',      stats.AP      ?? '—');
     appendStaticVital(vitalsRow,  'Save DC', stats.saveDC  ?? '—');
-    appendStaticVital(vitalsRow,  'Damage',  stats.damage  ?? '—');
+    appendStaticVital(vitalsRow,  'Damage',  formatDamage(stats.damage));
     el.appendChild(vitalsRow);
   } else {
     const v1 = document.createElement('div');
@@ -221,6 +221,14 @@ export function buildStatblockEl(creature, combatant = null, { onApSpend = null,
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatDamage(raw) {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return '—';
+  const base  = Math.floor(n);
+  const heavy = Math.ceil(n) - base;
+  return heavy > 0 ? `${base} (+${heavy} heavy)` : String(base);
+}
 
 function cap(str) {
   if (!str) return '';
