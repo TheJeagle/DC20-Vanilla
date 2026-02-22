@@ -726,15 +726,84 @@
         opacity: 0.75;
       }
 
-      .promise-section {
-        border-radius: 26px;
-        padding: clamp(26px, 5vw, 42px);
+      .enc-tools-section {
+        display: grid;
+        gap: 28px;
+      }
+
+      .enc-tools-intro {
+        display: grid;
+        gap: 10px;
+      }
+
+      .enc-tools-intro p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 1.05rem;
+      }
+
+      .enc-tools-grid {
+        display: grid;
+        gap: clamp(16px, 3vw, 24px);
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+
+      .enc-tool-card {
+        border-radius: 22px;
+        padding: clamp(22px, 3vw, 30px);
+        background: rgba(255, 255, 255, 0.94);
         border: 1px solid rgba(142, 68, 173, 0.18);
-        background: linear-gradient(130deg, rgba(142, 68, 173, 0.2), rgba(255, 255, 255, 0.95));
-        text-align: center;
+        box-shadow: 0 16px 36px rgba(82, 63, 143, 0.09);
         display: grid;
         gap: 12px;
-        box-shadow: 0 18px 42px rgba(82, 63, 143, 0.12);
+        align-content: start;
+      }
+
+      .enc-tool-card h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #3a2750;
+      }
+
+      .enc-tool-card p {
+        margin: 0;
+        color: rgba(52, 52, 52, 0.78);
+        line-height: 1.55;
+        font-size: 0.97rem;
+      }
+
+      .enc-tool-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.92rem;
+        color: var(--accent);
+        padding: 9px 18px;
+        border-radius: 999px;
+        background: rgba(142, 68, 173, 0.1);
+        border: 1px solid rgba(142, 68, 173, 0.22);
+        transition: transform 0.16s ease, box-shadow 0.16s ease;
+        justify-self: start;
+      }
+
+      .enc-tool-link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 22px rgba(142, 68, 173, 0.2);
+      }
+
+      .enc-tool-link--primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        color: #ffffff;
+        border: none;
+        box-shadow: 0 10px 24px rgba(142, 68, 173, 0.25);
+      }
+
+      .enc-tool-link--primary:hover {
+        box-shadow: 0 14px 30px rgba(142, 68, 173, 0.35);
       }
 
       footer {
@@ -792,7 +861,7 @@
           <ul class="value-props">
             <li><strong>Adaptive scaling:</strong> Generate balanced stats for any level and party size in moments.</li>
             <li><strong>Premade feature library:</strong> Mix and match abilities to craft memorable monsters without starting from scratch.</li>
-            <li><strong>Coming soon:</strong> Encounter creator to benchmark fights and scale them to your party automatically.</li>
+            <li><strong>Encounter tools:</strong> Build balanced fights, save them to your library, then run live combat with a full stat tracker.</li>
           </ul>
           <div class="cta-group">
             <a class="cta-primary" href="./CreateCreature/createCreature.html">Try it yourself — build a creature</a>
@@ -941,13 +1010,40 @@
         </article>
       </section>
 
-      <section class="promise-section" aria-labelledby="encounterHeading">
-        <h2 id="encounterHeading">Featured Encounters Coming Soon</h2>
-        <p>
-          We’re curating encounter packs that highlight player-tested monsters and showcase the new
-          encounter balancer. Expect themed lineups, reward hooks, and suggested tweaks for every
-          tier.
-        </p>
+      <section class="enc-tools-section" aria-labelledby="encounterToolsHeading">
+        <div class="enc-tools-intro">
+          <h2 id="encounterToolsHeading">Encounter Tools</h2>
+          <p>
+            Build balanced fights, track them live at the table, and keep your whole encounter
+            library in one place — all for free.
+          </p>
+        </div>
+        <div class="enc-tools-grid">
+          <div class="enc-tool-card">
+            <h3>Encounter Builder</h3>
+            <p>
+              Add monsters from your creature library, adjust levels and power tiers, and see the
+              difficulty balance against your party in real time. Save encounters to reuse or share.
+            </p>
+            <a class="enc-tool-link enc-tool-link--primary" href="./Encounters/encounters.html">Build an Encounter</a>
+          </div>
+          <div class="enc-tool-card">
+            <h3>My Encounters</h3>
+            <p>
+              Browse all your saved encounters at a glance. Expand any row to see the full party,
+              monster roster, and budget breakdown — then edit, run, or delete with one click.
+            </p>
+            <a class="enc-tool-link" href="./MyEncounters/myEncounters.html">View My Encounters</a>
+          </div>
+          <div class="enc-tool-card">
+            <h3>Run Encounter</h3>
+            <p>
+              Drag party members and monsters onto the combat tracker. Edit HP, PD, AD, and
+              attributes on the fly, with full statblocks expanding inline whenever you need them.
+            </p>
+            <a class="enc-tool-link" href="./MyEncounters/myEncounters.html">Go to My Encounters</a>
+          </div>
+        </div>
       </section>
     </main>
 
