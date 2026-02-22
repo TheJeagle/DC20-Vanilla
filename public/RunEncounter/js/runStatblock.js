@@ -1,17 +1,31 @@
 /**
  * runStatblock.js
  * Build a statblock DOM element from a decoded creature doc.
- * Returns a <div> with .statblock CSS classes (styles in runEncounter.css).
+ *
+ * When `combatant` is provided (run-encounter mode):
+ *  - PD and AD render as editable inputs wired to combatant state
+ *  - Mig / Agi / Cha / Int render as editable inputs
+ *  - HP is NOT shown here (it lives in the card header's slider row)
+ *
+ * Attribute keys in the Firestore doc are capitalised: Mig, Agi, Cha, Int.
  */
 
+const ATTR_DEFS = [
+  { dataKey: 'Mig', label: 'Might',        combatKey: 'currentMig' },
+  { dataKey: 'Agi', label: 'Agility',      combatKey: 'currentAgi' },
+  { dataKey: 'Cha', label: 'Charisma',     combatKey: 'currentCha' },
+  { dataKey: 'Int', label: 'Intelligence', combatKey: 'currentInt' },
+];
+
 /**
- * @param {object} creature - VanillaCreatures document data
+ * @param {object}      creature  - VanillaCreatures document data
+ * @param {object|null} combatant - run-encounter combatant state (optional)
  * @returns {HTMLDivElement}
  */
-export function buildStatblockEl(creature) {
+export function buildStatblockEl(creature, combatant = null) {
   const stats    = creature.stats     || {};
-  const attrs    = creature.attributes?.values || {};
-  const saves    = creature.attributes?.saves  || {};
+  const attrVals = creature.attributes?.values || {}; // keys: Mig, Agi, Cha, Int
+  const saves    = creature.attributes?.saves  || {}; // keys: Mig, Agi, Cha, Int
   const traits   = creature.traits    || {};
   const passives  = creature.featurePassives  || [];
   const actions   = creature.featureActions   || [];
@@ -20,50 +34,66 @@ export function buildStatblockEl(creature) {
   const el = document.createElement('div');
   el.className = 'statblock statblock--condensed';
 
-  // Name
+  // ── Name ────────────────────────────────────────────────
   const nameEl = document.createElement('div');
   nameEl.className = 'statblock-name';
   nameEl.textContent = creature.name || 'Unknown';
   el.appendChild(nameEl);
 
-  // Info line
+  // ── Info line ───────────────────────────────────────────
   const info = document.createElement('div');
   info.className = 'statblock-info';
   const infoParts = [];
   if (creature.size)  infoParts.push(cap(creature.size));
   if (creature.type)  infoParts.push(cap(creature.type));
-  if (creature.level !== undefined) infoParts.push(`Lv${creature.level}`);
-  if (creature.power) infoParts.push(cap(creature.power));
-  if (creature.role)  infoParts.push(cap(creature.role));
+  if (creature.level !== undefined) infoParts.push(`Level ${creature.level}`);
+  if (creature.power && creature.power !== 'normal') infoParts.push(cap(creature.power));
+  if (creature.role && creature.role !== 'none')     infoParts.push(cap(creature.role));
   info.textContent = infoParts.join(' · ');
   el.appendChild(info);
 
   el.appendChild(makeDivider());
 
-  // Vitals row 1: HP, PD, AD
-  const vitals1 = document.createElement('div');
-  vitals1.className = 'statblock-vitals';
-  appendVital(vitals1, 'HP',    stats.HP  ?? '—');
-  appendVital(vitals1, 'PD',    stats.PD  !== undefined
-    ? `${stats.PD} / ${stats.PDHeavy} / ${stats.PDBrutal}` : '—');
-  appendVital(vitals1, 'AD',    stats.AD  !== undefined
-    ? `${stats.AD} / ${stats.ADHeavy} / ${stats.ADBrutal}` : '—');
-  el.appendChild(vitals1);
+  // ── Vitals ──────────────────────────────────────────────
+  // In combat mode: PD and AD are editable; HP is omitted (shown in card above).
+  // In static mode: show HP / PD (with heavy/brutal) / AD (with heavy/brutal).
 
-  // Vitals row 2: Speed, AP, Save DC
-  const vitals2 = document.createElement('div');
-  vitals2.className = 'statblock-vitals';
-  appendVital(vitals2, 'Speed',   stats.speed   ?? '—');
-  appendVital(vitals2, 'AP',      stats.AP      ?? '—');
-  appendVital(vitals2, 'Save DC', stats.saveDC  ?? '—');
-  el.appendChild(vitals2);
+  if (combatant) {
+    const vitalsRow = document.createElement('div');
+    vitalsRow.className = 'statblock-vitals-edit';
+
+    appendEditableVital(vitalsRow, 'PD',     combatant, 'currentPd');
+    appendEditableVital(vitalsRow, 'AD',     combatant, 'currentAd');
+    appendStaticVital(vitalsRow,  'Speed',   stats.speed   ?? '—');
+    appendStaticVital(vitalsRow,  'AP',      stats.AP      ?? '—');
+    appendStaticVital(vitalsRow,  'Save DC', stats.saveDC  ?? '—');
+    appendStaticVital(vitalsRow,  'Damage',  stats.damage  ?? '—');
+    el.appendChild(vitalsRow);
+  } else {
+    const v1 = document.createElement('div');
+    v1.className = 'statblock-vitals';
+    appendStaticVital(v1, 'HP', stats.HP ?? '—');
+    appendStaticVital(v1, 'PD',
+      stats.PD !== undefined ? `${stats.PD} / ${stats.PDHeavy} / ${stats.PDBrutal}` : '—');
+    appendStaticVital(v1, 'AD',
+      stats.AD !== undefined ? `${stats.AD} / ${stats.ADHeavy} / ${stats.ADBrutal}` : '—');
+    el.appendChild(v1);
+
+    const v2 = document.createElement('div');
+    v2.className = 'statblock-vitals';
+    appendStaticVital(v2, 'Speed',   stats.speed   ?? '—');
+    appendStaticVital(v2, 'AP',      stats.AP      ?? '—');
+    appendStaticVital(v2, 'Save DC', stats.saveDC  ?? '—');
+    el.appendChild(v2);
+  }
 
   el.appendChild(makeRule());
 
-  // Attributes
+  // ── Attributes ──────────────────────────────────────────
   const attrGrid = document.createElement('div');
   attrGrid.className = 'statblock-attributes';
-  for (const [key, label] of [['mig','Mig'],['agi','Agi'],['cha','Cha'],['int','Int']]) {
+
+  for (const { dataKey, label, combatKey } of ATTR_DEFS) {
     const card = document.createElement('div');
     card.className = 'attribute-card';
 
@@ -71,28 +101,48 @@ export function buildStatblockEl(creature) {
     lbl.className = 'attribute-label';
     lbl.textContent = label;
 
-    const v = attrs[key] ?? 0;
-    const val = document.createElement('span');
-    val.className = 'attribute-value';
-    val.textContent = v >= 0 ? `+${v}` : `${v}`;
+    const rawVal  = attrVals[dataKey] ?? 0;
+    const saveVal = saves[dataKey]    ?? 0;
 
-    const s = saves[key] ?? 0;
-    const save = document.createElement('span');
-    save.className = 'attribute-save';
-    save.textContent = `(${s >= 0 ? '+' : ''}${s})`;
+    if (combatant) {
+      const inp = document.createElement('input');
+      inp.type      = 'number';
+      inp.className = 'statblock-editable-attr';
+      inp.value     = combatant[combatKey] ?? rawVal;
+      inp.step      = 1;
+      inp.title     = label;
+      inp.addEventListener('input', () => {
+        combatant[combatKey] = Number(inp.value) || 0;
+      });
 
-    card.append(lbl, val, save);
+      const saveLbl = document.createElement('span');
+      saveLbl.className   = 'attribute-save';
+      saveLbl.textContent = `(${fmtMod(saveVal)})`;
+
+      card.append(lbl, inp, saveLbl);
+    } else {
+      const val = document.createElement('span');
+      val.className   = 'attribute-value';
+      val.textContent = fmtMod(rawVal);
+
+      const saveLbl = document.createElement('span');
+      saveLbl.className   = 'attribute-save';
+      saveLbl.textContent = `(${fmtMod(saveVal)})`;
+
+      card.append(lbl, val, saveLbl);
+    }
+
     attrGrid.appendChild(card);
   }
   el.appendChild(attrGrid);
 
-  // Trait rows (resistances, vulnerabilities, immunities, senses, skills)
+  // ── Trait rows ──────────────────────────────────────────
   const traitDefs = [
-    { label: 'Resistances',    values: [...(traits.resistances?.damage || []),    ...(traits.resistances?.condition || [])] },
-    { label: 'Vulnerabilities',values: [...(traits.vulnerabilities?.damage || []),...(traits.vulnerabilities?.condition || [])] },
-    { label: 'Immunities',     values: [...(traits.immunities?.damage || []),      ...(traits.immunities?.condition || [])] },
-    { label: 'Senses',         values: traits.senses || [] },
-    { label: 'Skills',         values: traits.skills || [] },
+    { label: 'Resistances',     values: [...(traits.resistances?.damage    || []), ...(traits.resistances?.condition    || [])] },
+    { label: 'Vulnerabilities', values: [...(traits.vulnerabilities?.damage || []), ...(traits.vulnerabilities?.condition || [])] },
+    { label: 'Immunities',      values: [...(traits.immunities?.damage     || []), ...(traits.immunities?.condition     || [])] },
+    { label: 'Senses',          values: traits.senses || [] },
+    { label: 'Skills',          values: traits.skills || [] },
   ];
 
   const traitSection = document.createElement('div');
@@ -103,46 +153,38 @@ export function buildStatblockEl(creature) {
     row.className = 'statblock-trait-row';
 
     const lbl = document.createElement('span');
-    lbl.className = 'statblock-trait-label';
+    lbl.className   = 'statblock-trait-label';
     lbl.textContent = `${label}:`;
 
     const valWrap = document.createElement('span');
     valWrap.className = 'statblock-trait-values';
 
     if (values.length === 0) {
-      const empty = document.createElement('span');
-      empty.className = 'trait-empty';
-      empty.textContent = '—';
-      valWrap.appendChild(empty);
+      const em = document.createElement('span');
+      em.className   = 'trait-empty';
+      em.textContent = '—';
+      valWrap.appendChild(em);
     } else {
       values.forEach((v, i) => {
         if (i > 0) {
           const sep = document.createElement('span');
-          sep.className = 'trait-separator';
-          sep.textContent = ',';
+          sep.className   = 'trait-separator';
+          sep.textContent = ', ';
           valWrap.appendChild(sep);
         }
-        const span = document.createElement('span');
-        span.textContent = cap(v);
-        valWrap.appendChild(span);
+        const s = document.createElement('span');
+        s.textContent = cap(v);
+        valWrap.appendChild(s);
       });
     }
-
     row.append(lbl, valWrap);
     traitSection.appendChild(row);
   }
   el.appendChild(traitSection);
 
-  // Feature passives
+  // ── Feature passives ────────────────────────────────────
   if (passives.length > 0) {
-    const sec = document.createElement('div');
-    sec.className = 'statblock-feature-section';
-
-    const heading = document.createElement('div');
-    heading.className = 'statblock-feature-heading';
-    heading.textContent = 'Features';
-    sec.appendChild(heading);
-
+    const sec = makeSection('Features');
     const list = document.createElement('div');
     list.className = 'statblock-feature-list';
 
@@ -151,11 +193,11 @@ export function buildStatblockEl(creature) {
       item.className = 'statblock-feature-item';
 
       const fName = document.createElement('div');
-      fName.className = 'feature-name';
+      fName.className   = 'feature-name';
       fName.textContent = f.name || '';
 
       const fDesc = document.createElement('div');
-      fDesc.className = 'feature-description';
+      fDesc.className   = 'feature-description';
       fDesc.textContent = f.description || '';
 
       item.append(fName, fDesc);
@@ -165,12 +207,12 @@ export function buildStatblockEl(creature) {
     el.appendChild(sec);
   }
 
-  // Actions
+  // ── Actions ─────────────────────────────────────────────
   if (actions.length > 0) {
     el.appendChild(buildActionsSection('Actions', actions));
   }
 
-  // Reactions
+  // ── Reactions ───────────────────────────────────────────
   if (reactions.length > 0) {
     el.appendChild(buildActionsSection('Reactions', reactions));
   }
@@ -185,6 +227,11 @@ function cap(str) {
   return String(str).replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function fmtMod(n) {
+  const v = Number(n) || 0;
+  return v >= 0 ? `+${v}` : `${v}`;
+}
+
 function makeDivider() {
   const d = document.createElement('div');
   d.className = 'statblock-divider';
@@ -197,24 +244,56 @@ function makeRule() {
   return hr;
 }
 
-function appendVital(container, label, value) {
+function makeSection(title) {
+  const sec = document.createElement('div');
+  sec.className = 'statblock-feature-section';
+
+  const h = document.createElement('div');
+  h.className   = 'statblock-feature-heading';
+  h.textContent = title;
+  sec.appendChild(h);
+
+  return sec;
+}
+
+function appendStaticVital(container, label, value) {
   const lbl = document.createElement('span');
-  lbl.className = 'statblock-label';
+  lbl.className   = 'statblock-label';
   lbl.textContent = label;
 
   const val = document.createElement('span');
-  val.className = 'statblock-value';
+  val.className   = 'statblock-value';
   val.textContent = value;
 
   container.append(lbl, val);
 }
+
+function appendEditableVital(container, label, combatant, key) {
+  const lbl = document.createElement('span');
+  lbl.className   = 'statblock-label';
+  lbl.textContent = label;
+
+  const inp = document.createElement('input');
+  inp.type      = 'number';
+  inp.className = 'statblock-editable';
+  inp.value     = combatant[key] ?? 0;
+  inp.step      = 1;
+  inp.min       = 0;
+  inp.addEventListener('input', () => {
+    combatant[key] = Number(inp.value) || 0;
+  });
+
+  container.append(lbl, inp);
+}
+
+// ── Actions section ───────────────────────────────────────────────────────────
 
 function buildActionsSection(title, items) {
   const sec = document.createElement('div');
   sec.className = 'statblock-actions-section';
 
   const heading = document.createElement('div');
-  heading.className = 'statblock-actions-heading';
+  heading.className   = 'statblock-actions-heading';
   heading.textContent = `${title} (${items.length})`;
   sec.appendChild(heading);
 
@@ -222,43 +301,86 @@ function buildActionsSection(title, items) {
   list.className = 'statblock-actions-list';
 
   for (const action of items) {
-    const item = document.createElement('div');
-    item.className = 'statblock-action-item';
-
-    const badges = document.createElement('div');
-    badges.className = 'action-badges';
-
-    const nameBadge = document.createElement('span');
-    nameBadge.className = 'action-badge';
-    nameBadge.textContent = action.name || 'Action';
-    badges.appendChild(nameBadge);
-
-    if (action.cost) {
-      const costBadge = document.createElement('span');
-      costBadge.className = 'action-badge';
-      costBadge.textContent = action.cost;
-      badges.appendChild(costBadge);
-    }
-
-    item.appendChild(badges);
-
-    if (action.trigger) {
-      const trigger = document.createElement('div');
-      trigger.className = 'action-trigger';
-      trigger.textContent = `Trigger: ${action.trigger}`;
-      item.appendChild(trigger);
-    }
-
-    if (action.description) {
-      const desc = document.createElement('p');
-      desc.className = 'action-description';
-      desc.textContent = action.description;
-      item.appendChild(desc);
-    }
-
-    list.appendChild(item);
+    list.appendChild(buildActionItem(action));
   }
 
   sec.appendChild(list);
   return sec;
+}
+
+function buildActionItem(action) {
+  const item = document.createElement('div');
+  item.className = 'statblock-action-item';
+
+  // Name + cost row
+  const topRow = document.createElement('div');
+  topRow.className = 'action-top-row';
+
+  const nameEl = document.createElement('div');
+  nameEl.className   = 'action-name';
+  nameEl.textContent = action.name || 'Action';
+
+  topRow.appendChild(nameEl);
+
+  // Cost badges
+  const costStr = action.cost || action.ap || '';
+  if (costStr) {
+    const badge = document.createElement('span');
+    badge.className   = 'action-badge';
+    badge.textContent = costStr;
+    topRow.appendChild(badge);
+  }
+
+  // Extra type badges (range, melee, etc.)
+  const typeTags = [action.type, action.range].filter(Boolean);
+  for (const tag of typeTags) {
+    const badge = document.createElement('span');
+    badge.className   = 'action-badge action-badge--secondary';
+    badge.textContent = tag;
+    topRow.appendChild(badge);
+  }
+
+  item.appendChild(topRow);
+
+  // Trigger
+  if (action.trigger) {
+    const trig = document.createElement('div');
+    trig.className   = 'action-trigger';
+    trig.textContent = `Trigger: ${action.trigger}`;
+    item.appendChild(trig);
+  }
+
+  // Main description
+  const descText = action.description || action.effect || action.text || '';
+  if (descText) {
+    const desc = document.createElement('p');
+    desc.className   = 'action-description';
+    desc.textContent = descText;
+    item.appendChild(desc);
+  }
+
+  // Hit / damage line if present as separate fields
+  const hitParts = [];
+  if (action.hit  != null) hitParts.push(`Hit: ${action.hit}`);
+  if (action.damage) hitParts.push(`Damage: ${action.damage}`);
+  if (action.check) hitParts.push(`Check: ${action.check}`);
+  if (action.saveDC || action.save) hitParts.push(`Save: ${action.saveDC || action.save}`);
+
+  if (hitParts.length) {
+    const stats = document.createElement('div');
+    stats.className   = 'action-stats';
+    stats.textContent = hitParts.join(' · ');
+    item.appendChild(stats);
+  }
+
+  // Effects array if present
+  const effects = Array.isArray(action.effects) ? action.effects : [];
+  for (const eff of effects) {
+    const effEl = document.createElement('p');
+    effEl.className   = 'action-description action-effect';
+    effEl.textContent = typeof eff === 'string' ? eff : (eff.text || eff.description || '');
+    if (effEl.textContent) item.appendChild(effEl);
+  }
+
+  return item;
 }

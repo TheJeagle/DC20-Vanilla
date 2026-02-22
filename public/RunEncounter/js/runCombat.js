@@ -1,38 +1,63 @@
 /**
  * runCombat.js
- * Combat pane: drag-drop targets, combatant cards, stat inputs, remove logic.
+ * Combat pane: bench drops, drag-to-reorder, HP sliders, statblock with
+ * editable PD / AD / attribute fields.
  */
 import { state } from './runState.js';
 import { getDragId } from './runBench.js';
 import { buildStatblockEl } from './runStatblock.js';
 
+// ── Module-level drag state ───────────────────────────────────────────────────
+
+/** Index in state.combat being dragged for reorder (null = not reordering). */
+let _reorderIdx = null;
+/** Index where the dragged card will be inserted. */
+let _dropIdx    = null;
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
-/**
- * Wire up the combat panel as a drag-drop target and do an initial render.
- * @param {HTMLElement} combatContainer
- * @param {Function}    refreshBench   - callback to re-render bench after drop/remove
- */
 export function initCombat(combatContainer, refreshBench) {
   if (!combatContainer) return;
 
   combatContainer.addEventListener('dragover', (e) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    combatContainer.classList.add('drag-over');
+
+    if (_reorderIdx !== null) {
+      // Reorder drag — find insertion point
+      e.dataTransfer.dropEffect = 'move';
+      updateDropIndicator(e, combatContainer);
+    } else {
+      // Bench drag
+      e.dataTransfer.dropEffect = 'move';
+      combatContainer.classList.add('drag-over');
+    }
   });
 
-  combatContainer.addEventListener('dragleave', () => {
-    combatContainer.classList.remove('drag-over');
+  combatContainer.addEventListener('dragleave', (e) => {
+    if (!combatContainer.contains(e.relatedTarget)) {
+      combatContainer.classList.remove('drag-over');
+      clearDropIndicators(combatContainer);
+    }
   });
 
   combatContainer.addEventListener('drop', (e) => {
     e.preventDefault();
     combatContainer.classList.remove('drag-over');
+    clearDropIndicators(combatContainer);
 
+    if (_reorderIdx !== null) {
+      // Reorder drop
+      const toIdx = _dropIdx ?? state.combat.length;
+      reorderCombat(_reorderIdx, toIdx);
+      _reorderIdx = null;
+      _dropIdx    = null;
+      renderCombat(combatContainer, refreshBench);
+      return;
+    }
+
+    // Bench drop
     const id = getDragId();
     if (!id) return;
-
     const benchItem = state.bench.find(b => b.id === id);
     if (!benchItem || benchItem.inCombat) return;
 
@@ -45,11 +70,6 @@ export function initCombat(combatContainer, refreshBench) {
   renderCombat(combatContainer, refreshBench);
 }
 
-/**
- * Re-render the entire combat panel.
- * @param {HTMLElement} container
- * @param {Function}    refreshBench
- */
 export function renderCombat(container, refreshBench) {
   if (!container) return;
   container.innerHTML = '';
@@ -62,79 +82,141 @@ export function renderCombat(container, refreshBench) {
     return;
   }
 
-  // Render each combatant; pass index so remove splices correctly
-  for (let i = 0; i < state.combat.length; i++) {
-    container.appendChild(
-      buildCombatCard(state.combat[i], container, refreshBench)
-    );
+  state.combat.forEach((combatant, i) => {
+    container.appendChild(buildCombatCard(combatant, i, container, refreshBench));
+  });
+}
+
+// ── Reorder helpers ───────────────────────────────────────────────────────────
+
+function updateDropIndicator(e, container) {
+  const cards = [...container.querySelectorAll('.combat-card')];
+  let newIdx = state.combat.length;
+
+  for (let i = 0; i < cards.length; i++) {
+    const rect = cards[i].getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2) {
+      newIdx = i;
+      break;
+    }
+  }
+
+  if (newIdx !== _dropIdx) {
+    _dropIdx = newIdx;
+    cards.forEach((c, i) => {
+      c.classList.toggle('drop-before', i === newIdx);
+    });
   }
 }
 
-// ── Private helpers ───────────────────────────────────────────────────────────
+function clearDropIndicators(container) {
+  container.querySelectorAll('.drop-before').forEach(el =>
+    el.classList.remove('drop-before')
+  );
+}
+
+function reorderCombat(fromIdx, toIdx) {
+  if (fromIdx === toIdx) return;
+  const [moved] = state.combat.splice(fromIdx, 1);
+  const dest = toIdx > fromIdx ? toIdx - 1 : toIdx;
+  state.combat.splice(dest, 0, moved);
+}
+
+// ── Add combatant from bench ──────────────────────────────────────────────────
 
 function addCombatant(benchItem) {
   if (benchItem.type === 'player') {
     const p = benchItem.sourceData;
+    const maxHp = Number(p.hp) || 20;
     state.combat.push({
-      type: 'player',
-      benchId: benchItem.id,
-      label: benchItem.label,
-      sublabel: benchItem.sublabel,
-      currentHp: Number(p.hp) || 0,
+      type:      'player',
+      benchId:   benchItem.id,
+      label:     benchItem.label,
+      sublabel:  benchItem.sublabel,
+      currentHp: maxHp,
+      maxHp,
       sourceData: p,
     });
   } else {
-    // Monster (lone or group) — use first member's creature for base stats
-    const members   = benchItem.isGroup ? benchItem.sourceData : [benchItem.sourceData];
-    const first     = members[0];
-    const creature  = state.creatures[first.creatureId] || null;
-    const stats     = creature?.stats             || {};
-    const attrVals  = creature?.attributes?.values || {};
+    const members  = benchItem.isGroup ? benchItem.sourceData : [benchItem.sourceData];
+    const first    = members[0];
+    const creature = state.creatures[first.creatureId] || null;
+    const stats    = creature?.stats             || {};
+    const attrVals = creature?.attributes?.values || {};  // keys: Mig, Agi, Cha, Int
+    const maxHp    = stats.HP ?? 0;
 
     state.combat.push({
-      type: 'monster',
-      benchId: benchItem.id,
-      label: benchItem.label,
-      sublabel: benchItem.sublabel,
-      currentHp:  stats.HP  ?? 0,
+      type:       'monster',
+      benchId:    benchItem.id,
+      label:      benchItem.label,
+      sublabel:   benchItem.sublabel,
+      currentHp:  maxHp,
+      maxHp,
       currentPd:  stats.PD  ?? 0,
       currentAd:  stats.AD  ?? 0,
-      currentMig: attrVals.mig ?? 0,
-      currentAgi: attrVals.agi ?? 0,
-      currentCha: attrVals.cha ?? 0,
-      currentInt: attrVals.int ?? 0,
-      expanded:   false,
+      currentMig: attrVals.Mig ?? 0,
+      currentAgi: attrVals.Agi ?? 0,
+      currentCha: attrVals.Cha ?? 0,
+      currentInt: attrVals.Int ?? 0,
+      expanded:   true,
       sourceData: benchItem.sourceData,
       creatureId: first.creatureId,
     });
   }
 }
 
-function buildCombatCard(combatant, container, refreshBench) {
+// ── Card builder ──────────────────────────────────────────────────────────────
+
+function buildCombatCard(combatant, index, container, refreshBench) {
   const card = document.createElement('div');
   card.className = `combat-card combat-card--${combatant.type}`;
+  card.draggable = true;
+
+  // Drag-to-reorder: dragstart / dragend on the whole card
+  card.addEventListener('dragstart', (e) => {
+    // Only allow if the drag originated from the handle
+    if (!e.target.closest('.combat-drag-handle')) {
+      e.preventDefault();
+      return;
+    }
+    _reorderIdx = index;
+    card.classList.add('is-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.stopPropagation(); // don't let bench panel pick this up
+  });
+
+  card.addEventListener('dragend', () => {
+    _reorderIdx = null;
+    _dropIdx    = null;
+    card.classList.remove('is-dragging');
+  });
 
   // ── Header ──────────────────────────────────────────────
   const header = document.createElement('div');
   header.className = 'combat-card-header';
 
-  const nameEl = document.createElement('div');
-  nameEl.className = 'combat-card-name';
-  nameEl.textContent = combatant.label;
+  const handle = document.createElement('div');
+  handle.className = 'combat-drag-handle';
+  handle.textContent = '⠿';
+  handle.title = 'Drag to reorder';
+  handle.setAttribute('aria-hidden', 'true');
 
+  const nameWrap = document.createElement('div');
+  nameWrap.className = 'combat-card-name';
+  nameWrap.textContent = combatant.label;
   if (combatant.sublabel) {
     const sub = document.createElement('div');
     sub.className = 'combat-card-sublabel';
     sub.textContent = combatant.sublabel;
-    nameEl.appendChild(sub);
+    nameWrap.appendChild(sub);
   }
 
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'combat-remove-btn';
-  removeBtn.textContent = '× Remove';
+  removeBtn.textContent = '← Bench';
+  removeBtn.title = 'Return to bench';
   removeBtn.addEventListener('click', () => {
-    // Return to bench
     const benchItem = state.bench.find(b => b.id === combatant.benchId);
     if (benchItem) benchItem.inCombat = false;
     const idx = state.combat.indexOf(combatant);
@@ -143,10 +225,10 @@ function buildCombatCard(combatant, container, refreshBench) {
     renderCombat(container, refreshBench);
   });
 
-  header.append(nameEl, removeBtn);
+  header.append(handle, nameWrap, removeBtn);
   card.appendChild(header);
 
-  // ── Player card body ──────────────────────────────────
+  // ── Player ───────────────────────────────────────────────
   if (combatant.type === 'player') {
     if (combatant.sourceData.class) {
       const chip = document.createElement('span');
@@ -154,48 +236,12 @@ function buildCombatCard(combatant, container, refreshBench) {
       chip.textContent = combatant.sourceData.class;
       card.appendChild(chip);
     }
+    card.appendChild(buildHpRow(combatant));
 
-    card.appendChild(buildStatRow([{ key: 'currentHp', label: 'HP', allowNegative: true }], combatant));
-
-  // ── Monster card body ─────────────────────────────────
+  // ── Monster ──────────────────────────────────────────────
   } else {
-    const statsGrid = document.createElement('div');
-    statsGrid.className = 'combat-stats-grid';
+    card.appendChild(buildHpRow(combatant));
 
-    const statDefs = [
-      { key: 'currentHp',  label: 'HP',  allowNegative: true },
-      { key: 'currentPd',  label: 'PD' },
-      { key: 'currentAd',  label: 'AD' },
-      { key: 'currentMig', label: 'Mig' },
-      { key: 'currentAgi', label: 'Agi' },
-      { key: 'currentCha', label: 'Cha' },
-      { key: 'currentInt', label: 'Int' },
-    ];
-
-    for (const def of statDefs) {
-      const cell = document.createElement('div');
-      cell.className = 'combat-stat-cell';
-
-      const lbl = document.createElement('label');
-      lbl.className = 'combat-stat-label';
-      lbl.textContent = def.label;
-
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      inp.className = 'combat-stat-input';
-      inp.value = combatant[def.key];
-      inp.step = 1;
-      if (!def.allowNegative) inp.min = 0;
-      inp.addEventListener('input', () => {
-        combatant[def.key] = Number(inp.value) || 0;
-      });
-
-      cell.append(lbl, inp);
-      statsGrid.appendChild(cell);
-    }
-    card.appendChild(statsGrid);
-
-    // Statblock expand/collapse
     const creature = state.creatures[combatant.creatureId];
     if (creature) {
       const toggleBtn = document.createElement('button');
@@ -207,17 +253,17 @@ function buildCombatCard(combatant, container, refreshBench) {
       sbWrapper.className = 'combat-statblock-wrapper';
       sbWrapper.hidden = !combatant.expanded;
 
-      if (combatant.expanded) {
-        sbWrapper.appendChild(buildStatblockEl(creature));
-      }
+      const buildSb = () => {
+        sbWrapper.innerHTML = '';
+        sbWrapper.appendChild(buildStatblockEl(creature, combatant));
+      };
+
+      if (combatant.expanded) buildSb();
 
       toggleBtn.addEventListener('click', () => {
         combatant.expanded = !combatant.expanded;
         toggleBtn.textContent = combatant.expanded ? '▼ Statblock' : '▶ Statblock';
-        if (combatant.expanded) {
-          sbWrapper.innerHTML = '';
-          sbWrapper.appendChild(buildStatblockEl(creature));
-        }
+        if (combatant.expanded) buildSb();
         sbWrapper.hidden = !combatant.expanded;
       });
 
@@ -228,28 +274,42 @@ function buildCombatCard(combatant, container, refreshBench) {
   return card;
 }
 
-/** Build a simple label + number-input row for player cards. */
-function buildStatRow(defs, combatant) {
+// ── HP slider + number input (synced) ─────────────────────────────────────────
+
+function buildHpRow(combatant) {
   const row = document.createElement('div');
-  row.className = 'combat-stat-row';
+  row.className = 'combat-hp-row';
 
-  for (const { key, label, allowNegative } of defs) {
-    const lbl = document.createElement('label');
-    lbl.className = 'combat-stat-label';
-    lbl.textContent = label;
+  const label = document.createElement('span');
+  label.className = 'combat-hp-label';
+  label.textContent = 'HP';
 
-    const inp = document.createElement('input');
-    inp.type = 'number';
-    inp.className = 'combat-stat-input';
-    inp.value = combatant[key];
-    inp.step = 1;
-    if (!allowNegative) inp.min = 0;
-    inp.addEventListener('input', () => {
-      combatant[key] = Number(inp.value) || 0;
-    });
+  const maxHp = combatant.maxHp || 20;
 
-    row.append(lbl, inp);
-  }
+  const slider = document.createElement('input');
+  slider.type = 'range';
+  slider.className = 'combat-hp-slider';
+  slider.min = 0;
+  slider.max = maxHp;
+  slider.value = Math.max(0, combatant.currentHp);
 
+  const numInput = document.createElement('input');
+  numInput.type = 'number';
+  numInput.className = 'combat-hp-number';
+  numInput.value = combatant.currentHp;
+  numInput.step = 1;
+
+  slider.addEventListener('input', () => {
+    combatant.currentHp = Number(slider.value);
+    numInput.value = slider.value;
+  });
+
+  numInput.addEventListener('input', () => {
+    const val = Number(numInput.value) || 0;
+    combatant.currentHp = val;
+    slider.value = Math.max(0, Math.min(maxHp, val));
+  });
+
+  row.append(label, slider, numInput);
   return row;
 }

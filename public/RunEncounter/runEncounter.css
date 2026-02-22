@@ -705,3 +705,167 @@ details[open] .run-accordion-summary::before {
   font-size: 0.85rem;
   line-height: 1.35;
 }
+
+/* ── Action top row (name + badges) ─────────────────────── */
+.action-top-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.action-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #2d1f3b;
+  flex: 1;
+  min-width: 0;
+}
+
+.action-badge--secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background-color: #e8f4fd;
+  border: 1px solid #a8d4ef;
+  color: #1a4f6e;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.action-stats {
+  font-size: 0.8rem;
+  color: #4b3d58;
+  font-weight: 600;
+  border-top: 1px dashed #d8c9f0;
+  padding-top: 0.3rem;
+}
+
+.action-effect {
+  margin: 0;
+  font-size: 0.83rem;
+  line-height: 1.35;
+  color: #3a2c4b;
+}
+
+/* ── Combat drag handle ──────────────────────────────────── */
+.combat-drag-handle {
+  color: rgba(0,0,0,0.3);
+  font-size: 1rem;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+  padding: 0 0.1rem;
+  line-height: 1;
+}
+
+.combat-drag-handle:active { cursor: grabbing; }
+
+/* ── Drag reorder indicators ─────────────────────────────── */
+.combat-card.is-dragging {
+  opacity: 0.4;
+}
+
+.combat-card.drop-before {
+  border-top: 2px solid var(--enc-accent);
+  margin-top: -1px;
+}
+
+/* ── HP row (slider + number input) ─────────────────────── */
+.combat-hp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.combat-hp-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4b2e6d;
+  flex-shrink: 0;
+}
+
+.combat-hp-slider {
+  flex: 1;
+  height: 0.5rem;
+  accent-color: var(--enc-accent);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.combat-hp-number {
+  width: 4rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid #d0c6e4;
+  border-radius: 0.4rem;
+  background: #ffffff;
+  color: #2d1f3b;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.combat-hp-number:focus {
+  outline: none;
+  border-color: var(--enc-accent);
+  box-shadow: 0 0 0 2px rgba(142,68,173,0.2);
+}
+
+/* ── Editable statblock vitals (combat mode) ─────────────── */
+.statblock-vitals-edit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  align-items: center;
+  font-size: 0.88rem;
+}
+
+.statblock-editable {
+  width: 3.5rem;
+  padding: 0.25rem 0.4rem;
+  border: none;
+  border-bottom: 2px solid rgba(142,68,173,0.4);
+  border-radius: 0.35rem 0.35rem 0 0;
+  background: #f5f0ff;
+  color: #2d1f3b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  box-sizing: border-box;
+  transition: border-color 0.12s;
+}
+
+.statblock-editable:focus {
+  outline: none;
+  border-bottom-color: var(--enc-accent);
+  background: #ede5f7;
+}
+
+.statblock-editable-attr {
+  width: 2.8rem;
+  padding: 0.15rem 0.25rem;
+  border: none;
+  border-bottom: 2px solid rgba(142,68,173,0.35);
+  border-radius: 0.3rem 0.3rem 0 0;
+  background: transparent;
+  color: #2d1f3b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  box-sizing: border-box;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.statblock-editable-attr:focus {
+  outline: none;
+  border-bottom-color: var(--enc-accent);
+  background: #ede5f7;
+  border-radius: 0.3rem;
+}
