@@ -74,6 +74,14 @@ export function renderCombat(container, refreshBench) {
   if (!container) return;
   container.innerHTML = '';
 
+  // Keep currentTurnIdx in bounds if combatants were removed mid-combat
+  if (state.combatActive && state.currentTurnIdx >= state.combat.length) {
+    state.currentTurnIdx = Math.max(0, state.combat.length - 1);
+  }
+
+  const controls = buildTurnControls(container, refreshBench);
+  if (controls) container.appendChild(controls);
+
   if (state.combat.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'combat-empty';
@@ -83,8 +91,20 @@ export function renderCombat(container, refreshBench) {
   }
 
   state.combat.forEach((combatant, i) => {
-    container.appendChild(buildCombatCard(combatant, i, container, refreshBench));
+    const card = buildCombatCard(combatant, i, container, refreshBench);
+    if (state.combatActive && i === state.currentTurnIdx) {
+      card.classList.add('is-active-turn');
+    }
+    container.appendChild(card);
   });
+
+  // Scroll active card into view after layout settles
+  if (state.combatActive) {
+    requestAnimationFrame(() => {
+      container.querySelector('.is-active-turn')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
 }
 
 // ── Reorder helpers ───────────────────────────────────────────────────────────
@@ -144,6 +164,7 @@ function addCombatant(benchItem) {
     const stats    = creature?.stats             || {};
     const attrVals = creature?.attributes?.values || {};  // keys: Mig, Agi, Cha, Int
     const maxHp    = stats.HP ?? 0;
+    const maxAp    = stats.AP ?? 2;
 
     state.combat.push({
       type:       'monster',
@@ -158,6 +179,8 @@ function addCombatant(benchItem) {
       currentAgi: attrVals.Agi ?? 0,
       currentCha: attrVals.Cha ?? 0,
       currentInt: attrVals.Int ?? 0,
+      maxAp,
+      currentAp:  maxAp,
       expanded:   true,
       sourceData: benchItem.sourceData,
       creatureId: first.creatureId,
@@ -243,6 +266,15 @@ function buildCombatCard(combatant, index, container, refreshBench) {
 
     const creature = state.creatures[combatant.creatureId];
     if (creature) {
+      // AP pips — always visible so GM can track spending during the turn
+      const apRowObj = buildApRow(combatant);
+      card.appendChild(apRowObj.el);
+
+      const onApSpend = (cost) => {
+        combatant.currentAp = Math.max(0, combatant.currentAp - cost);
+        apRowObj.update();
+      };
+
       const toggleBtn = document.createElement('button');
       toggleBtn.type = 'button';
       toggleBtn.className = 'combat-expand-btn';
@@ -254,7 +286,7 @@ function buildCombatCard(combatant, index, container, refreshBench) {
 
       const buildSb = () => {
         sbWrapper.innerHTML = '';
-        sbWrapper.appendChild(buildStatblockEl(creature, combatant));
+        sbWrapper.appendChild(buildStatblockEl(creature, combatant, { onApSpend }));
       };
 
       if (combatant.expanded) buildSb();
@@ -271,6 +303,96 @@ function buildCombatCard(combatant, index, container, refreshBench) {
   }
 
   return card;
+}
+
+// ── Turn tracker ──────────────────────────────────────────────────────────────
+
+function buildTurnControls(container, refreshBench) {
+  if (state.combat.length === 0) return null;
+
+  const bar = document.createElement('div');
+  bar.className = 'combat-turn-controls';
+
+  if (!state.combatActive) {
+    const startBtn = document.createElement('button');
+    startBtn.type = 'button';
+    startBtn.className = 'combat-turn-btn combat-turn-btn--start';
+    startBtn.textContent = '▶ Start Combat';
+    startBtn.addEventListener('click', () => {
+      state.combatActive   = true;
+      state.currentTurnIdx = 0;
+      resetCombatantAp(state.combat[0]);
+      renderCombat(container, refreshBench);
+    });
+    bar.appendChild(startBtn);
+  } else {
+    const name = state.combat[state.currentTurnIdx]?.label || '—';
+
+    const label = document.createElement('span');
+    label.className   = 'combat-turn-label';
+    label.textContent = `${name}'s Turn`;
+    bar.appendChild(label);
+
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'combat-turn-btn combat-turn-btn--next';
+    nextBtn.textContent = 'Next Turn →';
+    nextBtn.addEventListener('click', () => {
+      state.currentTurnIdx = (state.currentTurnIdx + 1) % state.combat.length;
+      resetCombatantAp(state.combat[state.currentTurnIdx]);
+      renderCombat(container, refreshBench);
+    });
+    bar.appendChild(nextBtn);
+
+    const endBtn = document.createElement('button');
+    endBtn.type = 'button';
+    endBtn.className = 'combat-turn-btn combat-turn-btn--end';
+    endBtn.textContent = '✕ End Combat';
+    endBtn.addEventListener('click', () => {
+      state.combatActive   = false;
+      state.currentTurnIdx = 0;
+      renderCombat(container, refreshBench);
+    });
+    bar.appendChild(endBtn);
+  }
+
+  return bar;
+}
+
+function resetCombatantAp(combatant) {
+  if (combatant?.type === 'monster') {
+    combatant.currentAp = combatant.maxAp;
+  }
+}
+
+// ── AP pip row ─────────────────────────────────────────────────────────────────
+
+function buildApRow(combatant) {
+  const row = document.createElement('div');
+  row.className = 'combat-ap-row';
+
+  const label = document.createElement('span');
+  label.className   = 'combat-ap-label';
+  label.textContent = 'AP';
+  row.appendChild(label);
+
+  const pipsEl = document.createElement('div');
+  pipsEl.className = 'combat-ap-pips';
+  row.appendChild(pipsEl);
+
+  function update() {
+    pipsEl.innerHTML = '';
+    const max = combatant.maxAp || 0;
+    const cur = Math.max(0, combatant.currentAp ?? max);
+    for (let i = 0; i < max; i++) {
+      const pip = document.createElement('span');
+      pip.className = 'combat-ap-pip' + (i < cur ? ' combat-ap-pip--filled' : '');
+      pipsEl.appendChild(pip);
+    }
+  }
+
+  update();
+  return { el: row, update };
 }
 
 // ── HP slider + number input (synced) ─────────────────────────────────────────

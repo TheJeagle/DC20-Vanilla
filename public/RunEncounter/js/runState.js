@@ -38,4 +38,10 @@ export const state = {
 
   /** Editable encounter DC shown in the header. */
   encounterDc: 10,
+
+  /** Whether the turn tracker is running. */
+  combatActive: false,
+
+  /** Index into state.combat of whose turn it is. */
+  currentTurnIdx: 0,
 };

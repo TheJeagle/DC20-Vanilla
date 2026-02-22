@@ -22,7 +22,7 @@ const ATTR_DEFS = [
  * @param {object|null} combatant - run-encounter combatant state (optional)
  * @returns {HTMLDivElement}
  */
-export function buildStatblockEl(creature, combatant = null) {
+export function buildStatblockEl(creature, combatant = null, { onApSpend = null } = {}) {
   const stats    = creature.stats     || {};
   const attrVals = creature.attributes?.values || {}; // keys: Mig, Agi, Cha, Int
   const saves    = creature.attributes?.saves  || {}; // keys: Mig, Agi, Cha, Int
@@ -209,12 +209,12 @@ export function buildStatblockEl(creature, combatant = null) {
 
   // ── Actions ─────────────────────────────────────────────
   if (actions.length > 0) {
-    el.appendChild(buildActionsSection('Actions', actions));
+    el.appendChild(buildActionsSection('Actions', actions, onApSpend));
   }
 
   // ── Reactions ───────────────────────────────────────────
   if (reactions.length > 0) {
-    el.appendChild(buildActionsSection('Reactions', reactions));
+    el.appendChild(buildActionsSection('Reactions', reactions, onApSpend));
   }
 
   return el;
@@ -288,7 +288,7 @@ function appendEditableVital(container, label, combatant, key) {
 
 // ── Actions section ───────────────────────────────────────────────────────────
 
-function buildActionsSection(title, items) {
+function buildActionsSection(title, items, onApSpend) {
   const sec = document.createElement('div');
   sec.className = 'statblock-actions-section';
 
@@ -301,16 +301,25 @@ function buildActionsSection(title, items) {
   list.className = 'statblock-actions-list';
 
   for (const action of items) {
-    list.appendChild(buildActionItem(action));
+    list.appendChild(buildActionItem(action, onApSpend));
   }
 
   sec.appendChild(list);
   return sec;
 }
 
-function buildActionItem(action) {
+function buildActionItem(action, onApSpend) {
   const item = document.createElement('div');
   item.className = 'statblock-action-item';
+
+  if (onApSpend) {
+    item.classList.add('action-clickable');
+    const cost = Number(action.cost) || 0;
+    item.title = cost > 0 ? `Click to spend ${cost} AP` : 'Click to use';
+    item.addEventListener('click', () => {
+      if (cost > 0) onApSpend(cost);
+    });
+  }
 
   // ── Name row: name + AP cost badge ──────────────────────
   const topRow = document.createElement('div');

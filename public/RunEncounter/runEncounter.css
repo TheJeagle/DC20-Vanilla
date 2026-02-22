@@ -706,6 +706,113 @@ details[open] .run-accordion-summary::before {
   line-height: 1.35;
 }
 
+/* ── Turn tracker controls ───────────────────────────────── */
+.combat-turn-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.25rem 0.65rem;
+  border-bottom: 1px solid rgba(142,68,173,0.15);
+  margin-bottom: 0.25rem;
+}
+
+.combat-turn-label {
+  flex: 1;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #2d1f3b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combat-turn-btn {
+  appearance: none;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+  transition: background 0.12s, opacity 0.12s;
+  flex-shrink: 0;
+}
+
+.combat-turn-btn--start {
+  background: #27ae60;
+  color: #fff;
+}
+.combat-turn-btn--start:hover { background: #1e8449; }
+
+.combat-turn-btn--next {
+  background: var(--enc-accent);
+  color: #fff;
+}
+.combat-turn-btn--next:hover { background: #7d3c98; }
+
+.combat-turn-btn--end {
+  background: transparent;
+  border: 1px solid rgba(192,57,43,0.4);
+  color: #c0392b;
+}
+.combat-turn-btn--end:hover { background: rgba(192,57,43,0.1); }
+
+/* ── Active turn card highlight ──────────────────────────── */
+.combat-card.is-active-turn {
+  background: #fffbef;
+  box-shadow: 0 0 0 2px #f0a500, 0 4px 16px rgba(240,165,0,0.18);
+}
+
+/* ── AP pips ─────────────────────────────────────────────── */
+.combat-ap-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.combat-ap-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4b2e6d;
+  flex-shrink: 0;
+}
+
+.combat-ap-pips {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.combat-ap-pip {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(142,68,173,0.4);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.combat-ap-pip--filled {
+  background: var(--enc-accent);
+  border-color: var(--enc-accent);
+}
+
+/* ── Clickable actions (combat mode) ─────────────────────── */
+.statblock-action-item.action-clickable {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.statblock-action-item.action-clickable:hover {
+  background-color: rgba(142,68,173,0.1);
+}
+
+.statblock-action-item.action-clickable:active {
+  background-color: rgba(142,68,173,0.22);
+}
+
 /* ── Action top row (name + badges) ─────────────────────── */
 .action-top-row {
   display: flex;
