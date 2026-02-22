@@ -726,6 +726,14 @@ function recomputeCreatureFromInputs() {
 
   applyNumericDeltas(creature);
 
+  // Capture user's manually checked traits before the reset so they survive
+  // the feature recompute pass (applyFeatureEffects resets and refills these arrays).
+  const userTraits = {
+    resistances:     { damage: [...(creature.resistances?.damage     || [])], condition: [...(creature.resistances?.condition     || [])] },
+    vulnerabilities: { damage: [...(creature.vulnerabilities?.damage || [])], condition: [...(creature.vulnerabilities?.condition || [])] },
+    immunities:      { damage: [...(creature.immunities?.damage      || [])], condition: [...(creature.immunities?.condition      || [])] },
+  };
+
   creature.senses = [];
   creature.featureActions = [];
   creature.featureReactions = [];
@@ -740,9 +748,19 @@ function recomputeCreatureFromInputs() {
 
   creature.selectedFeatures = [...featureState.selectedIds];
   applyFeatureEffects(creature, selectedFeatures);
-  syncTraitCheckboxes('resistances', creature.resistances);
+
+  // Merge user-selected traits back in (feature-granted ones are already present).
+  const mergeTraits = (target, userPicked) => {
+    userPicked.damage   .forEach(v => { if (!target.damage   .includes(v)) target.damage   .push(v); });
+    userPicked.condition.forEach(v => { if (!target.condition.includes(v)) target.condition.push(v); });
+  };
+  mergeTraits(creature.resistances,     userTraits.resistances);
+  mergeTraits(creature.vulnerabilities, userTraits.vulnerabilities);
+  mergeTraits(creature.immunities,      userTraits.immunities);
+
+  syncTraitCheckboxes('resistances',     creature.resistances);
   syncTraitCheckboxes('vulnerabilities', creature.vulnerabilities);
-  syncTraitCheckboxes('immunities', creature.immunities);
+  syncTraitCheckboxes('immunities',      creature.immunities);
 }
 
 // High-level flow: read inputs → update state → refresh UI.
