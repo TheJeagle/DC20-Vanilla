@@ -97,21 +97,22 @@ export function getDragId() {
 /**
  * Render the bench panel into `container`.
  * @param {HTMLElement} container
+ * @param {((benchId: string) => void) | null} [onAdd] - called when the + button is clicked
  */
-export function renderBench(container) {
+export function renderBench(container, onAdd = null) {
   if (!container) return;
   container.innerHTML = '';
 
   const players  = state.bench.filter(b => b.type === 'player');
   const monsters = state.bench.filter(b => b.type === 'monster');
 
-  appendBenchSection(container, 'PARTY',    players);
-  appendBenchSection(container, 'MONSTERS', monsters);
+  appendBenchSection(container, 'PARTY',    players,  onAdd);
+  appendBenchSection(container, 'MONSTERS', monsters, onAdd);
 }
 
 // ── Private helpers ───────────────────────────────────────────────────────────
 
-function appendBenchSection(container, title, items) {
+function appendBenchSection(container, title, items, onAdd) {
   const section = document.createElement('div');
   section.className = 'bench-section';
 
@@ -127,14 +128,14 @@ function appendBenchSection(container, title, items) {
     section.appendChild(empty);
   } else {
     for (const item of items) {
-      section.appendChild(buildBenchItem(item));
+      section.appendChild(buildBenchItem(item, onAdd));
     }
   }
 
   container.appendChild(section);
 }
 
-function buildBenchItem(item) {
+function buildBenchItem(item, onAdd) {
   const el = document.createElement('div');
   el.className = 'bench-item';
   if (item.inCombat) el.classList.add('is-in-combat');
@@ -165,6 +166,17 @@ function buildBenchItem(item) {
     badge.className = 'bench-in-combat-badge';
     badge.textContent = 'In combat';
     el.appendChild(badge);
+  } else if (onAdd) {
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'bench-add-btn';
+    addBtn.textContent = '+';
+    addBtn.title = 'Add to combat';
+    addBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onAdd(item.id);
+    });
+    el.appendChild(addBtn);
   }
 
   el.addEventListener('dragstart', (e) => {

@@ -24,7 +24,10 @@ service cloud.firestore {
 
     // ── Encounters ────────────────────────────────────────────────────────────
     match /VanillaEncounters/{docId} {
-      allow read: if resource.data.isPublic == true || (request.auth != null && resource.data.ownerId == request.auth.uid);
+      // Allow all reads so unauthenticated users can query the collection for
+      // the community page. isPublic filtering is enforced client-side, matching
+      // the VanillaCreatures pattern. Write access is still owner-only.
+      allow read: if true;
       allow create: if request.auth != null
                     && request.resource.data.ownerId == request.auth.uid;
       allow update, delete: if request.auth != null

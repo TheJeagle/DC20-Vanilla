@@ -269,6 +269,26 @@ details[open] .run-accordion-summary::before {
   color: #6b4e8a;
 }
 
+.bench-add-btn {
+  appearance: none;
+  border: none;
+  background: linear-gradient(135deg, var(--enc-accent), #6c2ea3);
+  color: #ffffff;
+  border-radius: 50%;
+  width: 1.55rem;
+  height: 1.55rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.12s;
+}
+
+.bench-add-btn:hover { transform: scale(1.12); }
+
 .bench-in-combat-badge {
   font-size: 0.68rem;
   background: rgba(142,68,173,0.15);
@@ -281,7 +301,7 @@ details[open] .run-accordion-summary::before {
 
 /* ── Combat panel ────────────────────────────────────────── */
 .run-panel--combat {
-  min-height: 200px;
+  min-height: 480px;
 }
 
 .combat-panel {

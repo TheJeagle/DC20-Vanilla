@@ -312,19 +312,35 @@ main {
   color: rgba(31,31,31,0.55);
 }
 
-.enc-card-open-btn {
+.enc-card-open-btn,
+.enc-card-run-btn {
   text-decoration: none;
   border-radius: 999px;
   padding: 8px 18px;
-  background: rgba(142,68,173,0.16);
-  border: 1px solid rgba(142,68,173,0.28);
-  color: #5d2a7c;
   font-weight: 600;
   font-size: 0.88rem;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.enc-card-open-btn:hover {
+.enc-card-open-btn {
+  background: rgba(142,68,173,0.16);
+  border: 1px solid rgba(142,68,173,0.28);
+  color: #5d2a7c;
+}
+
+.enc-card-run-btn {
+  background: linear-gradient(135deg, #8e44ad, #6c2ea3);
+  border: none;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(90,52,140,0.22);
+}
+
+.enc-card-open-btn:hover,
+.enc-card-run-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 32px rgba(142,68,173,0.22);
+}
+
+.enc-card-run-btn:hover {
+  box-shadow: 0 14px 32px rgba(90,52,140,0.35);
 }

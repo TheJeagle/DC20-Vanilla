@@ -32,9 +32,10 @@ const dom = {
   encounterPublic:      () => document.getElementById('encounterPublic'),
 
   // Budget
-  budgetFill:       () => document.getElementById('budgetFill'),
-  budgetDifficulty: () => document.getElementById('budgetDifficulty'),
-  budgetNumbers:    () => document.getElementById('budgetNumbers'),
+  budgetFill:         () => document.getElementById('budgetFill'),
+  budgetDifficulty:   () => document.getElementById('budgetDifficulty'),
+  budgetNumbers:      () => document.getElementById('budgetNumbers'),
+  encounterDcDisplay: () => document.getElementById('encounterDcDisplay'),
 
   // Save / Run
   saveEncounterBtn: () => document.getElementById('saveEncounterBtn'),

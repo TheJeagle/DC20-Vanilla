@@ -5,6 +5,43 @@
 import { encounter } from './encounterState.js';
 import dom from './encounterDom.js';
 
+// ── Encounter DC lookup table ─────────────────────────────────────────────────
+// Indexed by level 1–20. Source: DC20 Encounter DC Table.
+
+const ENCOUNTER_DC_TABLE = [
+  null,                              // 0 — unused
+  { easy: 11, normal: 13, hard: 15 }, // 1
+  { easy: 11, normal: 13, hard: 15 }, // 2
+  { easy: 12, normal: 14, hard: 16 }, // 3
+  { easy: 12, normal: 14, hard: 16 }, // 4
+  { easy: 14, normal: 16, hard: 18 }, // 5
+  { easy: 14, normal: 16, hard: 18 }, // 6
+  { easy: 15, normal: 17, hard: 19 }, // 7
+  { easy: 15, normal: 17, hard: 19 }, // 8
+  { easy: 16, normal: 18, hard: 20 }, // 9
+  { easy: 16, normal: 18, hard: 20 }, // 10
+  { easy: 17, normal: 19, hard: 21 }, // 11
+  { easy: 17, normal: 19, hard: 21 }, // 12
+  { easy: 18, normal: 20, hard: 22 }, // 13
+  { easy: 18, normal: 20, hard: 22 }, // 14
+  { easy: 20, normal: 22, hard: 24 }, // 15
+  { easy: 20, normal: 22, hard: 24 }, // 16
+  { easy: 21, normal: 23, hard: 25 }, // 17
+  { easy: 21, normal: 23, hard: 25 }, // 18
+  { easy: 22, normal: 24, hard: 26 }, // 19
+  { easy: 22, normal: 24, hard: 26 }, // 20
+];
+
+/**
+ * Return the Encounter DC row for a given average party level.
+ * @param {number} avgLevel
+ * @returns {{ easy: number, normal: number, hard: number }}
+ */
+export function getEncounterDc(avgLevel) {
+  const level = Math.min(20, Math.max(1, Math.round(avgLevel)));
+  return ENCOUNTER_DC_TABLE[level] || { easy: 11, normal: 13, hard: 15 };
+}
+
 const TIER_MULTIPLIERS = {
   minion:    0.5,
   weak:      0.7,
@@ -62,4 +99,17 @@ export function renderBudget() {
   // Numbers
   const monsterDisplay = Number.isInteger(monsterTotal) ? monsterTotal : monsterTotal.toFixed(1);
   nums.textContent = `${monsterDisplay} / ${partyBudget} (${Math.round(pct)}%)`;
+
+  // Encounter DC display
+  const dcEl = dom.encounterDcDisplay();
+  if (dcEl) {
+    const partyCount = encounter.party.length;
+    if (partyCount === 0) {
+      dcEl.textContent = 'Encounter DC — add players to calculate';
+    } else {
+      const avgLevel = partyBudget / partyCount;
+      const dc = getEncounterDc(avgLevel);
+      dcEl.textContent = `Encounter DC — Easy: ${dc.easy} · Normal: ${dc.normal} · Hard: ${dc.hard}`;
+    }
+  }
 }

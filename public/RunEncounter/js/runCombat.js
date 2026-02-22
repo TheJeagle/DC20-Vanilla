@@ -208,7 +208,7 @@ function rescaleCreature(creature, targetLevel) {
 
 // ── Add combatant from bench ──────────────────────────────────────────────────
 
-function addCombatant(benchItem) {
+export function addCombatant(benchItem) {
   if (benchItem.type === 'player') {
     const p = benchItem.sourceData;
     const maxHp = Number(p.hp) || 20;

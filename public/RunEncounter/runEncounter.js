@@ -9,7 +9,7 @@ import { updateNavAuth } from '../navAuth.js';
 import { state } from './js/runState.js';
 import { loadEncounterForRun, fetchCreatures } from './js/runFirebase.js';
 import { buildBench, renderBench } from './js/runBench.js';
-import { initCombat } from './js/runCombat.js';
+import { initCombat, addCombatant, renderCombat } from './js/runCombat.js';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
@@ -28,6 +28,16 @@ const statusEl        = document.querySelector('#runStatus');
 const logoutButton    = document.querySelector('#logoutButton');
 
 const POWER_MULT = { minion: 0.5, weak: 0.7, normal: 1.0, apex: 2.0, legendary: 4.0 };
+
+// Encounter DC table (Normal column) — indexed by level 1–20
+const NORMAL_DC = [0, 13, 13, 14, 14, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 22, 22, 23, 23, 24, 24];
+
+function getNormalDcForParty(party) {
+  if (!party || party.length === 0) return null;
+  const avgLevel = party.reduce((s, p) => s + (Number(p.level) || 0), 0) / party.length;
+  const level    = Math.min(20, Math.max(1, Math.round(avgLevel)));
+  return NORMAL_DC[level];
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -53,7 +63,16 @@ function computeDifficulty(enc) {
 }
 
 function refreshBench() {
-  renderBench(benchPanel);
+  renderBench(benchPanel, onAddFromBench);
+}
+
+function onAddFromBench(benchId) {
+  const benchItem = state.bench.find(b => b.id === benchId);
+  if (!benchItem || benchItem.inCombat) return;
+  benchItem.inCombat = true;
+  addCombatant(benchItem);
+  refreshBench();
+  renderCombat(combatPanel, refreshBench);
 }
 
 // ── Render header ─────────────────────────────────────────────────────────────
@@ -95,6 +114,15 @@ function renderHeader(enc) {
       rewardsAccordion.hidden = true;
     }
   }
+
+  // Pre-populate DC from the Normal column of the Encounter DC table
+  if (dcInput && state.encounterDc === 10) { // only if still at default
+    const normalDc = getNormalDcForParty(enc.party);
+    if (normalDc) {
+      state.encounterDc = normalDc;
+      dcInput.value = normalDc;
+    }
+  }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -130,7 +158,7 @@ async function init() {
 
     renderHeader(enc);
     buildBench();
-    renderBench(benchPanel);
+    renderBench(benchPanel, onAddFromBench);
     initCombat(combatPanel, refreshBench);
 
   } catch (err) {

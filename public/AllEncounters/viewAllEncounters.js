@@ -250,6 +250,12 @@ function buildCard(enc) {
   openBtn.href = `../Encounters/encounters.html?encounterId=${encodeURIComponent(enc.id)}`;
   footer.appendChild(openBtn);
 
+  const runBtn = document.createElement('a');
+  runBtn.className = 'enc-card-run-btn';
+  runBtn.textContent = '▶ Run';
+  runBtn.href = `../RunEncounter/runEncounter.html?encounterId=${encodeURIComponent(enc.id)}`;
+  footer.appendChild(runBtn);
+
   card.appendChild(footer);
 
   return card;
