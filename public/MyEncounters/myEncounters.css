@@ -208,3 +208,28 @@ body {
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+/* ── Tag chips in row header ─────────────────────────────── */
+.enc-row-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.enc-tag-chip {
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.enc-tag-chip--boss  { background: #fdebd0; color: #935116; }
+.enc-tag-chip--apex  { background: #e8daef; color: #6c3483; }
+
+.enc-tag-chip--env {
+  background: rgba(142,68,173,0.1);
+  color: #5b3d7a;
+  border: 1px solid rgba(142,68,173,0.22);
+}

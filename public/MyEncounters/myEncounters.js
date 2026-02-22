@@ -1,5 +1,6 @@
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
 import { updateNavAuth } from '../navAuth.js';
+import { ENVIRONMENT_TAGS } from '../constants/encounterTags.js';
 import {
   collection,
   query,
@@ -13,6 +14,16 @@ import { auth, db } from '../firebaseClient.js';
 const ENCOUNTERS_COL = 'VanillaEncounters';
 
 const POWER_MULT = { minion: 0.5, weak: 0.7, normal: 1.0, apex: 2.0, legendary: 4.0 };
+
+const ENV_TAG_LABELS = Object.fromEntries(ENVIRONMENT_TAGS.map(t => [t.value, t.label]));
+
+function getAutoTags(enc) {
+  const powers = (enc.monsters || []).map(m => m.power);
+  const tags = [];
+  if (powers.includes('legendary')) tags.push('Boss');
+  if (powers.includes('apex'))      tags.push('Apex');
+  return tags;
+}
 
 const pageStatus  = document.querySelector('#pageStatus');
 const encounterList = document.querySelector('#encounterList');
@@ -156,7 +167,24 @@ function buildEncRow(enc, allEncounters) {
   });
 
   actions.append(editBtn, runBtn, deleteBtn);
-  header.append(toggleIcon, name, badge, meta, actions);
+
+  // Tag chips: auto-tags + environment tags
+  const tagChips = document.createElement('div');
+  tagChips.className = 'enc-row-tags';
+  for (const at of getAutoTags(enc)) {
+    const chip = document.createElement('span');
+    chip.className = `enc-tag-chip enc-tag-chip--auto enc-tag-chip--${at.toLowerCase()}`;
+    chip.textContent = at;
+    tagChips.appendChild(chip);
+  }
+  for (const tagValue of (enc.tags || [])) {
+    const chip = document.createElement('span');
+    chip.className = 'enc-tag-chip enc-tag-chip--env';
+    chip.textContent = ENV_TAG_LABELS[tagValue] || tagValue;
+    tagChips.appendChild(chip);
+  }
+
+  header.append(toggleIcon, name, badge, meta, tagChips, actions);
 
   // ── Details (hidden until expanded) ─────────────────────
   const details = document.createElement('div');

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Community Encounters • DC20 Creature Creator</title>
+    <link rel="stylesheet" href="../reset.css" />
+    <link rel="stylesheet" href="../site.css" />
+    <link rel="stylesheet" href="./viewAllEncounters.css" />
+  </head>
+  <body>
+    <nav class="site-nav">
+      <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
+      <div class="site-nav-links">
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn" type="button">Create <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../CreateCreature/createCreature.html">Create Creature</a>
+            <a class="nav-dropdown-item" href="../Encounters/encounters.html">Create Encounter</a>
+          </div>
+        </div>
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn is-active" type="button">Community <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../AllCreatures/viewAllCreatures.html">All Creatures</a>
+            <a class="nav-dropdown-item" href="./viewAllEncounters.html">All Encounters</a>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navAccountDropdown">
+          <button class="nav-dropdown-btn" type="button">Account <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../MyCreatures/myCreatures.html">My Creatures</a>
+            <a class="nav-dropdown-item" href="../MyEncounters/myEncounters.html">My Encounters</a>
+            <a class="nav-dropdown-item" href="../Auth/auth.html">Account</a>
+            <button class="nav-dropdown-item nav-dropdown-item--danger" type="button" id="logoutButton">Logout</button>
+          </div>
+        </div>
+        <a class="nav-link" id="navSignInLink" href="../Auth/auth.html" hidden>Sign In</a>
+      </div>
+    </nav>
+
+    <main>
+      <header class="enc-library-hero">
+        <h1>Community Encounters</h1>
+        <p>Browse encounters shared by the community. Filter by environment, difficulty, or monster count.</p>
+      </header>
+
+      <section class="enc-library-layout">
+
+        <!-- Filters sidebar -->
+        <aside class="enc-filters-panel">
+          <h2>Filters</h2>
+          <form id="filtersForm" class="enc-filters-form">
+
+            <div class="enc-filter-group">
+              <label for="filterSearch">Search</label>
+              <input id="filterSearch" type="search" placeholder="Search by name or description" autocomplete="off" />
+            </div>
+
+            <div class="enc-filter-group">
+              <label>Difficulty</label>
+              <select id="filterDifficulty">
+                <option value="">Any</option>
+                <option value="easy">Easy</option>
+                <option value="fair">Fair</option>
+                <option value="hard">Hard</option>
+                <option value="deadly">Deadly</option>
+              </select>
+            </div>
+
+            <div class="enc-filter-group">
+              <label>Monster Count</label>
+              <div class="enc-range-row">
+                <input id="filterMonsterMin" type="number" min="0" placeholder="Min" />
+                <span>–</span>
+                <input id="filterMonsterMax" type="number" min="0" placeholder="Max" />
+              </div>
+            </div>
+
+            <div class="enc-filter-group">
+              <label>Special</label>
+              <label class="enc-filter-check">
+                <input type="checkbox" id="filterBoss" /> Boss (has Legendary monster)
+              </label>
+              <label class="enc-filter-check">
+                <input type="checkbox" id="filterApex" /> Apex (has Apex monster)
+              </label>
+            </div>
+
+            <div class="enc-filter-group">
+              <label>Environment</label>
+              <div id="filterEnvTags" class="enc-env-tag-list"></div>
+            </div>
+
+            <div class="enc-filters-actions">
+              <button type="button" id="clearFilters">Reset filters</button>
+            </div>
+          </form>
+        </aside>
+
+        <!-- Results -->
+        <section class="enc-results-panel">
+          <div class="enc-results-header">
+            <div>
+              <h2>All Encounters</h2>
+              <p id="resultsMeta" class="enc-results-meta">Loading encounters…</p>
+            </div>
+          </div>
+
+          <div id="resultsLoading" class="enc-results-loading">Fetching community encounters…</div>
+          <div id="resultsEmpty" class="enc-results-empty is-hidden">
+            <h3>No encounters match your filters</h3>
+            <p>Try adjusting the filters or create an encounter to share with the community.</p>
+          </div>
+
+          <div id="encounterGrid" class="enc-card-grid"></div>
+        </section>
+
+      </section>
+    </main>
+
+    <footer>
+      <div>&copy; <span id="footerYear"></span> DC20 Creature Creator</div>
+      <nav>
+        <a href="https://www.dc20rpg.com" target="_blank" rel="noopener noreferrer">Official DC20</a>
+        <a href="https://discord.gg/dc20rpg" target="_blank" rel="noopener noreferrer">DC20 Discord</a>
+      </nav>
+    </footer>
+
+    <script type="module" src="./viewAllEncounters.js"></script>
+  </body>
+</html>

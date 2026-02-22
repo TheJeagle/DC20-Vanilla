@@ -10,6 +10,7 @@ export const encounter = {
   info: '',
   rewards: '',
   isPublic: true,
+  tags: [],       // environment tag slugs e.g. ['dungeon', 'forest']
   party: [],      // [{ id, name, class, level, hp, pd, ad }]
   partyId: null,
   monsters: [],   // [{ slotId, creatureId, name, baseLevel, levelDelta, power, role, groupId }]

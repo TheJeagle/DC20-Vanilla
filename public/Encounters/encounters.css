@@ -783,6 +783,36 @@ body {
 .save-status[data-tone="success"] { color: #1e8449; }
 .save-status[data-tone="error"]   { color: #b23c58; }
 
+/* ── Tag picker ──────────────────────────────────────────── */
+.enc-tag-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.enc-tag-chip {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #f0eaf8;
+  color: #5b3d7a;
+  border: 1px solid rgba(142,68,173,0.25);
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  user-select: none;
+}
+
+.enc-tag-chip:hover {
+  background: rgba(142,68,173,0.15);
+}
+
+.enc-tag-chip.is-active {
+  background: var(--enc-accent);
+  color: #ffffff;
+  border-color: var(--enc-accent);
+}
+
 /* ── Dialog ──────────────────────────────────────────────── */
 .enc-dialog {
   border: none;

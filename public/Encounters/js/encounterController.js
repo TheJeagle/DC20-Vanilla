@@ -26,6 +26,7 @@ import {
   applyFilters,
 } from './encounterMonsters.js';
 import { saveEncounter, loadEncounter } from './encounterFirebase.js';
+import { ENVIRONMENT_TAGS } from '../../constants/encounterTags.js';
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ let currentEncounterId = null;
 export function initController() {
   wireNav();
   wireMeta();
+  wireTagPicker();
   wireParty();
   wireMonsterLibrary();
   wireSave();
@@ -112,6 +114,42 @@ function wireMeta() {
       encounter.isPublic = pubCheck.checked;
     });
   }
+}
+
+// ── Tag picker ────────────────────────────────────────────────────────────────
+
+function wireTagPicker() {
+  const picker = document.getElementById('encounterTagPicker');
+  if (!picker) return;
+
+  for (const tag of ENVIRONMENT_TAGS) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'enc-tag-chip';
+    chip.textContent = tag.label;
+    chip.dataset.tagValue = tag.value;
+
+    chip.addEventListener('click', () => {
+      const idx = encounter.tags.indexOf(tag.value);
+      if (idx === -1) {
+        encounter.tags.push(tag.value);
+        chip.classList.add('is-active');
+      } else {
+        encounter.tags.splice(idx, 1);
+        chip.classList.remove('is-active');
+      }
+    });
+
+    picker.appendChild(chip);
+  }
+}
+
+function syncTagChips() {
+  const picker = document.getElementById('encounterTagPicker');
+  if (!picker) return;
+  picker.querySelectorAll('.enc-tag-chip').forEach(chip => {
+    chip.classList.toggle('is-active', encounter.tags.includes(chip.dataset.tagValue));
+  });
 }
 
 function updateSaveButton() {
@@ -224,6 +262,7 @@ function wireSave() {
         info:        encounter.info,
         rewards:     encounter.rewards,
         isPublic:    encounter.isPublic,
+        tags:        encounter.tags,
         partyId:     encounter.partyId,
         party:       encounter.party,
         monsters:    encounter.monsters,
@@ -276,6 +315,7 @@ async function loadEncounterById(encounterId) {
     encounter.info        = data.info        || '';
     encounter.rewards     = data.rewards     || '';
     encounter.isPublic    = data.isPublic    !== false;
+    encounter.tags        = Array.isArray(data.tags) ? data.tags : [];
     encounter.party       = data.party       || [];
     encounter.partyId     = data.partyId     || null;
     encounter.monsters    = data.monsters    || [];
@@ -290,6 +330,7 @@ async function loadEncounterById(encounterId) {
     const pubCheck = dom.encounterPublic();
     if (pubCheck) pubCheck.checked = encounter.isPublic;
 
+    syncTagChips();
     renderPartyRows();
     renderSlots();
     updateSaveButton();

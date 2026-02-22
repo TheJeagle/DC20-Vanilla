@@ -134,6 +134,24 @@ export async function loadMyCreatures(uid) {
 }
 
 /**
+ * Load recent public encounters (for community browse page).
+ * Uses orderBy savedAt desc + limit — no isPublic filter in query to avoid
+ * needing a composite index. Filters isPublic client-side.
+ * @returns {Promise<Array>}
+ */
+export async function loadPublicEncounters() {
+  const q = query(
+    collection(db, ENCOUNTERS_COL),
+    orderBy('savedAt', 'desc'),
+    limit(200)
+  );
+  const snap = await getDocs(q);
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(e => e.isPublic !== false);
+}
+
+/**
  * Load recent public creatures.
  * @returns {Promise<Array>}
  */
