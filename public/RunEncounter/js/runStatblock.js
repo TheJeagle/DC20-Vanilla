@@ -312,17 +312,15 @@ function buildActionItem(action) {
   const item = document.createElement('div');
   item.className = 'statblock-action-item';
 
-  // Name + cost row
+  // ── Name row: name + AP cost badge ──────────────────────
   const topRow = document.createElement('div');
   topRow.className = 'action-top-row';
 
   const nameEl = document.createElement('div');
   nameEl.className   = 'action-name';
   nameEl.textContent = action.name || 'Action';
-
   topRow.appendChild(nameEl);
 
-  // AP cost badge
   if (action.cost != null && action.cost !== '') {
     const badge = document.createElement('span');
     badge.className   = 'action-badge';
@@ -330,18 +328,9 @@ function buildActionItem(action) {
     topRow.appendChild(badge);
   }
 
-  // Type / defense / range badges
-  const typeTags = [action.actionType, action.targetDefense, action.range].filter(Boolean);
-  for (const tag of typeTags) {
-    const badge = document.createElement('span');
-    badge.className   = 'action-badge action-badge--secondary';
-    badge.textContent = tag;
-    topRow.appendChild(badge);
-  }
-
   item.appendChild(topRow);
 
-  // Trigger (reactions use reactionTrigger)
+  // ── Trigger ──────────────────────────────────────────────
   const triggerText = action.reactionTrigger || action.trigger || '';
   if (triggerText) {
     const trig = document.createElement('div');
@@ -350,47 +339,86 @@ function buildActionItem(action) {
     item.appendChild(trig);
   }
 
-  // Main description
+  // ── Prose summary line ───────────────────────────────────
+  // e.g. "Ranged Martial Attack vs PD of a creature within 10 / 15 Spaces,
+  //        3 Piercing damage on hit."
+  const actionTypeLabel = String(action.actionType || '').toLowerCase();
+  const isUtility = actionTypeLabel.includes('utility') && !actionTypeLabel.includes('check');
+
+  if (!isUtility) {
+    const parts = [];
+
+    // "{actionType} vs {targetDefense}"
+    let attackPart = action.actionType || '';
+    if (action.targetDefense) attackPart += ` vs ${action.targetDefense}`;
+    if (attackPart) parts.push(attackPart);
+
+    // "of {target} within/in {range}"
+    if (action.target || action.range) {
+      let locationPart = '';
+      if (action.target) locationPart += `of ${action.target}`;
+      if (action.range) {
+        const preposition = actionTypeLabel.includes('area') ? 'in' : 'within';
+        locationPart += locationPart ? ` ${preposition} ${action.range}` : `${preposition} ${action.range}`;
+      }
+      if (locationPart) parts.push(locationPart);
+    }
+
+    // damage
+    const segments = Array.isArray(action.damage) ? action.damage.filter(d => d.amount) : [];
+    if (segments.length) {
+      const dmgStr = segments
+        .map(d => {
+          const amt = Math.floor(Number(d.amount) || 0);
+          return d.type ? `${amt} ${cap(d.type)}` : String(amt);
+        })
+        .join(' + ');
+      parts.push(`${dmgStr} damage on hit`);
+    }
+
+    // check DC inline (e.g. "DC 14 check")
+    if (action.check?.dc != null && !action.targetDefense) {
+      parts.push(`DC ${action.check.dc}`);
+    }
+
+    if (parts.length) {
+      const summary = document.createElement('div');
+      summary.className   = 'action-stats';
+      summary.textContent = parts.join(', ') + '.';
+      item.appendChild(summary);
+    }
+
+    // ── Save block ─────────────────────────────────────────
+    if (action.save?.attribute) {
+      const saveLine = document.createElement('div');
+      saveLine.className = 'action-stats';
+      let s = `${action.save.attribute} Save DC ${action.save.dc ?? '—'}.`;
+      if (action.save.failure)     s += ` Failure: ${action.save.failure}.`;
+      if (action.save.failureEach5) s += ` Failure (each 5): ${action.save.failureEach5}.`;
+      if (action.save.success)     s += ` Success: ${action.save.success}.`;
+      saveLine.textContent = s;
+      item.appendChild(saveLine);
+    }
+
+    // ── Check failure/success (when there's a targetDefense check combo) ──
+    if (action.check?.dc != null && action.targetDefense) {
+      const checkLine = document.createElement('div');
+      checkLine.className = 'action-stats';
+      let c = `DC ${action.check.dc} check.`;
+      if (action.check.failure) c += ` Failure: ${action.check.failure}.`;
+      if (action.check.success) c += ` Success: ${action.check.success}.`;
+      checkLine.textContent = c;
+      item.appendChild(checkLine);
+    }
+  }
+
+  // ── Description (utility actions and any extra flavour text) ──
   const descText = action.description || action.effect || action.text || '';
   if (descText) {
     const desc = document.createElement('p');
     desc.className   = 'action-description';
     desc.textContent = descText;
     item.appendChild(desc);
-  }
-
-  // Stats line: damage (array of {amount,type}), save (object), check (object)
-  const statParts = [];
-
-  if (Array.isArray(action.damage) && action.damage.length) {
-    const dmg = action.damage
-      .map(d => {
-        const amt = Math.floor(Number(d.amount) || 0);
-        return d.type ? `${amt} ${d.type}` : String(amt);
-      })
-      .join(' + ');
-    statParts.push(`Damage: ${dmg}`);
-  }
-
-  if (action.save?.attribute) {
-    let saveStr = `${action.save.attribute} Save DC ${action.save.dc ?? '—'}`;
-    if (action.save.failure)     saveStr += ` · Fail: ${action.save.failure}`;
-    if (action.save.success)     saveStr += ` · Success: ${action.save.success}`;
-    statParts.push(saveStr);
-  }
-
-  if (action.check?.dc != null) {
-    let checkStr = `DC ${action.check.dc}`;
-    if (action.check.failure) checkStr += ` · Fail: ${action.check.failure}`;
-    if (action.check.success) checkStr += ` · Success: ${action.check.success}`;
-    statParts.push(checkStr);
-  }
-
-  if (statParts.length) {
-    const stats = document.createElement('div');
-    stats.className   = 'action-stats';
-    stats.textContent = statParts.join(' · ');
-    item.appendChild(stats);
   }
 
   return item;
