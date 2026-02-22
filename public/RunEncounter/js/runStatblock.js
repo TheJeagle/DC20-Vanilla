@@ -209,12 +209,12 @@ export function buildStatblockEl(creature, combatant = null, { onApSpend = null,
 
   // ── Actions ─────────────────────────────────────────────
   if (actions.length > 0) {
-    el.appendChild(buildActionsSection('Actions', actions, onApSpend, stats.check ?? null, onDodge));
+    el.appendChild(buildActionsSection('Actions', actions, onApSpend, stats.check ?? null, onDodge, stats.damage ?? 0));
   }
 
   // ── Reactions ───────────────────────────────────────────
   if (reactions.length > 0) {
-    el.appendChild(buildActionsSection('Reactions', reactions, onApSpend));
+    el.appendChild(buildActionsSection('Reactions', reactions, onApSpend, null, null, stats.damage ?? 0));
   }
 
   return el;
@@ -298,7 +298,7 @@ const COMMON_ACTIONS = ['Move', 'Advantage', 'Dodge', 'Grapple', 'Hide', 'Help',
 
 // ── Actions section ───────────────────────────────────────────────────────────
 
-function buildActionsSection(title, items, onApSpend, checkBonus = null, onDodge = null) {
+function buildActionsSection(title, items, onApSpend, checkBonus = null, onDodge = null, baseDamage = 0) {
   const sec = document.createElement('div');
   sec.className = 'statblock-actions-section';
 
@@ -348,14 +348,14 @@ function buildActionsSection(title, items, onApSpend, checkBonus = null, onDodge
   list.className = 'statblock-actions-list';
 
   for (const action of items) {
-    list.appendChild(buildActionItem(action, onApSpend));
+    list.appendChild(buildActionItem(action, onApSpend, baseDamage));
   }
 
   sec.appendChild(list);
   return sec;
 }
 
-function buildActionItem(action, onApSpend) {
+function buildActionItem(action, onApSpend, baseDamage = 0) {
   const item = document.createElement('div');
   item.className = 'statblock-action-item';
 
@@ -423,7 +423,7 @@ function buildActionItem(action, onApSpend) {
     // damage — new format: {useBase, modifier, type}; old format fallback: {amount, type}
     const segments = Array.isArray(action.damage) ? action.damage : [];
     if (segments.length) {
-      const baseDmg = Number(stats.damage) || 0;
+      const baseDmg = Number(baseDamage) || 0;
       let heavyBonus = 0;
       const dmgStr = segments
         .map(d => {
