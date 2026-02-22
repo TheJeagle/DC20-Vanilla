@@ -209,7 +209,7 @@ export function buildStatblockEl(creature, combatant = null, { onApSpend = null 
 
   // ── Actions ─────────────────────────────────────────────
   if (actions.length > 0) {
-    el.appendChild(buildActionsSection('Actions', actions, onApSpend));
+    el.appendChild(buildActionsSection('Actions', actions, onApSpend, stats.check ?? null));
   }
 
   // ── Reactions ───────────────────────────────────────────
@@ -288,13 +288,24 @@ function appendEditableVital(container, label, combatant, key) {
 
 // ── Actions section ───────────────────────────────────────────────────────────
 
-function buildActionsSection(title, items, onApSpend) {
+function buildActionsSection(title, items, onApSpend, checkBonus = null) {
   const sec = document.createElement('div');
   sec.className = 'statblock-actions-section';
 
   const heading = document.createElement('div');
-  heading.className   = 'statblock-actions-heading';
-  heading.textContent = `${title} (${items.length})`;
+  heading.className = 'statblock-actions-heading';
+
+  const titleSpan = document.createElement('span');
+  titleSpan.textContent = `${title} (${items.length})`;
+  heading.appendChild(titleSpan);
+
+  if (checkBonus != null) {
+    const hitSpan = document.createElement('span');
+    hitSpan.className   = 'statblock-actions-hit-bonus';
+    hitSpan.textContent = `To Hit: ${fmtMod(checkBonus)}`;
+    heading.appendChild(hitSpan);
+  }
+
   sec.appendChild(heading);
 
   const list = document.createElement('div');
