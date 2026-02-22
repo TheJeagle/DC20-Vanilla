@@ -170,15 +170,9 @@ function addCombatant(benchItem) {
 function buildCombatCard(combatant, index, container, refreshBench) {
   const card = document.createElement('div');
   card.className = `combat-card combat-card--${combatant.type}`;
-  card.draggable = true;
+  card.draggable = false; // enabled only when dragging from the handle
 
-  // Drag-to-reorder: dragstart / dragend on the whole card
   card.addEventListener('dragstart', (e) => {
-    // Only allow if the drag originated from the handle
-    if (!e.target.closest('.combat-drag-handle')) {
-      e.preventDefault();
-      return;
-    }
     _reorderIdx = index;
     card.classList.add('is-dragging');
     e.dataTransfer.effectAllowed = 'move';
@@ -188,6 +182,7 @@ function buildCombatCard(combatant, index, container, refreshBench) {
   card.addEventListener('dragend', () => {
     _reorderIdx = null;
     _dropIdx    = null;
+    card.draggable = false;
     card.classList.remove('is-dragging');
   });
 
@@ -200,6 +195,10 @@ function buildCombatCard(combatant, index, container, refreshBench) {
   handle.textContent = '⠿';
   handle.title = 'Drag to reorder';
   handle.setAttribute('aria-hidden', 'true');
+  handle.addEventListener('mousedown', () => {
+    card.draggable = true;
+    document.addEventListener('mouseup', () => { card.draggable = false; }, { once: true });
+  });
 
   const nameWrap = document.createElement('div');
   nameWrap.className = 'combat-card-name';

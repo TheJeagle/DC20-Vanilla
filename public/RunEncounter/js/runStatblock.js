@@ -322,17 +322,16 @@ function buildActionItem(action) {
 
   topRow.appendChild(nameEl);
 
-  // Cost badges
-  const costStr = action.cost || action.ap || '';
-  if (costStr) {
+  // AP cost badge
+  if (action.cost != null && action.cost !== '') {
     const badge = document.createElement('span');
     badge.className   = 'action-badge';
-    badge.textContent = costStr;
+    badge.textContent = `${action.cost} AP`;
     topRow.appendChild(badge);
   }
 
-  // Extra type badges (range, melee, etc.)
-  const typeTags = [action.type, action.range].filter(Boolean);
+  // Type / defense / range badges
+  const typeTags = [action.actionType, action.targetDefense, action.range].filter(Boolean);
   for (const tag of typeTags) {
     const badge = document.createElement('span');
     badge.className   = 'action-badge action-badge--secondary';
@@ -342,11 +341,12 @@ function buildActionItem(action) {
 
   item.appendChild(topRow);
 
-  // Trigger
-  if (action.trigger) {
+  // Trigger (reactions use reactionTrigger)
+  const triggerText = action.reactionTrigger || action.trigger || '';
+  if (triggerText) {
     const trig = document.createElement('div');
     trig.className   = 'action-trigger';
-    trig.textContent = `Trigger: ${action.trigger}`;
+    trig.textContent = `Trigger: ${triggerText}`;
     item.appendChild(trig);
   }
 
@@ -359,27 +359,38 @@ function buildActionItem(action) {
     item.appendChild(desc);
   }
 
-  // Hit / damage line if present as separate fields
-  const hitParts = [];
-  if (action.hit  != null) hitParts.push(`Hit: ${action.hit}`);
-  if (action.damage) hitParts.push(`Damage: ${action.damage}`);
-  if (action.check) hitParts.push(`Check: ${action.check}`);
-  if (action.saveDC || action.save) hitParts.push(`Save: ${action.saveDC || action.save}`);
+  // Stats line: damage (array of {amount,type}), save (object), check (object)
+  const statParts = [];
 
-  if (hitParts.length) {
-    const stats = document.createElement('div');
-    stats.className   = 'action-stats';
-    stats.textContent = hitParts.join(' · ');
-    item.appendChild(stats);
+  if (Array.isArray(action.damage) && action.damage.length) {
+    const dmg = action.damage
+      .map(d => {
+        const amt = Math.floor(Number(d.amount) || 0);
+        return d.type ? `${amt} ${d.type}` : String(amt);
+      })
+      .join(' + ');
+    statParts.push(`Damage: ${dmg}`);
   }
 
-  // Effects array if present
-  const effects = Array.isArray(action.effects) ? action.effects : [];
-  for (const eff of effects) {
-    const effEl = document.createElement('p');
-    effEl.className   = 'action-description action-effect';
-    effEl.textContent = typeof eff === 'string' ? eff : (eff.text || eff.description || '');
-    if (effEl.textContent) item.appendChild(effEl);
+  if (action.save?.attribute) {
+    let saveStr = `${action.save.attribute} Save DC ${action.save.dc ?? '—'}`;
+    if (action.save.failure)     saveStr += ` · Fail: ${action.save.failure}`;
+    if (action.save.success)     saveStr += ` · Success: ${action.save.success}`;
+    statParts.push(saveStr);
+  }
+
+  if (action.check?.dc != null) {
+    let checkStr = `DC ${action.check.dc}`;
+    if (action.check.failure) checkStr += ` · Fail: ${action.check.failure}`;
+    if (action.check.success) checkStr += ` · Success: ${action.check.success}`;
+    statParts.push(checkStr);
+  }
+
+  if (statParts.length) {
+    const stats = document.createElement('div');
+    stats.className   = 'action-stats';
+    stats.textContent = statParts.join(' · ');
+    item.appendChild(stats);
   }
 
   return item;
