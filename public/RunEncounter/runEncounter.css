@@ -177,6 +177,10 @@ details[open] .run-accordion-summary::before {
   color: #4a2d6c;
 }
 
+#combatPanel{
+  height: 400px;
+}
+
 .run-bench-hint {
   margin: 0;
   font-size: 0.78rem;
