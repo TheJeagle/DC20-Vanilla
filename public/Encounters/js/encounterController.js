@@ -28,12 +28,15 @@ import { saveEncounter, loadEncounter } from './encounterFirebase.js';
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
+let currentEncounterId = null;
+
 export function initController() {
   wireNav();
   wireMeta();
   wireParty();
   wireMonsterLibrary();
   wireSave();
+  wireRun();
   wirePartyDialog();
 
   // Auth listener
@@ -46,6 +49,8 @@ export function initController() {
   const params      = new URLSearchParams(window.location.search);
   const encounterId = params.get('encounterId');
   if (encounterId) {
+    currentEncounterId = encounterId;
+    updateRunButton();
     loadEncounterById(encounterId);
   }
 
@@ -111,6 +116,21 @@ function updateSaveButton() {
   const btn = dom.saveEncounterBtn();
   if (!btn) return;
   btn.disabled = !encounter.name.trim();
+}
+
+function updateRunButton() {
+  const btn = dom.runEncounterBtn();
+  if (!btn) return;
+  btn.disabled = !currentEncounterId;
+}
+
+function wireRun() {
+  const btn = dom.runEncounterBtn();
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if (!currentEncounterId) return;
+    window.location.href = `../RunEncounter/runEncounter.html?encounterId=${currentEncounterId}`;
+  });
 }
 
 // ── Party panel ───────────────────────────────────────────────────────────────
@@ -210,6 +230,8 @@ function wireSave() {
       });
 
       setStatus('Saved!', 'success');
+      currentEncounterId = docId;
+      updateRunButton();
       // Update URL so a reload reloads the same encounter
       const url = new URL(window.location.href);
       url.searchParams.set('encounterId', docId);

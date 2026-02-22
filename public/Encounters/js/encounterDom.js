@@ -36,8 +36,9 @@ const dom = {
   budgetDifficulty: () => document.getElementById('budgetDifficulty'),
   budgetNumbers:    () => document.getElementById('budgetNumbers'),
 
-  // Save
+  // Save / Run
   saveEncounterBtn: () => document.getElementById('saveEncounterBtn'),
+  runEncounterBtn:  () => document.getElementById('runEncounterBtn'),
   saveStatus:       () => document.getElementById('saveStatus'),
 
   // Save Party dialog

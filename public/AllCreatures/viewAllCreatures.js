@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
 import {
   collection,
   doc,
@@ -32,6 +32,7 @@ const dom = {
   likedCheckbox: document.getElementById('filterLiked'),
   clearFiltersButton: document.getElementById('clearFilters'),
   sortSelect: document.getElementById('sortSelect'),
+  logoutButton: document.getElementById('logoutButton'),
 };
 
 const defaultFilters = {
@@ -580,6 +581,12 @@ function attachEventListeners() {
     .forEach((input) => {
       input.addEventListener('change', applyFilters);
     });
+
+  if (dom.logoutButton) {
+    dom.logoutButton.addEventListener('click', () => {
+      signOut(auth).then(() => { window.location.href = '../Auth/auth.html'; });
+    });
+  }
 
   if (dom.clearFiltersButton) {
     dom.clearFiltersButton.addEventListener('click', () => {

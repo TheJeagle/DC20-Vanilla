@@ -12,14 +12,29 @@
     <nav class="site-nav">
       <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
       <div class="site-nav-links">
-        <a class="nav-link" href="../CreateCreature/createCreature.html">Create</a>
-        <a class="nav-link" href="../MyCreatures/myCreatures.html">My Creatures</a>
-        <a class="nav-link" href="../Encounters/encounters.html">Encounters</a>
-        <a class="nav-link" href="../MyEncounters/myEncounters.html">My Encounters</a>
-        <a class="nav-link" href="../AllCreatures/viewAllCreatures.html">All Creatures</a>
-        <a class="nav-link" href="../Auth/auth.html">Account</a>
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn" type="button">Create <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../CreateCreature/createCreature.html">Create Creature</a>
+            <a class="nav-dropdown-item" href="../Encounters/encounters.html">Create Encounter</a>
+          </div>
+        </div>
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn" type="button">Community <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../AllCreatures/viewAllCreatures.html">All Creatures</a>
+          </div>
+        </div>
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn" type="button">Account <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../MyCreatures/myCreatures.html">My Creatures</a>
+            <a class="nav-dropdown-item" href="../MyEncounters/myEncounters.html">My Encounters</a>
+            <a class="nav-dropdown-item" href="../Auth/auth.html">Account</a>
+            <button class="nav-dropdown-item nav-dropdown-item--danger" type="button" id="logoutButton">Logout</button>
+          </div>
+        </div>
       </div>
-      <button class="nav-button nav-button--danger" type="button" id="logoutButton">Logout</button>
     </nav>
 
     <!-- Status / loading -->
