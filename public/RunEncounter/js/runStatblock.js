@@ -294,6 +294,25 @@ function appendEditableVital(container, label, combatant, key) {
   container.append(lbl, inp);
 }
 
+/**
+ * Append a labeled outcome line (Failure / Success / Each 5 / Save DC header).
+ * If `value` is omitted the label is rendered as a plain header line.
+ */
+function appendOutcomeLine(parent, label, value) {
+  const row = document.createElement('div');
+  row.className = 'action-outcome-line';
+  const lbl = document.createElement('span');
+  lbl.className   = 'action-outcome-label';
+  lbl.textContent = value != null ? `${label}: ` : label;
+  row.appendChild(lbl);
+  if (value != null) {
+    const val = document.createElement('span');
+    val.textContent = value;
+    row.appendChild(val);
+  }
+  parent.appendChild(row);
+}
+
 const COMMON_ACTIONS = ['Move', 'Advantage', 'Dodge', 'Grapple', 'Hide', 'Help', 'Hold Action'];
 
 // ── Actions section ───────────────────────────────────────────────────────────
@@ -440,7 +459,7 @@ function buildActionItem(action, onApSpend, baseDamage = 0) {
       parts.push(onHit);
     }
 
-    // check DC inline (e.g. "DC 14 check")
+    // check DC inline for pure check actions (no attack roll)
     if (action.check?.dc != null && !action.targetDefense) {
       parts.push(`DC ${action.check.dc}`);
     }
@@ -454,25 +473,20 @@ function buildActionItem(action, onApSpend, baseDamage = 0) {
 
     // ── Save block ─────────────────────────────────────────
     if (action.save?.attribute) {
-      const saveLine = document.createElement('div');
-      saveLine.className = 'action-stats';
-      let s = `${action.save.attribute} Save DC ${action.save.dc ?? '—'}.`;
-      if (action.save.failure)     s += ` Failure: ${action.save.failure}.`;
-      if (action.save.failureEach5) s += ` Failure (each 5): ${action.save.failureEach5}.`;
-      if (action.save.success)     s += ` Success: ${action.save.success}.`;
-      saveLine.textContent = s;
-      item.appendChild(saveLine);
+      appendOutcomeLine(item, `${action.save.attribute} Save, DC ${action.save.dc ?? '—'}`);
+      if (action.save.failure)      appendOutcomeLine(item, 'Failure',            action.save.failure);
+      if (action.save.failureEach5) appendOutcomeLine(item, 'Failure (Each 5)',   action.save.failureEach5);
+      if (action.save.success)      appendOutcomeLine(item, 'Success',            action.save.success);
+      if (action.save.successEach5) appendOutcomeLine(item, 'Success (Each 5)',   action.save.successEach5);
     }
 
-    // ── Check failure/success (when there's a targetDefense check combo) ──
-    if (action.check?.dc != null && action.targetDefense) {
-      const checkLine = document.createElement('div');
-      checkLine.className = 'action-stats';
-      let c = `DC ${action.check.dc} check.`;
-      if (action.check.failure) c += ` Failure: ${action.check.failure}.`;
-      if (action.check.success) c += ` Success: ${action.check.success}.`;
-      checkLine.textContent = c;
-      item.appendChild(checkLine);
+    // ── Check outcomes — shown for all check-type actions ──
+    // (DC is already in the summary line above; just render the riders)
+    if (action.check?.dc != null) {
+      if (action.check.failure)      appendOutcomeLine(item, 'Failure',           action.check.failure);
+      if (action.check.failureEach5) appendOutcomeLine(item, 'Failure (Each 5)',  action.check.failureEach5);
+      if (action.check.success)      appendOutcomeLine(item, 'Success',           action.check.success);
+      if (action.check.successEach5) appendOutcomeLine(item, 'Success (Each 5)',  action.check.successEach5);
     }
   }
 

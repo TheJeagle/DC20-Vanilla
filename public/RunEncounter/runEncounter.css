@@ -981,6 +981,19 @@ details[open] .run-accordion-summary::before {
   padding-top: 0.3rem;
 }
 
+.action-outcome-line {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #3a2c4b;
+  border-top: 1px dashed #d8c9f0;
+  padding-top: 0.25rem;
+}
+
+.action-outcome-label {
+  font-weight: 700;
+  color: #5b3d7a;
+}
+
 .action-effect {
   margin: 0;
   font-size: 0.83rem;
