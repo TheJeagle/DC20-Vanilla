@@ -253,7 +253,7 @@ export function addCombatant(benchItem) {
       maxAp,
       currentAp:  maxAp,
       dodgeState: 0,   // 0 = none, 1 = dodging, 2 = full dodge
-      expanded:   true,
+      expanded:   false,
       sourceData: benchItem.sourceData,
       creatureId: first.creatureId,
       creature,         // rescaled (or original) creature doc for statblock rendering
