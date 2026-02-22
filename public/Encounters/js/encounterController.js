@@ -27,6 +27,7 @@ import {
 } from './encounterMonsters.js';
 import { saveEncounter, loadEncounter } from './encounterFirebase.js';
 import { ENVIRONMENT_TAGS } from '../../constants/encounterTags.js';
+import { fetchCreaturesForEncounter, downloadEncounterObsidian, printEncounterPdf } from './encounterExport.js';
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,7 @@ export function initController() {
   wireMonsterLibrary();
   wireSave();
   wireRun();
+  wireExport();
   wirePartyDialog();
 
   // Auth listener
@@ -171,6 +173,33 @@ function wireRun() {
     if (!currentEncounterId) return;
     window.location.href = `../RunEncounter/runEncounter.html?encounterId=${currentEncounterId}`;
   });
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+
+function wireExport() {
+  const mdBtn  = document.getElementById('exportObsidianBtn');
+  const pdfBtn = document.getElementById('exportPdfBtn');
+
+  async function runExport(type) {
+    setStatus('Fetching creature data…', '');
+    try {
+      const creaturesMap = await fetchCreaturesForEncounter(encounter);
+      if (type === 'md') {
+        downloadEncounterObsidian(encounter, creaturesMap);
+        setStatus('Exported!', 'success');
+      } else {
+        printEncounterPdf(encounter, creaturesMap);
+        setStatus('', '');
+      }
+    } catch (err) {
+      console.error('Encounter export failed:', err);
+      setStatus('Export failed. Please try again.', 'error');
+    }
+  }
+
+  if (mdBtn)  mdBtn.addEventListener('click',  () => runExport('md'));
+  if (pdfBtn) pdfBtn.addEventListener('click', () => runExport('pdf'));
 }
 
 // ── Party panel ───────────────────────────────────────────────────────────────

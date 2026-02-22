@@ -202,6 +202,14 @@ body {
   white-space: pre-line;
 }
 
+.enc-detail-export {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0d0ee;
+}
+
 .enc-detail-budget {
   display: flex;
   align-items: center;
