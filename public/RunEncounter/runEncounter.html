@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Run Encounter • DC20 Creature Creator</title>
+    <link rel="stylesheet" href="../reset.css">
+    <link rel="stylesheet" href="../site.css">
+    <link rel="stylesheet" href="runEncounter.css">
+  </head>
+  <body>
+    <nav class="site-nav">
+      <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
+      <div class="site-nav-links">
+        <a class="nav-link" href="../CreateCreature/createCreature.html">Create</a>
+        <a class="nav-link" href="../MyCreatures/myCreatures.html">My Creatures</a>
+        <a class="nav-link" href="../Encounters/encounters.html">Encounters</a>
+        <a class="nav-link" href="../MyEncounters/myEncounters.html">My Encounters</a>
+        <a class="nav-link" href="../AllCreatures/viewAllCreatures.html">All Creatures</a>
+        <a class="nav-link" href="../Auth/auth.html">Account</a>
+      </div>
+      <button class="nav-button nav-button--danger" type="button" id="logoutButton">Logout</button>
+    </nav>
+
+    <!-- Status / loading -->
+    <div id="runStatus" class="run-status" role="status" aria-live="polite" hidden></div>
+
+    <!-- Header strip -->
+    <div class="run-header">
+      <div class="run-header-main">
+        <h1 id="encounterTitle" class="run-encounter-title">Loading…</h1>
+        <span id="difficultyBadge" class="budget-difficulty budget-difficulty--easy">Easy</span>
+        <label class="run-dc-label">
+          Encounter DC:
+          <input type="number" id="encounterDcInput" class="run-dc-input" value="10" min="1" max="40">
+        </label>
+      </div>
+
+      <div class="run-header-accordions">
+        <details id="descAccordion" class="run-accordion" hidden>
+          <summary class="run-accordion-summary">Description</summary>
+          <p id="descText" class="run-accordion-body"></p>
+        </details>
+        <details id="notesAccordion" class="run-accordion" hidden>
+          <summary class="run-accordion-summary">GM Notes</summary>
+          <p id="notesText" class="run-accordion-body"></p>
+        </details>
+        <details id="rewardsAccordion" class="run-accordion" hidden>
+          <summary class="run-accordion-summary">Rewards</summary>
+          <p id="rewardsText" class="run-accordion-body"></p>
+        </details>
+      </div>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="run-columns">
+
+      <!-- LEFT: Bench -->
+      <div class="run-col run-col--bench">
+        <div class="run-panel">
+          <h2 class="run-panel-heading">Bench</h2>
+          <p class="run-bench-hint">Drag to combat →</p>
+          <div id="benchPanel" class="bench-panel"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Combat -->
+      <div class="run-col run-col--combat">
+        <div class="run-panel run-panel--combat">
+          <h2 class="run-panel-heading">Combat</h2>
+          <div id="combatPanel" class="combat-panel"></div>
+        </div>
+      </div>
+
+    </div><!-- end run-columns -->
+
+    <script type="module" src="runEncounter.js"></script>
+  </body>
+</html>

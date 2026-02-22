@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Encounters • DC20 Creature Creator</title>
+    <link rel="stylesheet" href="../reset.css">
+    <link rel="stylesheet" href="../site.css">
+    <link rel="stylesheet" href="myEncounters.css">
+  </head>
+  <body>
+    <nav class="site-nav">
+      <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
+      <div class="site-nav-links">
+        <a class="nav-link" href="../CreateCreature/createCreature.html">Create</a>
+        <a class="nav-link" href="../MyCreatures/myCreatures.html">My Creatures</a>
+        <a class="nav-link" href="../Encounters/encounters.html">Encounters</a>
+        <a class="nav-link is-active" href="./myEncounters.html">My Encounters</a>
+        <a class="nav-link" href="../AllCreatures/viewAllCreatures.html">All Creatures</a>
+        <a class="nav-link" href="../Auth/auth.html">Account</a>
+      </div>
+      <button class="nav-button nav-button--danger" type="button" id="logoutButton">Logout</button>
+    </nav>
+
+    <main id="myEncountersPage">
+      <div class="page-header">
+        <h1>My Encounters</h1>
+        <a class="enc-new-btn" href="../Encounters/encounters.html">+ New Encounter</a>
+      </div>
+
+      <div id="pageStatus" class="page-status" role="status" aria-live="polite"></div>
+
+      <div id="encounterList" class="encounter-list"></div>
+    </main>
+
+    <script type="module" src="myEncounters.js"></script>
+  </body>
+</html>
