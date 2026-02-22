@@ -1,59 +1,31 @@
 /**
- * encounterExport.js
- * Encounter export helpers — Obsidian (.md download) and PDF (print window).
- * Both require fetching full creature docs from Firestore to build statblocks.
+ * runExport.js
+ * Encounter export helpers for the RunEncounter page.
+ * Reads from decoded Firestore creature docs (state.creatures map) — no extra fetches needed.
+ *
+ * Firestore creature shape used here:
+ *   creature.stats.{HP, PD, PDHeavy, PDBrutal, AD, ADHeavy, ADBrutal, speed, AP, saveDC, check, damage}
+ *   creature.attributes.values.{Mig, Agi, Cha, Int}
+ *   creature.traits.{resistances, vulnerabilities, immunities, senses, skills}
+ *   creature.featurePassives[], featureActions[], featureReactions[]
+ *
+ * Action damage — two formats:
+ *   New: {useBase, modifier, type}  → (useBase ? baseDamage : 0) + modifier
+ *   Old: {amount, type}             → amount
  */
-import {
-  doc,
-  getDoc,
-} from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
-import { db } from '../../firebaseClient.js';
-
-const CREATURES_COL = 'VanillaCreatures';
 
 const POWER_MULT = { minion: 0.5, weak: 0.7, normal: 1.0, apex: 2.0, legendary: 4.0 };
 
-// ── Firestore fetch ───────────────────────────────────────────────────────────
-
-/**
- * Fetch all unique creature documents referenced by enc.monsters[].creatureId.
- * Returns a map of { creatureId: creatureData }.
- */
-export async function fetchCreaturesForEncounter(enc) {
-  const ids = [...new Set(
-    (enc.monsters || []).map(m => m.creatureId).filter(Boolean)
-  )];
-  if (ids.length === 0) return {};
-
-  const results = await Promise.all(
-    ids.map(async (id) => {
-      try {
-        const snap = await getDoc(doc(db, CREATURES_COL, id));
-        if (!snap.exists()) return null;
-        return { id: snap.id, ...snap.data() };
-      } catch {
-        return null;
-      }
-    })
-  );
-
-  const map = {};
-  for (const c of results) {
-    if (c) map[c.id] = c;
-  }
-  return map;
-}
-
-// ── Private helpers ───────────────────────────────────────────────────────────
+// ── Private helpers ────────────────────────────────────────────────────────────
 
 function toTitleCase(str) {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function toSigned(value) {
-  const n = Math.round(Number(value) || 0);
-  return `${n >= 0 ? '+' : ''}${n}`;
+function toSigned(n) {
+  const v = Math.round(Number(n) || 0);
+  return `${v >= 0 ? '+' : ''}${v}`;
 }
 
 function yamlQuote(str) {
@@ -67,7 +39,7 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;');
 }
 
-function computeEncounterDifficulty(enc) {
+function computeDifficulty(enc) {
   const partyBudget  = (enc.party || []).reduce((s, p) => s + (Number(p.level) || 0), 0);
   const monsterTotal = (enc.monsters || []).reduce((s, m) => {
     const mult = POWER_MULT[m.power] ?? 1.0;
@@ -81,37 +53,50 @@ function computeEncounterDifficulty(enc) {
   return 'deadly';
 }
 
-function buildActionDesc(action, fallbackSaveDC) {
-  const parts = [];
-  if (action.actionType)     parts.push(action.actionType);
-  if (action.targetDefense)  parts.push(`vs ${action.targetDefense}`);
-  if (action.target)         parts.push(action.target);
-  if (action.range)          parts.push(action.range);
+function effectiveLvl(monsterSlot, creature) {
+  if (monsterSlot) {
+    return Math.max(0, (monsterSlot.baseLevel || 0) + (monsterSlot.levelDelta || 0));
+  }
+  return creature.level ?? 1;
+}
 
-  if (Array.isArray(action.damage) && action.damage.length) {
-    const dmg = action.damage
-      .map(d => {
-        const amt = Math.floor(Number(d.amount) || 0);
-        return d.type ? `${amt} ${d.type}` : String(amt);
-      })
-      .join(' + ');
-    parts.push(`${dmg} damage`);
+/**
+ * Build action description string.
+ * Handles both new damage format {useBase, modifier, type} and old {amount, type}.
+ */
+function buildActionDesc(action, fallbackSaveDC, baseDamage) {
+  const parts = [];
+  if (action.actionType)    parts.push(action.actionType);
+  if (action.targetDefense) parts.push(`vs ${action.targetDefense}`);
+  if (action.target)        parts.push(action.target);
+  if (action.range)         parts.push(action.range);
+
+  const segments = Array.isArray(action.damage) ? action.damage : [];
+  if (segments.length) {
+    const base = Number(baseDamage) || 0;
+    const dmg = segments.map(d => {
+      const amt = d.useBase !== undefined
+        ? (d.useBase ? base : 0) + (Number(d.modifier) || 0)
+        : Number(d.amount) || 0;
+      return d.type ? `${Math.floor(amt)} ${d.type}` : String(Math.floor(amt));
+    }).join(' + ');
+    parts.push(`${dmg} damage on hit`);
   }
 
   if (action.save?.attribute) {
     const dc = action.save.dc ?? fallbackSaveDC;
     parts.push(`${action.save.attribute} Save DC ${dc}`);
-    if (action.save.failure)     parts.push(`Failure: ${action.save.failure}`);
+    if (action.save.failure)      parts.push(`Failure: ${action.save.failure}`);
     if (action.save.failureEach5) parts.push(`Failure (Each 5): ${action.save.failureEach5}`);
-    if (action.save.success)     parts.push(`Success: ${action.save.success}`);
+    if (action.save.success)      parts.push(`Success: ${action.save.success}`);
     if (action.save.successEach5) parts.push(`Success (Each 5): ${action.save.successEach5}`);
   }
 
   if (action.check?.dc != null) {
     parts.push(`DC ${action.check.dc}`);
-    if (action.check.failure)     parts.push(`Failure: ${action.check.failure}`);
+    if (action.check.failure)      parts.push(`Failure: ${action.check.failure}`);
     if (action.check.failureEach5) parts.push(`Failure (Each 5): ${action.check.failureEach5}`);
-    if (action.check.success)     parts.push(`Success: ${action.check.success}`);
+    if (action.check.success)      parts.push(`Success: ${action.check.success}`);
     if (action.check.successEach5) parts.push(`Success (Each 5): ${action.check.successEach5}`);
   }
 
@@ -121,37 +106,38 @@ function buildActionDesc(action, fallbackSaveDC) {
   return parts.filter(Boolean).join(', ');
 }
 
-function buildActionEntry(action, fallbackSaveDC) {
+function buildActionEntry(action, fallbackSaveDC, baseDamage) {
   const cost = action.cost != null ? ` (${action.cost})` : '';
   const name = `${action.name || 'Action'}${cost}`;
-  const desc = buildActionDesc(action, fallbackSaveDC);
+  const desc = buildActionDesc(action, fallbackSaveDC, baseDamage);
   return `  - name: ${name}\n    desc: ${yamlQuote(desc)}`;
 }
 
-/** Returns effective level for a monster slot. */
-function effectiveLevel(monsterSlot, creature) {
-  if (monsterSlot) {
-    return Math.max(0, (monsterSlot.baseLevel || 0) + (monsterSlot.levelDelta || 0));
-  }
-  return creature.level ?? 1;
-}
+// ── Obsidian YAML statblock ────────────────────────────────────────────────────
 
-// ── Obsidian YAML statblock ───────────────────────────────────────────────────
+function buildCreatureYaml(creature, monsterSlot) {
+  const stats    = creature.stats     || {};
+  const attrVals = creature.attributes?.values || {};
+  const traits   = creature.traits    || {};
 
-function buildCreatureStatblockYaml(creature, monsterSlot) {
   const name   = monsterSlot?.name || creature.name || 'Unknown';
-  const level  = effectiveLevel(monsterSlot, creature);
-  const pd     = Math.round(Number(creature.PD)     || 0);
-  const ad     = Math.round(Number(creature.AD)     || 0);
-  const hp     = Math.round(Number(creature.HP)     || 0);
-  const ap     = Math.round(Number(creature.AP)     || 0);
-  const speed  = Math.round(Number(creature.speed)  || 0);
-  const saveDC = Math.round(Number(creature.saveDC) || 0);
-  const attack = toSigned(creature.check);
-  const mig    = Math.round(Number(creature.attributes?.Mig) || 0);
-  const agi    = Math.round(Number(creature.attributes?.Agi) || 0);
-  const cha    = Math.round(Number(creature.attributes?.Cha) || 0);
-  const int_   = Math.round(Number(creature.attributes?.Int) || 0);
+  const level  = effectiveLvl(monsterSlot, creature);
+  const pd     = Math.round(Number(stats.PD)       || 0);
+  const pdH    = Math.round(Number(stats.PDHeavy)  || pd + 5);
+  const pdB    = Math.round(Number(stats.PDBrutal) || pd + 10);
+  const ad     = Math.round(Number(stats.AD)       || 0);
+  const adH    = Math.round(Number(stats.ADHeavy)  || ad + 5);
+  const adB    = Math.round(Number(stats.ADBrutal) || ad + 10);
+  const hp     = Math.round(Number(stats.HP)       || 0);
+  const ap     = Math.round(Number(stats.AP)       || 0);
+  const speed  = Math.round(Number(stats.speed)    || 0);
+  const saveDC = Math.round(Number(stats.saveDC)   || 0);
+  const attack = toSigned(stats.check);
+  const mig    = Math.round(Number(attrVals.Mig)   || 0);
+  const agi    = Math.round(Number(attrVals.Agi)   || 0);
+  const cha    = Math.round(Number(attrVals.Cha)   || 0);
+  const int_   = Math.round(Number(attrVals.Int)   || 0);
+  const baseDmg = Number(stats.damage) || 0;
 
   const lines = [];
   lines.push('```statblock');
@@ -161,8 +147,8 @@ function buildCreatureStatblockYaml(creature, monsterSlot) {
   lines.push(`type: ${toTitleCase(creature.type)}`);
   lines.push(`level: ${level}`);
   lines.push(`hp: ${hp}`);
-  lines.push(`pd: ${pd}/${pd + 5}/${pd + 10}`);
-  lines.push(`ad: ${ad}/${ad + 5}/${ad + 10}`);
+  lines.push(`pd: ${pd}/${pdH}/${pdB}`);
+  lines.push(`ad: ${ad}/${adH}/${adB}`);
   lines.push(`mig: ${mig}`);
   lines.push(`agi: ${agi}`);
   lines.push(`cha: ${cha}`);
@@ -178,14 +164,14 @@ function buildCreatureStatblockYaml(creature, monsterSlot) {
     const all = [...(group?.damage || []), ...(group?.condition || [])].filter(Boolean);
     if (all.length) charEntries.push({ name: label, desc: all.join(', ') });
   };
-  pushTraitGroup('Resistances',    creature.resistances);
-  pushTraitGroup('Vulnerabilities', creature.vulnerabilities);
-  pushTraitGroup('Immunities',     creature.immunities);
-  if (Array.isArray(creature.skills) && creature.skills.length) {
-    charEntries.push({ name: 'Skills', desc: creature.skills.map(toTitleCase).join(', ') });
+  pushTraitGroup('Resistances',     traits.resistances);
+  pushTraitGroup('Vulnerabilities', traits.vulnerabilities);
+  pushTraitGroup('Immunities',      traits.immunities);
+  if (Array.isArray(traits.skills) && traits.skills.length) {
+    charEntries.push({ name: 'Skills', desc: traits.skills.map(toTitleCase).join(', ') });
   }
-  if (Array.isArray(creature.senses) && creature.senses.length) {
-    charEntries.push({ name: 'Senses', desc: creature.senses.join(', ') });
+  if (Array.isArray(traits.senses) && traits.senses.length) {
+    charEntries.push({ name: 'Senses', desc: traits.senses.join(', ') });
   }
   if (charEntries.length) {
     lines.push('characteristics:');
@@ -214,28 +200,28 @@ function buildCreatureStatblockYaml(creature, monsterSlot) {
 
   if (regular.length) {
     lines.push('attacks_spells:');
-    regular.forEach(a => lines.push(buildActionEntry(a, saveDC)));
+    regular.forEach(a => lines.push(buildActionEntry(a, saveDC, baseDmg)));
   }
   if (allReactions.length) {
     lines.push('reactions:');
-    allReactions.forEach(a => lines.push(buildActionEntry(a, saveDC)));
+    allReactions.forEach(a => lines.push(buildActionEntry(a, saveDC, baseDmg)));
   }
   if (legendary.length) {
     lines.push('legendary_actions:');
-    legendary.forEach(a => lines.push(buildActionEntry(a, saveDC)));
+    legendary.forEach(a => lines.push(buildActionEntry(a, saveDC, baseDmg)));
   }
   if (apex.length) {
     lines.push('apex_actions:');
-    apex.forEach(a => lines.push(buildActionEntry(a, saveDC)));
+    apex.forEach(a => lines.push(buildActionEntry(a, saveDC, baseDmg)));
   }
 
   lines.push('```');
   return lines.join('\n');
 }
 
-// ── Obsidian export ───────────────────────────────────────────────────────────
+// ── Obsidian .md export ────────────────────────────────────────────────────────
 
-export function generateEncounterObsidianMd(enc, creaturesMap) {
+function generateEncounterMd(enc, creaturesMap) {
   const lines = [];
   lines.push(`# ${enc.name || 'Unnamed Encounter'}`);
   lines.push('');
@@ -261,7 +247,6 @@ export function generateEncounterObsidianMd(enc, creaturesMap) {
     lines.push('');
   }
 
-  // One statblock per unique creature
   const seen = new Set();
   for (const m of enc.monsters || []) {
     if (!m.creatureId || seen.has(m.creatureId)) continue;
@@ -271,47 +256,48 @@ export function generateEncounterObsidianMd(enc, creaturesMap) {
 
     lines.push('---');
     lines.push('');
-    lines.push(buildCreatureStatblockYaml(creature, m));
+    lines.push(buildCreatureYaml(creature, m));
     lines.push('');
   }
 
   return lines.join('\n');
 }
 
-function downloadText(filename, text) {
-  const blob = new Blob([text], { type: 'text/plain' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-export function downloadEncounterObsidian(enc, creaturesMap) {
-  const md   = generateEncounterObsidianMd(enc, creaturesMap);
+export function downloadEncounterMd(enc, creaturesMap) {
+  const md   = generateEncounterMd(enc, creaturesMap);
   const slug = (enc.name || 'encounter')
     .replace(/[^a-z0-9\s-]/gi, '').trim().replace(/\s+/g, '-').toLowerCase()
     || 'encounter';
-  downloadText(`${slug}.md`, md);
+  const blob = new Blob([md], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `${slug}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── PDF (print window) ────────────────────────────────────────────────────────
 
 function buildStatblockHtml(creature, monsterSlot) {
+  const stats    = creature.stats     || {};
+  const attrVals = creature.attributes?.values || {};
+  const traits   = creature.traits    || {};
+
   const name   = monsterSlot?.name || creature.name || 'Unknown';
-  const level  = effectiveLevel(monsterSlot, creature);
-  const pd     = Math.round(Number(creature.PD)     || 0);
-  const ad     = Math.round(Number(creature.AD)     || 0);
-  const hp     = Math.round(Number(creature.HP)     || 0);
-  const ap     = Math.round(Number(creature.AP)     || 0);
-  const speed  = Math.round(Number(creature.speed)  || 0);
-  const saveDC = Math.round(Number(creature.saveDC) || 0);
-  const attack = toSigned(creature.check);
-  const mig    = Math.round(Number(creature.attributes?.Mig) || 0);
-  const agi    = Math.round(Number(creature.attributes?.Agi) || 0);
-  const cha    = Math.round(Number(creature.attributes?.Cha) || 0);
-  const int_   = Math.round(Number(creature.attributes?.Int) || 0);
+  const level  = effectiveLvl(monsterSlot, creature);
+  const pd     = Math.round(Number(stats.PD)       || 0);
+  const ad     = Math.round(Number(stats.AD)       || 0);
+  const hp     = Math.round(Number(stats.HP)       || 0);
+  const ap     = Math.round(Number(stats.AP)       || 0);
+  const speed  = Math.round(Number(stats.speed)    || 0);
+  const saveDC = Math.round(Number(stats.saveDC)   || 0);
+  const attack = toSigned(stats.check);
+  const mig    = Math.round(Number(attrVals.Mig)   || 0);
+  const agi    = Math.round(Number(attrVals.Agi)   || 0);
+  const cha    = Math.round(Number(attrVals.Cha)   || 0);
+  const int_   = Math.round(Number(attrVals.Int)   || 0);
+  const baseDmg = Number(stats.damage) || 0;
   const size   = toTitleCase(creature.size);
   const type   = toTitleCase(creature.type);
   const power  = toTitleCase(monsterSlot?.power || creature.power || 'normal');
@@ -328,10 +314,29 @@ function buildStatblockHtml(creature, monsterSlot) {
     if (!actions.length) return '';
     const rows = actions.map(a => {
       const cost = a.cost != null ? ` (${a.cost} AP)` : '';
-      return `<p class="sb-action"><span class="sb-action-name">${escapeHtml((a.name || 'Action') + cost)}.</span> ${escapeHtml(buildActionDesc(a, saveDC))}</p>`;
+      return `<p class="sb-action"><span class="sb-action-name">${escapeHtml((a.name || 'Action') + cost)}.</span> ${escapeHtml(buildActionDesc(a, saveDC, baseDmg))}</p>`;
     }).join('');
     return `<div class="sb-divider"></div><p class="sb-section-title">${title}</p>${rows}`;
   }
+
+  // Characteristics
+  const charParts = [];
+  const pushTraitGroup = (label, group) => {
+    const all = [...(group?.damage || []), ...(group?.condition || [])].filter(Boolean);
+    if (all.length) charParts.push(`<strong>${label}:</strong> ${escapeHtml(all.join(', '))}`);
+  };
+  pushTraitGroup('Resistances',     traits.resistances);
+  pushTraitGroup('Vulnerabilities', traits.vulnerabilities);
+  pushTraitGroup('Immunities',      traits.immunities);
+  if (Array.isArray(traits.skills) && traits.skills.length) {
+    charParts.push(`<strong>Skills:</strong> ${escapeHtml(traits.skills.map(toTitleCase).join(', '))}`);
+  }
+  if (Array.isArray(traits.senses) && traits.senses.length) {
+    charParts.push(`<strong>Senses:</strong> ${escapeHtml(traits.senses.join(', '))}`);
+  }
+  const charHtml = charParts.length
+    ? `<div class="sb-divider"></div><div class="sb-chars">${charParts.join(' &nbsp;·&nbsp; ')}</div>`
+    : '';
 
   const passivesHtml = passives.length
     ? `<div class="sb-divider"></div>${passives.map(f =>
@@ -361,34 +366,27 @@ function buildStatblockHtml(creature, monsterSlot) {
     <div class="sb-attr"><span class="sb-attr-lbl">Cha</span> ${cha >= 0 ? '+' : ''}${cha}</div>
     <div class="sb-attr"><span class="sb-attr-lbl">Int</span> ${int_ >= 0 ? '+' : ''}${int_}</div>
   </div>
+  ${charHtml}
   ${passivesHtml}
-  ${renderActionGroup(regular,   'Actions')}
+  ${renderActionGroup(regular,      'Actions')}
   ${renderActionGroup(allReactions, 'Reactions')}
-  ${renderActionGroup(legendary, 'Legendary Actions')}
-  ${renderActionGroup(apex,      'Apex Actions')}
+  ${renderActionGroup(legendary,    'Legendary Actions')}
+  ${renderActionGroup(apex,         'Apex Actions')}
 </div>`;
 }
 
 export function printEncounterPdf(enc, creaturesMap) {
-  const encName = escapeHtml(enc.name || 'Unnamed Encounter');
-  const diff    = computeEncounterDifficulty(enc);
+  const encName   = escapeHtml(enc.name || 'Unnamed Encounter');
+  const diff      = computeDifficulty(enc);
   const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
 
-  // Page 1: encounter text
   let textContent = `<h1 class="enc-title">${encName}</h1>`;
   textContent += `<p class="enc-meta">${diffLabel} Encounter &nbsp;·&nbsp; ${(enc.party || []).length} Players &nbsp;·&nbsp; ${(enc.monsters || []).length} Monsters</p>`;
 
-  if (enc.description) {
-    textContent += `<h2>Description</h2><p>${escapeHtml(enc.description)}</p>`;
-  }
-  if (enc.info) {
-    textContent += `<h2>GM Notes</h2><p>${escapeHtml(enc.info).replace(/\n/g, '<br>')}</p>`;
-  }
-  if (enc.rewards) {
-    textContent += `<h2>Rewards</h2><p>${escapeHtml(enc.rewards)}</p>`;
-  }
+  if (enc.description) textContent += `<h2>Description</h2><p>${escapeHtml(enc.description)}</p>`;
+  if (enc.info)        textContent += `<h2>GM Notes</h2><p>${escapeHtml(enc.info).replace(/\n/g, '<br>')}</p>`;
+  if (enc.rewards)     textContent += `<h2>Rewards</h2><p>${escapeHtml(enc.rewards)}</p>`;
 
-  // Subsequent pages: two monsters per page
   const uniqueMonsters = [];
   const seen = new Set();
   for (const m of enc.monsters || []) {
@@ -417,19 +415,19 @@ export function printEncounterPdf(enc, creaturesMap) {
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Georgia, serif; font-size: 10pt; color: #1a1a1a; background: #fff; }
 
-    /* ── Encounter text page ── */
+    /* Encounter text page */
     .text-page { padding: 2cm; }
     .enc-title { font-size: 22pt; color: #4a1a6a; border-bottom: 2px solid #4a1a6a; padding-bottom: 6px; margin-bottom: 14px; }
     .enc-meta  { font-size: 9pt; color: #555; margin-bottom: 18px; font-style: italic; }
     h2 { font-size: 12pt; color: #4a1a6a; margin: 18px 0 6px; border-bottom: 1px solid #c8a0e0; padding-bottom: 3px; }
     p  { line-height: 1.6; }
 
-    /* ── Monster pages ── */
+    /* Monster pages */
     .monster-page { page-break-before: always; padding: 1cm; }
     .monster-pair { display: flex; gap: 1cm; align-items: flex-start; }
     .monster-pair > .statblock { flex: 1; }
 
-    /* ── Statblock ── */
+    /* Statblock */
     .statblock { border: 2px solid #8c2a2a; background: #fdf6ee; font-size: 8.5pt; }
     .sb-header  { background: #8c2a2a; color: #fff; padding: 6px 10px; }
     .sb-name    { font-size: 12pt; font-weight: bold; }
@@ -441,6 +439,7 @@ export function printEncounterPdf(enc, creaturesMap) {
     .sb-core-lbl { font-size: 6pt; text-transform: uppercase; letter-spacing: 0.4px; color: #666; }
     .sb-attrs { display: flex; gap: 16px; padding: 4px 10px; background: #f5e8d0; }
     .sb-attr-lbl { font-weight: bold; color: #8c2a2a; }
+    .sb-chars { padding: 3px 10px; font-size: 7.5pt; color: #333; line-height: 1.5; }
     .sb-section-title { font-variant: small-caps; font-weight: bold; color: #8c2a2a; font-size: 8.5pt; padding: 3px 10px 0; }
     .sb-action, .sb-passive { padding: 2px 10px; margin: 1px 0; line-height: 1.4; }
     .sb-action-name, .sb-passive-name { font-weight: bold; font-style: italic; }

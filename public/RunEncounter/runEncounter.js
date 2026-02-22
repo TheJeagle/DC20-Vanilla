@@ -10,6 +10,7 @@ import { state } from './js/runState.js';
 import { loadEncounterForRun, fetchCreatures } from './js/runFirebase.js';
 import { buildBench, renderBench } from './js/runBench.js';
 import { initCombat, addCombatant, renderCombat } from './js/runCombat.js';
+import { downloadEncounterMd, printEncounterPdf } from './js/runExport.js';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
@@ -160,6 +161,11 @@ async function init() {
     buildBench();
     renderBench(benchPanel, onAddFromBench);
     initCombat(combatPanel, refreshBench);
+
+    document.getElementById('exportMdBtn')?.addEventListener('click',
+      () => downloadEncounterMd(state.encounter, state.creatures));
+    document.getElementById('exportPdfBtn')?.addEventListener('click',
+      () => printEncounterPdf(state.encounter, state.creatures));
 
   } catch (err) {
     console.error('Failed to load encounter for run', err);

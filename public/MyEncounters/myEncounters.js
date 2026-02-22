@@ -1,7 +1,6 @@
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
 import { updateNavAuth } from '../navAuth.js';
 import { ENVIRONMENT_TAGS } from '../constants/encounterTags.js';
-import { fetchCreaturesForEncounter, downloadEncounterObsidian, printEncounterPdf } from '../Encounters/js/encounterExport.js';
 import {
   collection,
   query,
@@ -223,51 +222,6 @@ function buildEncRow(enc, allEncounters) {
     descLine.textContent = `"${enc.description}"`;
     details.appendChild(descLine);
   }
-
-  // Export buttons
-  const exportRow = document.createElement('div');
-  exportRow.className = 'enc-detail-export';
-
-  const mdBtn = document.createElement('button');
-  mdBtn.type = 'button';
-  mdBtn.className = 'enc-action-btn';
-  mdBtn.textContent = 'Export .md';
-  mdBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    mdBtn.disabled = true;
-    mdBtn.textContent = 'Loading…';
-    try {
-      const creaturesMap = await fetchCreaturesForEncounter(enc);
-      downloadEncounterObsidian(enc, creaturesMap);
-    } catch (err) {
-      console.error('Encounter export failed:', err);
-    } finally {
-      mdBtn.disabled = false;
-      mdBtn.textContent = 'Export .md';
-    }
-  });
-
-  const pdfBtn = document.createElement('button');
-  pdfBtn.type = 'button';
-  pdfBtn.className = 'enc-action-btn';
-  pdfBtn.textContent = 'Export PDF';
-  pdfBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    pdfBtn.disabled = true;
-    pdfBtn.textContent = 'Loading…';
-    try {
-      const creaturesMap = await fetchCreaturesForEncounter(enc);
-      printEncounterPdf(enc, creaturesMap);
-    } catch (err) {
-      console.error('Encounter PDF export failed:', err);
-    } finally {
-      pdfBtn.disabled = false;
-      pdfBtn.textContent = 'Export PDF';
-    }
-  });
-
-  exportRow.append(mdBtn, pdfBtn);
-  details.appendChild(exportRow);
 
   row.append(header, details);
 

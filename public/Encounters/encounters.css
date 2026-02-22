@@ -774,15 +774,6 @@ body {
   cursor: not-allowed;
 }
 
-.save-action--export {
-  background: linear-gradient(135deg, #4a6a8a, #2e5070);
-  box-shadow: 0 8px 18px rgba(40,70,100,0.2);
-}
-
-.save-action--export:hover:not(:disabled) {
-  box-shadow: 0 12px 24px rgba(40,70,100,0.3);
-}
-
 .save-status {
   font-size: 0.85rem;
   color: #3d2c5c;

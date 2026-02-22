@@ -97,6 +97,22 @@ body {
   box-shadow: 0 0 0 2px rgba(142,68,173,0.2);
 }
 
+.run-export-btn {
+  appearance: none;
+  border: 1px solid rgba(142,68,173,0.3);
+  border-radius: 0.45rem;
+  background: rgba(142,68,173,0.08);
+  color: #6b3d8a;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+
+.run-export-btn:hover { background: rgba(142,68,173,0.18); }
+
 /* Accordions */
 .run-header-accordions {
   display: flex;
