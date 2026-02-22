@@ -415,13 +415,18 @@ function buildActionItem(action, onApSpend) {
     // damage
     const segments = Array.isArray(action.damage) ? action.damage.filter(d => d.amount) : [];
     if (segments.length) {
+      let heavyBonus = 0;
       const dmgStr = segments
         .map(d => {
-          const amt = Math.floor(Number(d.amount) || 0);
-          return d.type ? `${amt} ${cap(d.type)}` : String(amt);
+          const raw  = Number(d.amount) || 0;
+          const base = Math.floor(raw);
+          heavyBonus += Math.ceil(raw) - base;
+          return d.type ? `${base} ${cap(d.type)}` : String(base);
         })
         .join(' + ');
-      parts.push(`${dmgStr} damage on hit`);
+      let onHit = `${dmgStr} damage on hit`;
+      if (heavyBonus > 0) onHit += `, +${heavyBonus} on heavy hits`;
+      parts.push(onHit);
     }
 
     // check DC inline (e.g. "DC 14 check")
