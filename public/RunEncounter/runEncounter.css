@@ -671,6 +671,32 @@ details[open] .run-accordion-summary::before {
   text-transform: none;
 }
 
+.statblock-common-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(142,68,173,0.12);
+  margin-bottom: 0.1rem;
+}
+
+.statblock-common-btn {
+  appearance: none;
+  border: 1px solid #cbb3e6;
+  border-radius: 999px;
+  background: #f5f0ff;
+  color: #45245f;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.18rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.1s, transform 0.08s;
+  white-space: nowrap;
+}
+
+.statblock-common-btn:hover  { background: #ede5f7; }
+.statblock-common-btn:active { background: #d8c9f0; transform: scale(0.95); }
+
 .statblock-actions-list {
   display: flex;
   flex-direction: column;

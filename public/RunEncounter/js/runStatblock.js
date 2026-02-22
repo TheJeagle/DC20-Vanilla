@@ -286,6 +286,8 @@ function appendEditableVital(container, label, combatant, key) {
   container.append(lbl, inp);
 }
 
+const COMMON_ACTIONS = ['Move', 'Advantage', 'Dodge', 'Grapple', 'Hide', 'Help', 'Hold Action'];
+
 // ── Actions section ───────────────────────────────────────────────────────────
 
 function buildActionsSection(title, items, onApSpend, checkBonus = null) {
@@ -307,6 +309,27 @@ function buildActionsSection(title, items, onApSpend, checkBonus = null) {
   }
 
   sec.appendChild(heading);
+
+  // Common 1-AP actions row (only shown for the Actions section, not Reactions)
+  if (title === 'Actions') {
+    const commonRow = document.createElement('div');
+    commonRow.className = 'statblock-common-actions';
+    for (const name of COMMON_ACTIONS) {
+      const btn = document.createElement('button');
+      btn.type      = 'button';
+      btn.className = 'statblock-common-btn';
+      btn.textContent = name;
+      btn.title = '1 AP';
+      if (onApSpend) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          onApSpend(1);
+        });
+      }
+      commonRow.appendChild(btn);
+    }
+    sec.appendChild(commonRow);
+  }
 
   const list = document.createElement('div');
   list.className = 'statblock-actions-list';
