@@ -367,7 +367,7 @@ function buildActionItem(action, onApSpend) {
       let locationPart = '';
       if (action.target) locationPart += `of ${action.target}`;
       if (action.range) {
-        const preposition = actionTypeLabel.includes('area') ? 'in' : 'within';
+        const preposition = actionTypeLabel.includes('area') ? 'within' : 'within';
         locationPart += locationPart ? ` ${preposition} ${action.range}` : `${preposition} ${action.range}`;
       }
       if (locationPart) parts.push(locationPart);
