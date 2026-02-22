@@ -38,20 +38,21 @@ function buildPartyRow(p) {
 
   const fields = [
     { key: 'name',  type: 'text',   ph: 'Name' },
-    { key: 'class', type: 'text',   ph: 'Class' },
+    { key: 'class', type: 'text',   ph: 'Class', list: 'dc20-classes' },
     { key: 'level', type: 'number', ph: '1', min: 0, max: 20 },
     { key: 'hp',    type: 'number', ph: 'HP',  min: 0 },
     { key: 'pd',    type: 'number', ph: 'PD',  min: 0 },
     { key: 'ad',    type: 'number', ph: 'AD',  min: 0 },
   ];
 
-  fields.forEach(({ key, type, ph, min, max }) => {
+  fields.forEach(({ key, type, ph, min, max, list }) => {
     const input = document.createElement('input');
     input.type = type;
     input.placeholder = ph;
     input.value = p[key] ?? '';
-    if (min !== undefined) input.min = min;
-    if (max !== undefined) input.max = max;
+    if (min  !== undefined) input.min  = min;
+    if (max  !== undefined) input.max  = max;
+    if (list !== undefined) input.setAttribute('list', list);
     input.addEventListener('input', () => {
       p[key] = type === 'number' ? Number(input.value) || 0 : input.value;
       // Budget depends on level; re-render budget through slots
