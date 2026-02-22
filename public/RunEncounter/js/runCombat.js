@@ -414,7 +414,9 @@ function buildTurnControls(container, refreshBench) {
     startBtn.addEventListener('click', () => {
       state.combatActive   = true;
       state.currentTurnIdx = 0;
-      resetCombatantAp(state.combat[0]);
+      const first = state.combat[0];
+      resetCombatantAp(first);
+      if (first?.type === 'monster') first.expanded = true;
       renderCombat(container, refreshBench);
     });
     bar.appendChild(startBtn);
@@ -435,7 +437,9 @@ function buildTurnControls(container, refreshBench) {
       resetCombatantAp(outgoing);
       if (outgoing?.type === 'monster') outgoing.expanded = false;
       state.currentTurnIdx = (state.currentTurnIdx + 1) % state.combat.length;
-      resetCombatantAp(state.combat[state.currentTurnIdx]);
+      const incoming = state.combat[state.currentTurnIdx];
+      resetCombatantAp(incoming);
+      if (incoming?.type === 'monster') incoming.expanded = true;
       renderCombat(container, refreshBench);
     });
     bar.appendChild(nextBtn);
