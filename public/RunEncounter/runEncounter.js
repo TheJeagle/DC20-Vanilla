@@ -5,6 +5,7 @@
  */
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
 import { auth } from '../firebaseClient.js';
+import { updateNavAuth } from '../navAuth.js';
 import { state } from './js/runState.js';
 import { loadEncounterForRun, fetchCreatures } from './js/runFirebase.js';
 import { buildBench, renderBench } from './js/runBench.js';
@@ -157,9 +158,8 @@ if (logoutButton) {
   });
 }
 
-onAuthStateChanged(auth, () => {
-  // Auth state is observed but not required to view the page
-  // (encounter may be public; auth guard can be added later if needed)
+onAuthStateChanged(auth, (user) => {
+  updateNavAuth(user);
 });
 
 document.addEventListener('DOMContentLoaded', () => {

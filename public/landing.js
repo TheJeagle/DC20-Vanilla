@@ -9,6 +9,7 @@
  */
 
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+import { updateNavAuth } from './navAuth.js';
 import {
   collection,
   doc,
@@ -98,6 +99,7 @@ const nowTimestamp = () => Timestamp.fromMillis(Date.now());
 const authReadyPromise = new Promise((resolve) => {
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
+    updateNavAuth(user);
     resolve();
 
     if (landingState.featured || landingState.newest || landingState.runners.length) {

@@ -1,4 +1,5 @@
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+import { updateNavAuth } from '../navAuth.js';
 import {
   collection,
   doc,
@@ -608,6 +609,7 @@ function attachEventListeners() {
 function initializeAuthListener() {
   onAuthStateChanged(auth, (user) => {
     state.currentUser = user;
+    updateNavAuth(user);
     annotateLikesForCreatures(user).catch((error) =>
       console.warn('Failed to refresh like annotations', error)
     );

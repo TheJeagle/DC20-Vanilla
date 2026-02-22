@@ -5,6 +5,7 @@
  * and coordinates Firestore persistence while delegating UI details to panel modules.
  */
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+import { updateNavAuth } from '../../navAuth.js';
 import { roleModifiersData } from '../../Rules/gameRules.js';
 import { loadFeatures, applyFeatureEffects } from '../../features.js';
 import { auth } from '../../firebaseClient.js';
@@ -819,6 +820,7 @@ function initializeAuthHandling() {
 
   onAuthStateChanged(auth, (user) => {
     setCurrentUser(user);
+    updateNavAuth(user);
     updateSaveButtonState(user);
     updateSavePromptForAuth(user);
   });

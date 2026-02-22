@@ -5,6 +5,7 @@
  */
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
 import { auth } from '../../firebaseClient.js';
+import { updateNavAuth } from '../../navAuth.js';
 import { encounter, ui } from './encounterState.js';
 import dom from './encounterDom.js';
 import { renderSlots } from './encounterSlots.js';
@@ -42,6 +43,7 @@ export function initController() {
   // Auth listener
   onAuthStateChanged(auth, user => {
     ui.currentUser = user;
+    updateNavAuth(user);
     onAuthChange(user);
   });
 

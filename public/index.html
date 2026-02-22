@@ -852,7 +852,7 @@
             <a class="nav-dropdown-item" href="./AllCreatures/viewAllCreatures.html">All Creatures</a>
           </div>
         </div>
-        <div class="nav-dropdown">
+        <div class="nav-dropdown" id="navAccountDropdown">
           <button class="nav-dropdown-btn" type="button">Account <span class="nav-dropdown-chevron">▾</span></button>
           <div class="nav-dropdown-menu">
             <a class="nav-dropdown-item" href="./MyCreatures/myCreatures.html">My Creatures</a>
@@ -861,6 +861,7 @@
             <button class="nav-dropdown-item nav-dropdown-item--danger" type="button" id="logoutButton">Logout</button>
           </div>
         </div>
+        <a class="nav-link" id="navSignInLink" href="./Auth/auth.html" hidden>Sign In</a>
       </div>
       <a class="nav-button" href="./CreateCreature/createCreature.html">Start Building</a>
     </nav>
@@ -885,9 +886,9 @@
         </div>
         <aside class="hero-aside">
           <div class="see-all-card">
-            <h3>Explore the full roster</h3>
-            <p>Discover community-built creatures, compare builds, and find inspiration for your next encounter.</p>
-            <a class="see-all-button" href="./AllCreatures/viewAllCreatures.html">See all creatures</a>
+            <h3>Build your next encounter</h3>
+            <p>Add monsters, balance the difficulty against your party, and run live combat — all in one place.</p>
+            <a class="see-all-button" href="./Encounters/encounters.html">Open Encounter Builder</a>
           </div>
         </aside>
       </div>
@@ -1046,17 +1047,10 @@
             <h3>My Encounters</h3>
             <p>
               Browse all your saved encounters at a glance. Expand any row to see the full party,
-              monster roster, and budget breakdown — then edit, run, or delete with one click.
+              monster roster, and budget breakdown — then run live combat with HP tracking and
+              full statblocks inline.
             </p>
             <a class="enc-tool-link" href="./MyEncounters/myEncounters.html">View My Encounters</a>
-          </div>
-          <div class="enc-tool-card">
-            <h3>Run Encounter</h3>
-            <p>
-              Drag party members and monsters onto the combat tracker. Edit HP, PD, AD, and
-              attributes on the fly, with full statblocks expanding inline whenever you need them.
-            </p>
-            <a class="enc-tool-link" href="./MyEncounters/myEncounters.html">Go to My Encounters</a>
           </div>
         </div>
       </section>

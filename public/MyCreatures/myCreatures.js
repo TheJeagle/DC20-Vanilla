@@ -1,4 +1,5 @@
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+import { updateNavAuth } from '../navAuth.js';
 import {
   collection,
   query,
@@ -650,6 +651,7 @@ if (logoutButton) {
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
+  updateNavAuth(user);
   if (!user) {
     setStatus('info', 'Sign in to view your saved creatures.');
     if (creaturesList) {
