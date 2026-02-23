@@ -97,17 +97,23 @@ export const powerScalingFactors = {
 // Type flavor: humanoid (armored), beast (tough hide), dragon (deadly and durable),
 // construct (durable, less accurate), undead (easy to hit, strong saves),
 // elemental (high AD), fiend (strong saves), aberration (hard-hitting),
-// plant (very tough, high HP).
+// plant (very tough, high HP), giant (high HP/AD, lower PD, hard-hitting),
+// fey (elusive/high PD, potent saves), ooze (very high HP/AD, low PD, mindless),
+// celestial (balanced resilience, +PD/AD/SaveDC).
 export const typeScalingFactors = {
-    humanoid: {HPFactor: 1.0, PDMod: 2,  ADMod: 0,  CheckMod: 1,  SaveDCMod: 0,  DamageMod: 0},
-    beast: {HPFactor: 1.2, PDMod: 1,  ADMod: 1,  CheckMod: 0,  SaveDCMod: 0,  DamageMod: 0.5},
-    dragon: {HPFactor: 1.3, PDMod: 1,  ADMod: 1,  CheckMod: 0,  SaveDCMod: 0,  DamageMod: 1},
-    construct: {HPFactor: 1.3, PDMod: 0,  ADMod: 2,  CheckMod: -0.5,  SaveDCMod: 1,  DamageMod: 0},
-    undead: {HPFactor: 1.0, PDMod: 0,  ADMod: 0,  CheckMod: 1,  SaveDCMod: 1,  DamageMod: 0.5},
-    elemental: {HPFactor: 1.2, PDMod: 0,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 0,  DamageMod: 0.5},
-    fiend: {HPFactor: 1.0, PDMod: 1,  ADMod: 1,  CheckMod: 1,  SaveDCMod: 1,  DamageMod: 0.5},
-    aberration: {HPFactor: 1.0, PDMod: 0,  ADMod: 0,  CheckMod: 1,  SaveDCMod: 1,  DamageMod: 1},
-    plant: {HPFactor: 1.5, PDMod: 2,  ADMod: 0,  CheckMod: 0,  SaveDCMod: 0,  DamageMod: 0}
+    humanoid:  {HPFactor: 1.0, PDMod:  2, ADMod: 0, CheckMod:  1,   SaveDCMod: 0, DamageMod: 0},
+    beast:     {HPFactor: 1.2, PDMod:  1, ADMod: 1, CheckMod:  0,   SaveDCMod: 0, DamageMod: 0.5},
+    dragon:    {HPFactor: 1.3, PDMod:  1, ADMod: 1, CheckMod:  0,   SaveDCMod: 0, DamageMod: 1},
+    construct: {HPFactor: 1.3, PDMod:  0, ADMod: 2, CheckMod: -0.5, SaveDCMod: 1, DamageMod: 0},
+    undead:    {HPFactor: 1.0, PDMod:  0, ADMod: 0, CheckMod:  1,   SaveDCMod: 1, DamageMod: 0.5},
+    elemental: {HPFactor: 1.2, PDMod:  0, ADMod: 2, CheckMod:  1,   SaveDCMod: 0, DamageMod: 0.5},
+    fiend:     {HPFactor: 1.0, PDMod:  1, ADMod: 1, CheckMod:  1,   SaveDCMod: 1, DamageMod: 0.5},
+    aberration:{HPFactor: 1.0, PDMod:  0, ADMod: 0, CheckMod:  1,   SaveDCMod: 1, DamageMod: 1},
+    plant:     {HPFactor: 1.5, PDMod:  2, ADMod: 0, CheckMod:  0,   SaveDCMod: 0, DamageMod: 0},
+    giant:     {HPFactor: 1.4, PDMod: -2, ADMod: 2, CheckMod:  0,   SaveDCMod: 0, DamageMod: 1},
+    fey:       {HPFactor: 1.0, PDMod:  1, ADMod: 0, CheckMod:  1,   SaveDCMod: 2, DamageMod: 0},
+    ooze:      {HPFactor: 1.5, PDMod: -2, ADMod: 2, CheckMod: -1,   SaveDCMod: 0, DamageMod: 0.5},
+    celestial: {HPFactor: 1.0, PDMod:  1, ADMod: 1, CheckMod:  1,   SaveDCMod: 1, DamageMod: 0},
 }
 
 
