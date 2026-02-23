@@ -369,14 +369,14 @@
     "isReaction": true,
     "reactionTrigger": "When a hostile creature makes an attack action within 1 Space of you",
     "effects": {
-      "cost": 0,
+      "cost": 1,
       "targetDefense": "PD",
       "target": "the creature making the attack",
       "range": "1 Space",
       "actionDescription": "After the attack you move up to your Speed without causing opportunity attacks.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
-    "tags": ["role/lurker", "attack/martial", "attack/single-target", "target/pd", "ap-cost/0", "feature-cost/2"]
+    "tags": ["role/lurker", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/2"]
   },
   {
     "id": "wall-of-earth",
@@ -587,11 +587,11 @@
     "isReaction": true,
     "reactionTrigger": "When an ally within 1 Space of you is targeted by an attack",
     "effects": {
-      "cost": 0,
+      "cost": 1,
       "range": "1 Space",
       "actionDescription": "You shove your ally aside and become the target of the triggering attack instead."
     },
-    "tags": ["role/brute", "role/defender", "ap-cost/0", "feature-cost/1"]
+    "tags": ["role/brute", "role/defender", "ap-cost/1", "feature-cost/1"]
   },
 
   {
@@ -892,14 +892,14 @@
     "isReaction": true,
     "reactionTrigger": "When a creature within 1 Space of you deals damage to an ally",
     "effects": {
-      "cost": 0,
+      "cost": 1,
       "targetDefense": "PD",
       "target": "the triggering creature",
       "range": "1 Space",
       "actionDescription": "You immediately lash back at any creature that strikes your allies.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Slashing" }]
     },
-    "tags": ["role/defender", "attack/martial", "attack/single-target", "target/pd", "ap-cost/0", "feature-cost/1"]
+    "tags": ["role/defender", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "taunt-strike",
@@ -932,11 +932,11 @@
     "isReaction": true,
     "reactionTrigger": "When an ally within 1 Space of you is targeted by an attack",
     "effects": {
-      "cost": 0,
+      "cost": 1,
       "range": "1 Space",
       "actionDescription": "You step into the path of the attack, becoming the target instead. The attack targets your PD or AD (same defense as originally targeted)."
     },
-    "tags": ["role/defender", "ap-cost/0", "feature-cost/1"]
+    "tags": ["role/defender", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "fortress-stance",
@@ -1964,5 +1964,259 @@
       }
     },
     "tags": ["creature/ooze", "role/controller", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/1", "status/poisoned"]
+  },
+
+  {
+    "id": "opportunity-shot",
+    "type": "action-attack",
+    "name": "Opportunity Shot",
+    "featureDescription": "Fire at an enemy the moment they drop their guard or flee.",
+    "featureCost": 1,
+    "actionType": "Ranged Martial Attack",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within your ranged attack range moves out of a Space adjacent to an ally",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "the triggering creature",
+      "range": "10 / 15 Spaces",
+      "actionDescription": "You seize the opening as the enemy exposes themselves.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
+    },
+    "tags": ["role/artillerist", "creature/humanoid", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "arcane-interrupt",
+    "type": "action-check-utility",
+    "name": "Arcane Interrupt",
+    "featureDescription": "Disrupt an enemy ability with a psychic lash before it takes effect.",
+    "featureCost": 2,
+    "actionType": "Spell Check",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within 8 Spaces uses an ability that involves a check or save",
+    "effects": {
+      "cost": 1,
+      "target": "the triggering creature",
+      "range": "8 Spaces",
+      "actionDescription": "You project a burst of disruptive energy, hampering the triggering ability.",
+      "check": {
+        "dc": 10,
+        "failure": "The ability proceeds normally.",
+        "success": "The ability's check or save has DisADV.",
+        "successEach5": "The target is also Disoriented until the end of its turn."
+      }
+    },
+    "tags": ["role/controller", "creature/aberration", "attack/spellcaster", "ap-cost/1", "feature-cost/2", "status/disoriented"]
+  },
+  {
+    "id": "protective-ward",
+    "type": "action-check-utility",
+    "name": "Protective Ward",
+    "featureDescription": "Shield an ally from incoming harm with a burst of divine energy.",
+    "featureCost": 1,
+    "actionType": "Spell Utility",
+    "isReaction": true,
+    "reactionTrigger": "When an ally within 3 Spaces takes damage",
+    "effects": {
+      "cost": 1,
+      "target": "the triggering ally",
+      "range": "3 Spaces",
+      "actionDescription": "You extend a barrier of divine energy around a nearby ally, halving the damage they take."
+    },
+    "tags": ["role/support", "creature/celestial", "attack/spellcaster", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "evasive-step",
+    "type": "action-check-utility",
+    "name": "Evasive Step",
+    "featureDescription": "Dart out of reach the moment an attacker commits to their strike.",
+    "featureCost": 1,
+    "actionType": "Spell Utility",
+    "isReaction": true,
+    "reactionTrigger": "When you are targeted by a melee attack",
+    "effects": {
+      "cost": 1,
+      "actionDescription": "You flicker out of reach before the attack lands, stepping up to 1 Space in any direction. The attack still resolves at your new position."
+    },
+    "tags": ["role/skirmisher", "creature/fey", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "savage-retaliation",
+    "type": "action-attack",
+    "name": "Savage Retaliation",
+    "featureDescription": "Instinctively lash out when hurt, driven by pure predator instinct.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within 1 Space deals damage to you",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "the triggering creature",
+      "range": "1 Space",
+      "actionDescription": "Pain triggers pure instinct — you slash or bite at whatever hurt you.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Slashing" }]
+    },
+    "tags": ["creature/beast", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "death-throes",
+    "type": "action-attack",
+    "name": "Death Throes",
+    "featureDescription": "When struck down, unleash one final attack before falling.",
+    "featureCost": 2,
+    "actionType": "Melee Spell Attack",
+    "isReaction": true,
+    "reactionTrigger": "When you would be reduced to 0 HP",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "AD",
+      "target": "the triggering creature",
+      "range": "1 Space",
+      "actionDescription": "Even as destruction takes you, you lash out with undying fury. This attack resolves before you fall.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Necrotic" }]
+    },
+    "tags": ["creature/undead", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/2"]
+  },
+  {
+    "id": "wing-buffer",
+    "type": "action-check-utility",
+    "name": "Wing Buffer",
+    "featureDescription": "Beat your wings when struck in melee, sending the attacker stumbling back.",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within 1 Space hits you with a melee attack",
+    "effects": {
+      "cost": 1,
+      "target": "the triggering creature",
+      "range": "1 Space",
+      "actionDescription": "You beat your wings hard, catching the attacker with the force and pushing them away.",
+      "check": {
+        "dc": 10,
+        "failure": "Push 1 Space.",
+        "success": "Push 2 Spaces.",
+        "successEach5": "+1 Space."
+      }
+    },
+    "tags": ["creature/dragon", "attack/martial", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "hellish-rebuke",
+    "type": "action-attack",
+    "name": "Hellish Rebuke",
+    "featureDescription": "When hurt, point a finger and call down infernal fire on the attacker.",
+    "featureCost": 1,
+    "actionType": "Ranged Spell Attack",
+    "isReaction": true,
+    "reactionTrigger": "When a creature deals damage to you",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "AD",
+      "target": "the triggering creature",
+      "range": "5 Spaces",
+      "actionDescription": "You point at the creature that harmed you and speak a word of infernal power. Flames erupt around them.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Fire" }]
+    },
+    "tags": ["creature/fiend", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "elemental-retaliation",
+    "type": "action-attack",
+    "name": "Elemental Retaliation",
+    "featureDescription": "When struck, discharge a burst of raw elemental energy at the attacker.",
+    "featureCost": 1,
+    "actionType": "Ranged Spell Attack",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within 5 Spaces deals damage to you",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "AD",
+      "target": "the triggering creature",
+      "range": "5 Spaces",
+      "actionDescription": "A burst of raw elemental force erupts toward your attacker. Change the damage type to match this elemental's element.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Fire" }]
+    },
+    "tags": ["creature/elemental", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "thorn-burst",
+    "type": "action-attack",
+    "name": "Thorn Burst",
+    "featureDescription": "When struck in melee, razor thorns snap outward to punish the attacker.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within 1 Space hits you with a melee attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "AD",
+      "target": "the triggering creature",
+      "range": "1 Space",
+      "actionDescription": "Razor-sharp thorns snap outward when you are struck, punishing the attacker.",
+      "damageSegments": [{ "useBase": false, "modifier": 2, "type": "Piercing" }]
+    },
+    "tags": ["creature/plant", "attack/martial", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "iron-parry",
+    "type": "action-check-utility",
+    "name": "Iron Parry",
+    "featureDescription": "Position your rigid body to deflect an incoming blow.",
+    "featureCost": 1,
+    "actionType": "Martial Utility",
+    "isReaction": true,
+    "reactionTrigger": "When targeted by an attack",
+    "effects": {
+      "cost": 1,
+      "actionDescription": "You angle your hardened body to deflect the strike, gaining +3 PD and AD against the triggering attack."
+    },
+    "tags": ["creature/construct", "ap-cost/1", "feature-cost/1"]
+  },
+  {
+    "id": "mighty-swat",
+    "type": "action-check-utility",
+    "name": "Mighty Swat",
+    "featureDescription": "Swat away a creature that dares strike you in melee.",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within 1 Space hits you with a melee attack",
+    "effects": {
+      "cost": 1,
+      "target": "the triggering creature",
+      "range": "1 Space",
+      "actionDescription": "You swipe at the attacker with overwhelming force, sending them flying.",
+      "check": {
+        "dc": 10,
+        "failure": "Push 2 Spaces.",
+        "success": "Push 3 Spaces and knock Prone.",
+        "successEach5": "+1 Space."
+      }
+    },
+    "tags": ["creature/giant", "attack/martial", "ap-cost/1", "feature-cost/1", "status/hindered"]
+  },
+  {
+    "id": "engulf",
+    "type": "action-attack",
+    "name": "Engulf",
+    "featureDescription": "When struck in melee, surge outward and attempt to engulf the attacker.",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "isReaction": true,
+    "reactionTrigger": "When a creature within 1 Space hits you with a melee attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "AD",
+      "target": "the triggering creature",
+      "range": "1 Space",
+      "actionDescription": "Your form surges outward, attempting to envelop the attacker.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Poison" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is Grappled."
+      }
+    },
+    "tags": ["creature/ooze", "attack/martial", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/2", "status/grappled"]
   }
 ]
