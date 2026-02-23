@@ -306,17 +306,13 @@ export function downloadEncounterMd(enc, creaturesMap) {
 
 // ── PDF (print window) ────────────────────────────────────────────────────────
 
-function buildActionHtml(action, saveDC, baseDmg) {
-  const cost = action.cost != null ? ` (${action.cost} AP)` : '';
-  const nameHtml = escapeHtml(`${action.name || 'Action'}${cost}`);
+/** Build a single action's inline summary text (joined with · like the creator's print mode). */
+function buildActionSummary(action, saveDC, baseDmg) {
+  const parts = [];
 
-  const lines = [];
-
-  // Attack / type line
   const typeParts = [];
   if (action.actionType) typeParts.push(escapeHtml(action.actionType));
   if (action.targetDefense) typeParts.push(`vs <strong>${escapeHtml(action.targetDefense)}</strong>`);
-  if (action.check?.dc != null && !action.targetDefense) typeParts.push(`DC <strong>${action.check.dc}</strong>`);
 
   const segments = Array.isArray(action.damage) ? action.damage : [];
   if (segments.length) {
@@ -325,146 +321,177 @@ function buildActionHtml(action, saveDC, baseDmg) {
       const amt = d.useBase !== undefined
         ? (d.useBase ? base : 0) + (Number(d.modifier) || 0)
         : Number(d.amount) || 0;
-      const type = d.type ? ` ${escapeHtml(d.type)}` : '';
-      return `<strong>${Math.floor(amt)}${type}</strong>`;
+      return `<strong>${Math.floor(amt)}${d.type ? ' ' + escapeHtml(d.type) : ''}</strong>`;
     }).join(' + ');
     typeParts.push(`${dmgStr} damage on hit`);
   }
-  if (typeParts.length) lines.push(typeParts.join('. ') + '.');
+  if (typeParts.length) parts.push(typeParts.join(' '));
 
-  // Target / range line
   if (action.target || action.range) {
-    const parts = ['Target'];
-    if (action.target) parts.push(escapeHtml(action.target));
-    if (action.range) parts.push(`within ${escapeHtml(action.range)}`);
-    lines.push(parts.join(' ') + '.');
+    const t = ['Target'];
+    if (action.target) t.push(escapeHtml(action.target));
+    if (action.range)  t.push(`within ${escapeHtml(action.range)}`);
+    parts.push(t.join(' '));
   }
 
-  // Reaction trigger
-  if (action.reactionTrigger) lines.push(`<em>Trigger:</em> ${escapeHtml(action.reactionTrigger)}`);
+  if (action.reactionTrigger) parts.push(`<em>Trigger:</em> ${escapeHtml(action.reactionTrigger)}`);
 
-  // Save block
   if (action.save?.attribute) {
     const dc = action.save.dc ?? saveDC;
-    lines.push(`${escapeHtml(action.save.attribute)} Save, DC: <strong>${dc}</strong>.`);
-    if (action.save.failure) lines.push(`<em>Failure:</em> ${escapeHtml(action.save.failure)}`);
-    if (action.save.failureEach5) lines.push(`<em>Failure (Each 5):</em> ${escapeHtml(action.save.failureEach5)}`);
-    if (action.save.success) lines.push(`<em>Success:</em> ${escapeHtml(action.save.success)}`);
-    if (action.save.successEach5) lines.push(`<em>Success (Each 5):</em> ${escapeHtml(action.save.successEach5)}`);
+    parts.push(`${escapeHtml(action.save.attribute)} Save DC <strong>${dc}</strong>`);
+    if (action.save.failure)      parts.push(`Failure: ${escapeHtml(action.save.failure)}`);
+    if (action.save.failureEach5) parts.push(`Each 5: ${escapeHtml(action.save.failureEach5)}`);
+    if (action.save.success)      parts.push(`Success: ${escapeHtml(action.save.success)}`);
+    if (action.save.successEach5) parts.push(`Success Each 5: ${escapeHtml(action.save.successEach5)}`);
   }
 
-  // Check block
-  if (action.check?.dc != null && action.targetDefense) {
-    lines.push(`Check DC: <strong>${action.check.dc}</strong>.`);
-  }
-  if (action.check) {
-    if (action.check.failure) lines.push(`<em>Failure:</em> ${escapeHtml(action.check.failure)}`);
-    if (action.check.failureEach5) lines.push(`<em>Failure (Each 5):</em> ${escapeHtml(action.check.failureEach5)}`);
-    if (action.check.success) lines.push(`<em>Success:</em> ${escapeHtml(action.check.success)}`);
-    if (action.check.successEach5) lines.push(`<em>Success (Each 5):</em> ${escapeHtml(action.check.successEach5)}`);
+  if (action.check?.dc != null) {
+    parts.push(`Check DC <strong>${action.check.dc}</strong>`);
+    if (action.check.failure)      parts.push(`Failure: ${escapeHtml(action.check.failure)}`);
+    if (action.check.failureEach5) parts.push(`Each 5: ${escapeHtml(action.check.failureEach5)}`);
+    if (action.check.success)      parts.push(`Success: ${escapeHtml(action.check.success)}`);
+    if (action.check.successEach5) parts.push(`Success Each 5: ${escapeHtml(action.check.successEach5)}`);
   }
 
-  // Description
-  if (action.description) lines.push(escapeHtml(action.description));
+  if (action.description) parts.push(escapeHtml(action.description));
 
-  const bodyHtml = lines.map(l => `<div class="sb-action-line">${l}</div>`).join('');
-  return `<p class="sb-action"><span class="sb-action-name">${nameHtml}:</span>${bodyHtml}</p>`;
+  return parts.join(' · ');
 }
 
 function buildStatblockHtml(creature, monsterSlot) {
-  const stats    = creature.stats     || {};
-  const attrVals = creature.attributes?.values || {};
-  const traits   = creature.traits    || {};
+  const stats     = creature.stats              || {};
+  const attrVals  = creature.attributes?.values || {};
+  const attrSaves = creature.attributes?.saves  || {};
+  const traits    = creature.traits             || {};
 
-  const name   = monsterSlot?.name || creature.name || 'Unknown';
-  const level  = effectiveLvl(monsterSlot, creature);
-  const pd     = Math.round(Number(stats.PD)       || 0);
-  const pdH    = Math.round(Number(stats.PDHeavy)  || pd + 5);
-  const pdB    = Math.round(Number(stats.PDBrutal) || pd + 10);
-  const ad     = Math.round(Number(stats.AD)       || 0);
-  const adH    = Math.round(Number(stats.ADHeavy)  || ad + 5);
-  const adB    = Math.round(Number(stats.ADBrutal) || ad + 10);
-  const hp     = Math.round(Number(stats.HP)       || 0);
-  const ap     = Math.round(Number(stats.AP)       || 0);
-  const speed  = Math.round(Number(stats.speed)    || 0);
-  const saveDC = Math.round(Number(stats.saveDC)   || 0);
-  const attack = toSigned(stats.check);
-  const mig    = Math.round(Number(attrVals.Mig)   || 0);
-  const agi    = Math.round(Number(attrVals.Agi)   || 0);
-  const cha    = Math.round(Number(attrVals.Cha)   || 0);
-  const int_   = Math.round(Number(attrVals.Int)   || 0);
+  const name    = monsterSlot?.name || creature.name || 'Unknown';
+  const level   = effectiveLvl(monsterSlot, creature);
+  const pd      = Math.round(Number(stats.PD)       || 0);
+  const pdH     = Math.round(Number(stats.PDHeavy)  || pd + 5);
+  const pdB     = Math.round(Number(stats.PDBrutal) || pd + 10);
+  const ad      = Math.round(Number(stats.AD)       || 0);
+  const adH     = Math.round(Number(stats.ADHeavy)  || ad + 5);
+  const adB     = Math.round(Number(stats.ADBrutal) || ad + 10);
+  const hp      = Math.round(Number(stats.HP)       || 0);
+  const ap      = Math.round(Number(stats.AP)       || 0);
+  const speed   = Math.round(Number(stats.speed)    || 0);
+  const saveDC  = Math.round(Number(stats.saveDC)   || 0);
+  const attack  = toSigned(stats.check);
   const baseDmg = Number(stats.damage) || 0;
-  const size   = toTitleCase(creature.size);
-  const type   = toTitleCase(creature.type);
-  const power  = toTitleCase(monsterSlot?.power || creature.power || 'normal');
-  const role   = toTitleCase(monsterSlot?.role  || creature.role  || '');
+  const mig     = Math.round(Number(attrVals.Mig)   || 0);
+  const agi     = Math.round(Number(attrVals.Agi)   || 0);
+  const cha     = Math.round(Number(attrVals.Cha)   || 0);
+  const int_    = Math.round(Number(attrVals.Int)   || 0);
+  const migSave = Math.round(Number(attrSaves.Mig)  || 0);
+  const agiSave = Math.round(Number(attrSaves.Agi)  || 0);
+  const chaSave = Math.round(Number(attrSaves.Cha)  || 0);
+  const intSave = Math.round(Number(attrSaves.Int)  || 0);
+  const size    = toTitleCase(creature.size);
+  const type    = toTitleCase(creature.type);
+  const power   = toTitleCase(monsterSlot?.power || creature.power || 'normal');
+  const role    = toTitleCase(monsterSlot?.role  || creature.role  || '');
 
+  const signed = n => `${n >= 0 ? '+' : ''}${n}`;
+
+  // Traits section
+  function traitRow(label, group) {
+    const all = [...(group?.damage || []), ...(group?.condition || [])].filter(Boolean);
+    if (!all.length) return '';
+    const pills = all.map(v => `<span>${escapeHtml(v)}</span>`).join('');
+    return `<div class="statblock-trait-row"><span class="statblock-trait-label">${label}:</span><span class="statblock-trait-values">${pills}</span></div>`;
+  }
+  function simpleRow(label, arr) {
+    if (!Array.isArray(arr) || !arr.length) return '';
+    const pills = arr.map(v => `<span>${escapeHtml(toTitleCase(v))}</span>`).join('');
+    return `<div class="statblock-trait-row"><span class="statblock-trait-label">${label}:</span><span class="statblock-trait-values">${pills}</span></div>`;
+  }
+  const traitsInner = [
+    traitRow('Resistances',     traits.resistances),
+    traitRow('Vulnerabilities', traits.vulnerabilities),
+    traitRow('Immunities',      traits.immunities),
+    simpleRow('Skills',  traits.skills),
+    simpleRow('Senses',  traits.senses),
+  ].filter(Boolean).join('');
+  const traitsHtml = traitsInner
+    ? `<hr class="statblock-rule"><div class="statblock-traits statblock-trait-section">${traitsInner}</div>`
+    : '';
+
+  // Passives
+  const passives = Array.isArray(creature.featurePassives) ? creature.featurePassives : [];
+  const passivesHtml = passives.length
+    ? `<div class="statblock-feature-section">
+        <span class="statblock-feature-heading">Features</span>
+        <div class="statblock-feature-list">${passives.map(f => `
+          <div class="statblock-feature-item">
+            <div class="feature-name">${escapeHtml(f.name || '')}</div>
+            <div class="feature-description">${escapeHtml(f.description || '')}</div>
+          </div>`).join('')}
+        </div>
+      </div>`
+    : '';
+
+  // Actions
   const allActions   = Array.isArray(creature.featureActions)   ? creature.featureActions   : [];
   const allReactions = Array.isArray(creature.featureReactions) ? creature.featureReactions : [];
   const regular   = allActions.filter(a => !a.isLegendaryAction && !a.isApexAction);
   const legendary = allActions.filter(a => a.isLegendaryAction);
   const apex      = allActions.filter(a => a.isApexAction);
-  const passives  = Array.isArray(creature.featurePassives) ? creature.featurePassives : [];
 
-  function renderActionGroup(actions, title) {
+  function renderActionItem(a) {
+    const cost = a.cost != null ? ` (${a.cost} AP)` : '';
+    const summary = buildActionSummary(a, saveDC, baseDmg);
+    return `<div class="statblock-action-item">
+      <strong>${escapeHtml((a.name || 'Action') + cost)}:</strong>
+      <div class="action-summary">${summary}</div>
+    </div>`;
+  }
+  function renderActionSection(actions, heading) {
     if (!actions.length) return '';
-    const rows = actions.map(a => buildActionHtml(a, saveDC, baseDmg)).join('');
-    return `<div class="sb-divider"></div><p class="sb-section-title">${title}</p>${rows}`;
+    return `<div class="statblock-actions-section">
+      <div class="statblock-actions-heading">${escapeHtml(heading)}</div>
+      <div class="statblock-actions-list">${actions.map(renderActionItem).join('')}</div>
+    </div>`;
   }
 
-  // Characteristics
-  const charParts = [];
-  const pushTraitGroup = (label, group) => {
-    const all = [...(group?.damage || []), ...(group?.condition || [])].filter(Boolean);
-    if (all.length) charParts.push(`<strong>${label}:</strong> ${escapeHtml(all.join(', '))}`);
-  };
-  pushTraitGroup('Resistances',     traits.resistances);
-  pushTraitGroup('Vulnerabilities', traits.vulnerabilities);
-  pushTraitGroup('Immunities',      traits.immunities);
-  if (Array.isArray(traits.skills) && traits.skills.length) {
-    charParts.push(`<strong>Skills:</strong> ${escapeHtml(traits.skills.map(toTitleCase).join(', '))}`);
-  }
-  if (Array.isArray(traits.senses) && traits.senses.length) {
-    charParts.push(`<strong>Senses:</strong> ${escapeHtml(traits.senses.join(', '))}`);
-  }
-  const charHtml = charParts.length
-    ? `<div class="sb-divider"></div><div class="sb-chars">${charParts.join(' &nbsp;·&nbsp; ')}</div>`
+  const actionsBarHtml = `<div class="statblock-actions-bar">
+    <span>Attack: ${attack}</span>
+    <span>Base Dmg: ${Math.floor(baseDmg)}</span>
+    <span>Save DC: ${saveDC}</span>
+    <span>Speed: ${speed}</span>
+  </div>`;
+
+  const regularHtml = regular.length
+    ? `<div class="statblock-actions-section">
+        <div class="statblock-actions-heading">Actions (${ap} AP)</div>
+        ${actionsBarHtml}
+        <div class="statblock-actions-list">${regular.map(renderActionItem).join('')}</div>
+      </div>`
     : '';
 
-  const passivesHtml = passives.length
-    ? `<div class="sb-divider"></div>${passives.map(f =>
-        `<p class="sb-passive"><span class="sb-passive-name">${escapeHtml(f.name || '')}.</span> ${escapeHtml(f.description || '')}</p>`
-      ).join('')}`
-    : '';
+  const infoLeft  = `${size} ${type}`.trim();
+  const infoRight = `Level ${level}${power && power !== 'Normal' ? ` ${power}` : ''}${role ? ` ${role}` : ''}`;
 
   return `<div class="statblock">
-  <div class="sb-header">
-    <div class="sb-name">${escapeHtml(name)}</div>
-    <div class="sb-subtitle">${escapeHtml(size)} ${escapeHtml(type)} — Level ${level} ${escapeHtml(power)}${role ? ` ${escapeHtml(role)}` : ''}</div>
+  <div class="statblock-name">${escapeHtml(name)}</div>
+  <div class="statblock-info">${escapeHtml(infoLeft)} | ${escapeHtml(infoRight)}</div>
+  <div class="statblock-divider"></div>
+  <div class="statblock-vitals">
+    <span class="statblock-label">HP</span><span class="statblock-value">${hp}</span>
+    <span class="statblock-label">PD</span><span class="statblock-value">${pd} / ${pdH} / ${pdB}</span>
+    <span class="statblock-label">AD</span><span class="statblock-value">${ad} / ${adH} / ${adB}</span>
   </div>
-  <div class="sb-divider"></div>
-  <div class="sb-core-row">
-    <div class="sb-core-block"><div class="sb-core-val">${hp}</div><div class="sb-core-lbl">HP</div></div>
-    <div class="sb-core-block"><div class="sb-core-val">${pd}/${pdH}/${pdB}</div><div class="sb-core-lbl">PD</div></div>
-    <div class="sb-core-block"><div class="sb-core-val">${ad}/${adH}/${adB}</div><div class="sb-core-lbl">AD</div></div>
-    <div class="sb-core-block"><div class="sb-core-val">${ap}</div><div class="sb-core-lbl">AP</div></div>
-    <div class="sb-core-block"><div class="sb-core-val">${speed}</div><div class="sb-core-lbl">Speed</div></div>
-    <div class="sb-core-block"><div class="sb-core-val">${attack}</div><div class="sb-core-lbl">Attack</div></div>
-    <div class="sb-core-block"><div class="sb-core-val">${saveDC}</div><div class="sb-core-lbl">Save DC</div></div>
+  <div class="statblock-attributes">
+    <div class="attribute-card"><span class="attribute-label">MIG</span><span class="attribute-value">${signed(mig)}</span><span class="attribute-save">(${signed(migSave)})</span></div>
+    <div class="attribute-card"><span class="attribute-label">AGI</span><span class="attribute-value">${signed(agi)}</span><span class="attribute-save">(${signed(agiSave)})</span></div>
+    <div class="attribute-card"><span class="attribute-label">CHA</span><span class="attribute-value">${signed(cha)}</span><span class="attribute-save">(${signed(chaSave)})</span></div>
+    <div class="attribute-card"><span class="attribute-label">INT</span><span class="attribute-value">${signed(int_)}</span><span class="attribute-save">(${signed(intSave)})</span></div>
   </div>
-  <div class="sb-divider"></div>
-  <div class="sb-attrs">
-    <div class="sb-attr"><span class="sb-attr-lbl">Mig</span> ${mig >= 0 ? '+' : ''}${mig}</div>
-    <div class="sb-attr"><span class="sb-attr-lbl">Agi</span> ${agi >= 0 ? '+' : ''}${agi}</div>
-    <div class="sb-attr"><span class="sb-attr-lbl">Cha</span> ${cha >= 0 ? '+' : ''}${cha}</div>
-    <div class="sb-attr"><span class="sb-attr-lbl">Int</span> ${int_ >= 0 ? '+' : ''}${int_}</div>
-  </div>
-  ${charHtml}
+  ${traitsHtml}
   ${passivesHtml}
-  ${renderActionGroup(regular,      'Actions')}
-  ${renderActionGroup(allReactions, 'Reactions')}
-  ${renderActionGroup(legendary,    'Legendary Actions')}
-  ${renderActionGroup(apex,         'Apex Actions')}
+  ${regularHtml}
+  ${renderActionSection(allReactions, 'Reactions')}
+  ${renderActionSection(legendary,    'Legendary Actions')}
+  ${renderActionSection(apex,         'Apex Actions')}
 </div>`;
 }
 
@@ -525,49 +552,68 @@ export function printEncounterPdf(enc, creaturesMap) {
   <title>${encName} — DC20 Encounter</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Georgia, serif; font-size: 10pt; color: #1a1a1a; background: #fff; }
+    body { font-family: system-ui, -apple-system, sans-serif; font-size: 10pt; color: #101010; background: #fff; }
 
     /* ── Encounter info page ── */
-    .text-page { padding: 2cm; }
-    .enc-title { font-size: 20pt; font-weight: bold; color: #8c2a2a; border-bottom: 3px solid #8c2a2a; padding-bottom: 6px; margin-bottom: 12px; }
-    .enc-badges { margin-bottom: 16px; }
-    .enc-badge { display: inline-block; padding: 3px 10px; border-radius: 3px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-    .enc-badge--easy    { background: #d4edda; color: #155724; }
-    .enc-badge--fair    { background: #fff3cd; color: #856404; }
-    .enc-badge--hard    { background: #ffe0b2; color: #7a3800; }
-    .enc-badge--deadly  { background: #f8d7da; color: #721c24; }
-    h2 { font-size: 11pt; font-weight: bold; color: #8c2a2a; margin: 16px 0 6px; border-bottom: 1px solid #c8a0a0; padding-bottom: 3px; }
-    p  { line-height: 1.6; margin-bottom: 6px; }
-    .info-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 6px; }
-    .info-table th { background: #8c2a2a; color: #fff; padding: 4px 8px; text-align: left; font-weight: bold; }
-    .info-table td { padding: 3px 8px; border-bottom: 1px solid #e8d8d0; }
-    .info-table tr:nth-child(even) td { background: #fdf6ee; }
+    .text-page { padding: 1.5cm 2cm; }
+    .enc-title  { font-size: 20pt; font-weight: 700; color: #5b2c6f; border-bottom: 4px solid #5b2c6f; padding-bottom: 6px; margin-bottom: 10px; border-radius: 2px; }
+    .enc-badges { margin-bottom: 14px; }
+    .enc-badge  { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .enc-badge--easy   { background: #d4edda; color: #155724; }
+    .enc-badge--fair   { background: #fff3cd; color: #856404; }
+    .enc-badge--hard   { background: #ffe0b2; color: #7a3800; }
+    .enc-badge--deadly { background: #f8d7da; color: #721c24; }
+    h2 { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b2c6f; margin: 14px 0 5px; border-bottom: 1px solid #c9a7dd; padding-bottom: 2px; }
+    p  { line-height: 1.5; margin-bottom: 6px; font-size: 9pt; }
+    .info-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 8px; }
+    .info-table th { background: #5b2c6f; color: #fff; padding: 4px 8px; text-align: left; font-weight: 700; }
+    .info-table td { padding: 3px 8px; border-bottom: 1px solid #e0d5f0; }
+    .info-table tr:nth-child(even) td { background: #f8f5fc; }
 
     /* ── Monster pages ── */
     .monster-page { page-break-before: always; padding: 1cm; }
     .monster-pair { display: flex; gap: 0.8cm; align-items: flex-start; }
     .monster-pair > .statblock { flex: 1; min-width: 0; }
 
-    /* ── Statblock ── */
-    .statblock { border: 2px solid #8c2a2a; background: #fdf6ee; font-size: 8pt; page-break-inside: avoid; }
-    .sb-header   { background: #8c2a2a; color: #fff; padding: 6px 10px; }
-    .sb-name     { font-size: 11pt; font-weight: bold; }
-    .sb-subtitle { font-size: 7pt; font-style: italic; opacity: 0.9; margin-top: 2px; }
-    .sb-divider  { height: 2px; background: #8c2a2a; }
-    .sb-core-row { display: flex; background: #f5e8d0; padding: 5px 2px; }
-    .sb-core-block { flex: 1; text-align: center; min-width: 0; }
-    .sb-core-val { font-size: 9pt; font-weight: bold; color: #8c2a2a; line-height: 1.2; white-space: nowrap; }
-    .sb-core-lbl { font-size: 5.5pt; text-transform: uppercase; letter-spacing: 0.3px; color: #666; }
-    .sb-attrs    { display: flex; gap: 12px; padding: 3px 10px; background: #f5e8d0; font-size: 8pt; }
-    .sb-attr-lbl { font-weight: bold; color: #8c2a2a; }
-    .sb-chars    { padding: 3px 10px; font-size: 7.5pt; color: #333; line-height: 1.5; }
-    .sb-section-title { font-variant: small-caps; font-weight: bold; color: #8c2a2a; font-size: 8pt; padding: 3px 10px 1px; }
-    .sb-action   { padding: 2px 10px 3px; margin: 0; line-height: 1.4; }
-    .sb-passive  { padding: 2px 10px 3px; margin: 0; line-height: 1.4; }
-    .sb-action-name  { font-weight: bold; font-style: italic; }
-    .sb-passive-name { font-weight: bold; font-style: italic; }
-    .sb-action-line  { margin: 0; }
-    .sb-action-line + .sb-action-line { margin-top: 1px; }
+    /* ── Statblock — mirrors createCreature.css ── */
+    .statblock { display: flex; flex-direction: column; gap: 0.3rem; font-size: 7.5pt; color: #101010; page-break-inside: avoid; }
+
+    .statblock-name { background: #5b2c6f; color: #fff; padding: 0.35rem 0.6rem; border-radius: 4px; font-size: 11pt; font-weight: 700; }
+    .statblock-info { font-weight: 600; letter-spacing: 0.02em; font-size: 7.5pt; }
+    .statblock-divider { height: 0; border-bottom: 4px solid #5b2c6f; border-radius: 4px; }
+
+    .statblock-vitals { display: grid; grid-template-columns: auto auto auto auto auto auto; gap: 0.2rem; align-items: center; }
+    .statblock-label  { font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+    .statblock-value  { background: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 4px; white-space: nowrap; }
+
+    .statblock-attributes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.2rem; }
+    .attribute-card  { background: #f5f5f5; border-radius: 4px; padding: 0.2rem 0.4rem; display: flex; flex-direction: row; align-items: baseline; gap: 0.3rem; }
+    .attribute-label { font-weight: 700; text-transform: uppercase; font-size: 6.5pt; }
+    .attribute-value { font-size: 7.5pt; }
+    .attribute-save  { font-size: 6.5pt; color: #555; }
+
+    .statblock-rule  { border: none; border-top: 2px solid #d0d0d0; margin: 0; }
+
+    .statblock-traits { display: flex; flex-direction: column; gap: 0.2rem; }
+    .statblock-trait-section { padding-bottom: 0.3rem; border-bottom: 4px solid #5b2c6f; border-radius: 2px; }
+    .statblock-trait-row    { display: flex; gap: 0.25rem; align-items: baseline; flex-wrap: nowrap; }
+    .statblock-trait-label  { font-weight: 700; white-space: nowrap; }
+    .statblock-trait-values { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+    .statblock-trait-values span { background: #f5f5f5; border-radius: 3px; padding: 0.1rem 0.25rem; }
+
+    .statblock-feature-section  { display: flex; flex-direction: column; gap: 0.2rem; padding-top: 0.25rem; border-bottom: 4px solid #5b2c6f; border-radius: 2px; }
+    .statblock-feature-heading  { font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 7pt; }
+    .statblock-feature-list     { display: flex; flex-direction: column; gap: 0.2rem; }
+    .statblock-feature-item     { background: #f5f5f5; border-radius: 4px; padding: 0.2rem 0.4rem; }
+    .feature-name               { font-weight: 600; }
+    .feature-description        { color: #333; line-height: 1.3; }
+
+    .statblock-actions-section  { display: flex; flex-direction: column; gap: 0.25rem; padding-top: 0.25rem; border-bottom: 4px solid #5b2c6f; border-radius: 2px; }
+    .statblock-actions-heading  { font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 7pt; }
+    .statblock-actions-bar      { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: space-between; background: #efe6f4; border: 1px solid #c9a7dd; border-radius: 4px; padding: 0.2rem 0.4rem; font-weight: 600; color: #3a2750; font-size: 7pt; }
+    .statblock-actions-list     { display: flex; flex-direction: column; gap: 0.25rem; }
+    .statblock-action-item      { background: #f8f6ff; border: 1px solid #d8c9f0; border-radius: 4px; padding: 0.2rem 0.4rem; color: #2d1f3b; line-height: 1.35; }
+    .action-summary             { margin-top: 1px; }
 
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
