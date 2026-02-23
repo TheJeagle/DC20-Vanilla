@@ -216,6 +216,40 @@ function buildFoundryPassiveItem(f) {
   };
 }
 
+const FOUNDRY_SKILLS = [
+  { key: 'awa', label: 'Awareness',     baseAttribute: 'prime' },
+  { key: 'acr', label: 'Acrobatics',    baseAttribute: 'agi'   },
+  { key: 'ani', label: 'Animal',        baseAttribute: 'cha'   },
+  { key: 'ath', label: 'Athletics',     baseAttribute: 'mig'   },
+  { key: 'inf', label: 'Influence',     baseAttribute: 'cha'   },
+  { key: 'inm', label: 'Intimidation',  baseAttribute: 'mig'   },
+  { key: 'ins', label: 'Insight',       baseAttribute: 'cha'   },
+  { key: 'inv', label: 'Investigation', baseAttribute: 'int'   },
+  { key: 'med', label: 'Medicine',      baseAttribute: 'int'   },
+  { key: 'ste', label: 'Stealth',       baseAttribute: 'agi'   },
+  { key: 'sur', label: 'Survival',      baseAttribute: 'int'   },
+  { key: 'tri', label: 'Trickery',      baseAttribute: 'agi'   },
+];
+
+function buildFoundrySkills(creatureSkills, attrMap) {
+  const trainedSet = new Set(
+    (creatureSkills || []).map((s) => s.trim().toLowerCase())
+  );
+  const result = {};
+  for (const { key, label, baseAttribute } of FOUNDRY_SKILLS) {
+    const mastery = trainedSet.has(label.toLowerCase()) ? 1 : 0;
+    const attrVal = attrMap[baseAttribute] ?? attrMap.prime ?? 0;
+    result[key] = {
+      modifier: attrVal + mastery * 2,
+      baseAttribute,
+      bonus: 0,
+      mastery,
+      label,
+    };
+  }
+  return result;
+}
+
 export function generateFoundryJSON() {
   const pd     = Math.round(Number(creature.PD) || 0);
   const ad     = Math.round(Number(creature.AD) || 0);
@@ -230,10 +264,11 @@ export function generateFoundryJSON() {
   const int_   = Math.round(Number(creature.attributes?.Int) || 0);
   const baseDmg = Number(creature.damage) || 0;
 
-  const migSave = (creature.attributeSaves?.Mig || 0) > 0;
-  const agiSave = (creature.attributeSaves?.Agi || 0) > 0;
-  const chaSave = (creature.attributeSaves?.Cha || 0) > 0;
-  const intSave = (creature.attributeSaves?.Int || 0) > 0;
+  // All attributes get combat mastery added to saves in DC20, so saveMastery is always true.
+  const migSave = true;
+  const agiSave = true;
+  const chaSave = true;
+  const intSave = true;
 
   // Journal / description
   const journalParts = [];
@@ -309,12 +344,15 @@ export function generateFoundryJSON() {
       },
       resources: {
         health: {
-          bonus: 0, value: hp, current: hp, max: hp, temp: null, useFlat: true, reset: '',
+          bonus: 0, value: hp, current: hp, max: hp, temp: 0, useFlat: true, reset: '',
         },
         ap: {
           bonus: 0, value: ap, max: ap, label: 'dc20rpg.resource.ap', reset: 'roundEnd',
         },
         custom: {},
+      },
+      jump: {
+        current: agi, value: agi, bonus: 0, key: 'flat', label: 'dc20rpg.speed.jump', multiplier: 1,
       },
       movement: {
         ground:   makeMovement(speed, 'dc20rpg.speed.ground'),
@@ -340,6 +378,7 @@ export function generateFoundryJSON() {
         cha: makeAttr(cha, chaSave, 'dc20rpg.attributes.cha'),
         int: makeAttr(int_, intSave, 'dc20rpg.attributes.int'),
       },
+      skills: buildFoundrySkills(creature.skills, { mig, agi, cha, int: int_, prime: Math.round(Number(creature.attributes?.Prime) || 0) }),
       journal: journalParts.join('') || '',
     },
     items,
