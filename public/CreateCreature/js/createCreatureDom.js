@@ -38,6 +38,7 @@ const dom = {
   logoutButton: document.querySelector('#logoutButton'),
   resetInputsButton: document.querySelector('#resetInputsButton'),
   copyObsidianButton: document.querySelector('#copyObsidianButton'),
+  downloadFoundryButton: document.querySelector('#downloadFoundryButton'),
   printStatblockButton: document.querySelector('#printStatblockButton'),
   recommendationsPanel: document.querySelector('#recommendationsPanel'),
 };

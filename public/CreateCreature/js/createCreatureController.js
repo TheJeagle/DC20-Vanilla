@@ -50,7 +50,7 @@ import {
   toggleFeatureSelection,
 } from './createCreatureFeatures.js';
 import { fetchCreatureDocument, saveCreatureDocument } from './createCreatureFirebase.js';
-import { generateObsidianYAML } from './createCreatureExport.js';
+import { generateObsidianYAML, generateFoundryJSON } from './createCreatureExport.js';
 
 /**
  * Convert arbitrary text into title case for display.
@@ -864,6 +864,20 @@ function initializeEventHandlers() {
       } catch {
         setSaveStatus('Could not write to clipboard.', 'error', { sticky: false });
       }
+    });
+  }
+
+  if (dom.downloadFoundryButton) {
+    dom.downloadFoundryButton.addEventListener('click', () => {
+      updateStatblock();
+      const json = generateFoundryJSON();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(creature.name || 'creature').replace(/\s+/g, '-').toLowerCase()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
     });
   }
 

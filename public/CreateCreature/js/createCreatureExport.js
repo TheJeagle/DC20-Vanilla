@@ -66,6 +66,291 @@ function buildActionEntry(action, fallbackSaveDC, baseDamage) {
   return `  - name: ${name}\n    desc: ${yamlQuote(desc)}`;
 }
 
+// ---------------------------------------------------------------------------
+// Foundry VTT JSON export
+// ---------------------------------------------------------------------------
+
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function buildFoundryActionDescription(action, fallbackSaveDC, baseDamage) {
+  const headerParts = [];
+  if (action.actionType) headerParts.push(escapeHtml(action.actionType));
+  if (action.targetDefense) headerParts.push(`vs ${action.targetDefense}`);
+  if (action.target) headerParts.push(`Target: ${escapeHtml(action.target)}`);
+  if (action.range) headerParts.push(`Range: ${escapeHtml(action.range)}`);
+  if (action.cost != null) headerParts.push(`${action.cost} AP`);
+
+  const descParts = [];
+  if (headerParts.length) descParts.push(`<p><strong>${headerParts.join(' | ')}</strong></p>`);
+
+  if (Array.isArray(action.damage) && action.damage.length) {
+    const base = Number(baseDamage) || 0;
+    let heavyHit = false;
+    const dmgStrs = action.damage.map((d) => {
+      const amt = d.useBase !== undefined
+        ? (d.useBase ? base : 0) + (Number(d.modifier) || 0)
+        : Number(d.amount) || 0;
+      if (amt % 1 !== 0) heavyHit = true;
+      return d.type ? `${Math.floor(amt)} ${escapeHtml(d.type)}` : String(Math.floor(amt));
+    });
+    descParts.push(`<p>${dmgStrs.join(' + ')} damage on hit${heavyHit ? ', +1 on heavy hits' : ''}.</p>`);
+  }
+
+  if (action.save?.attribute) {
+    const dc = action.save.dc ?? fallbackSaveDC;
+    let t = `<p>${escapeHtml(action.save.attribute)} Save DC ${dc}.`;
+    if (action.save.failure) t += ` <strong>Failure:</strong> ${escapeHtml(action.save.failure)}.`;
+    if (action.save.failureEach5) t += ` <strong>Failure (each 5):</strong> ${escapeHtml(action.save.failureEach5)}.`;
+    if (action.save.success) t += ` <strong>Success:</strong> ${escapeHtml(action.save.success)}.`;
+    t += '</p>';
+    descParts.push(t);
+  }
+
+  if (action.check?.dc != null) {
+    let t = `<p>DC ${action.check.dc} Check.`;
+    if (action.check.failure) t += ` <strong>Failure:</strong> ${escapeHtml(action.check.failure)}.`;
+    if (action.check.success) t += ` <strong>Success:</strong> ${escapeHtml(action.check.success)}.`;
+    t += '</p>';
+    descParts.push(t);
+  }
+
+  if (action.reactionTrigger) descParts.push(`<p><strong>Trigger:</strong> ${escapeHtml(action.reactionTrigger)}</p>`);
+  if (action.description) descParts.push(`<p>${escapeHtml(action.description)}</p>`);
+
+  return descParts.join('');
+}
+
+function buildFoundryActionItem(action, fallbackSaveDC, baseDmg, forceReaction) {
+  const isAttack = action.targetDefense != null;
+  const isMelee = (action.actionType || '').toLowerCase().includes('melee');
+  const isSpell = (action.actionType || '').toLowerCase().includes('spell');
+  const targetDefence = action.targetDefense === 'AD' ? 'area' : 'precision';
+
+  // Primary damage formula for Foundry's dice roller
+  let formulasObj = {};
+  if (isAttack && Array.isArray(action.damage) && action.damage.length) {
+    const base = Number(baseDmg) || 0;
+    const d = action.damage[0];
+    const amt = d.useBase !== undefined
+      ? (d.useBase ? base : 0) + (Number(d.modifier) || 0)
+      : Number(d.amount) || 0;
+    formulasObj['fnd0'] = {
+      formula: String(Math.floor(amt)),
+      type: (d.type || 'physical').toLowerCase(),
+      category: 'damage',
+      fail: false, failFormula: '',
+      each5: false, each5Formula: '',
+      overrideDefence: '',
+    };
+  }
+
+  return {
+    name: action.name || 'Action',
+    type: 'feature',
+    img: 'icons/svg/sword.svg',
+    system: {
+      description: buildFoundryActionDescription(action, fallbackSaveDC, baseDmg),
+      tableName: 'action',
+      source: '',
+      isReaction: !!(forceReaction || action.isReaction),
+      actionType: isAttack ? 'attack' : (action.cost ? 'other' : ''),
+      attackFormula: {
+        rangeType: isMelee ? 'melee' : 'ranged',
+        checkType: isSpell ? 'spellAttack' : 'attack',
+        targetDefence,
+        rollBonus: 0,
+        combatMastery: true,
+        critThreshold: 20,
+        formulaMod: '',
+        halfDmgOnMiss: false,
+        skipBonusDamage: { heavy: false, brutal: false, crit: false, conditionals: false },
+        ignoreCloseQuarters: false,
+      },
+      costs: {
+        resources: {
+          ap: action.cost ?? 1,
+          actionPoint: null, stamina: null, mana: null, health: null,
+          custom: {}, grit: null, restPoints: null,
+        },
+        charges: {
+          current: null, max: null, maxChargesFormula: '', overriden: false,
+          rechargeFormula: '', rechargeDice: '', requiredTotalMinimum: null,
+          reset: '', showAsResource: false, subtract: 1, deleteOnZero: false,
+        },
+      },
+      formulas: formulasObj,
+      enhancements: {},
+      featureType: 'monster',
+    },
+  };
+}
+
+function buildFoundryPassiveItem(f) {
+  return {
+    name: f.name || 'Feature',
+    type: 'feature',
+    img: 'icons/svg/book.svg',
+    system: {
+      description: `<p>${escapeHtml(getFeatureSummary(f) || '')}</p>`,
+      tableName: '',
+      source: '',
+      isReaction: false,
+      actionType: '',
+      costs: {
+        resources: {
+          ap: null,
+          actionPoint: null, stamina: null, mana: null, health: null,
+          custom: {}, grit: null, restPoints: null,
+        },
+      },
+      formulas: {},
+      enhancements: {},
+      featureType: 'monster',
+    },
+  };
+}
+
+export function generateFoundryJSON() {
+  const pd     = Math.round(Number(creature.PD) || 0);
+  const ad     = Math.round(Number(creature.AD) || 0);
+  const hp     = Math.round(Number(creature.HP) || 0);
+  const ap     = Math.round(Number(creature.AP) || 0);
+  const speed  = Math.round(Number(creature.speed) || 0);
+  const saveDC = Math.round(Number(creature.saveDC) || 0);
+  const check  = Math.round(Number(creature.check) || 0);
+  const mig    = Math.round(Number(creature.attributes?.Mig) || 0);
+  const agi    = Math.round(Number(creature.attributes?.Agi) || 0);
+  const cha    = Math.round(Number(creature.attributes?.Cha) || 0);
+  const int_   = Math.round(Number(creature.attributes?.Int) || 0);
+  const baseDmg = Number(creature.damage) || 0;
+
+  const migSave = (creature.attributeSaves?.Mig || 0) > 0;
+  const agiSave = (creature.attributeSaves?.Agi || 0) > 0;
+  const chaSave = (creature.attributeSaves?.Cha || 0) > 0;
+  const intSave = (creature.attributeSaves?.Int || 0) > 0;
+
+  // Journal / description
+  const journalParts = [];
+  if (creature.shortDescription) journalParts.push(`<p><em>${escapeHtml(creature.shortDescription)}</em></p>`);
+  if (creature.longDescription) journalParts.push(`<p>${escapeHtml(creature.longDescription)}</p>`);
+
+  // Collect passive features (same dedup logic as Obsidian export)
+  const uniqueFeatures = new Map();
+  if (Array.isArray(creature.featurePassives)) {
+    creature.featurePassives.forEach((f) => {
+      if (f?.id && !uniqueFeatures.has(f.id)) uniqueFeatures.set(f.id, f);
+    });
+  }
+  featureState.selectedIds.forEach((id) => {
+    const f = featureState.byId[id];
+    if (f?.type === FEATURE_TYPES.MODIFIER && !uniqueFeatures.has(f.id)) {
+      uniqueFeatures.set(f.id, f);
+    }
+  });
+
+  // Build items array
+  const items = [];
+  const allActions   = Array.isArray(creature.featureActions)   ? creature.featureActions   : [];
+  const allReactions = Array.isArray(creature.featureReactions) ? creature.featureReactions : [];
+  allActions.forEach((a)   => items.push(buildFoundryActionItem(a, saveDC, baseDmg, false)));
+  allReactions.forEach((a) => items.push(buildFoundryActionItem(a, saveDC, baseDmg, true)));
+  uniqueFeatures.forEach((f) => items.push(buildFoundryPassiveItem(f)));
+
+  const makeAttr = (current, saveMastery, label) => ({
+    saveMastery,
+    value: 0,
+    current,
+    save: 0,
+    bonuses: { check: 0, value: 0, save: 0 },
+    label,
+    check: 0,
+  });
+
+  const makeMovement = (value, label, extraFields) => ({
+    useCustom: true, current: value, value, bonus: 0, label, ...extraFields,
+  });
+
+  const doc = {
+    name: creature.name || 'Unnamed',
+    type: 'npc',
+    img: 'icons/svg/mystery-man.svg',
+    system: {
+      defences: {
+        precision: {
+          normal: pd, formulaKey: 'flat', customFormula: '',
+          value: pd, heavy: pd + 5, brutal: pd + 10,
+          label: 'dc20rpg.defence.precision',
+          bonuses: { noArmor: 0, noHeavy: 0, always: 0 },
+        },
+        area: {
+          normal: ad, formulaKey: 'flat', customFormula: '',
+          value: ad, heavy: ad + 5, brutal: ad + 10,
+          label: 'dc20rpg.defence.area',
+          bonuses: { noArmor: 0, noHeavy: 0, always: 0 },
+        },
+      },
+      details: {
+        level: creature.level ?? 1,
+        combatMastery: 0,
+        creatureType: (creature.type || '').toLowerCase(),
+        aligment: '',
+        role: toTitleCase(creature.role || ''),
+      },
+      size: {
+        fromAncestry: false,
+        size: (creature.size || 'medium').toLowerCase(),
+        spaceOccupation: null,
+      },
+      resources: {
+        health: {
+          bonus: 0, value: hp, current: hp, max: hp, temp: null, useFlat: true, reset: '',
+        },
+        ap: {
+          bonus: 0, value: ap, max: ap, label: 'dc20rpg.resource.ap', reset: 'roundEnd',
+        },
+        custom: {},
+      },
+      movement: {
+        ground:   makeMovement(speed, 'dc20rpg.speed.ground'),
+        climbing: makeMovement(0, 'dc20rpg.speed.climbing', { fullSpeed: false, halfSpeed: false }),
+        swimming: makeMovement(0, 'dc20rpg.speed.swimming', { fullSpeed: false, halfSpeed: false }),
+        burrow:   makeMovement(0, 'dc20rpg.speed.burrow',   { fullSpeed: false, halfSpeed: false }),
+        glide:    makeMovement(0, 'dc20rpg.speed.glide',    { fullSpeed: false, halfSpeed: false }),
+        flying:   makeMovement(0, 'dc20rpg.speed.flying',   { fullSpeed: false, halfSpeed: false }),
+      },
+      saveDC: {
+        value: { spell: saveDC, martial: saveDC },
+        bonus: { spell: 0, martial: 0 },
+        flat: false,
+      },
+      attackMod: {
+        value: { spell: check, martial: check },
+        bonus: { spell: 0, martial: 0 },
+        flat: false,
+      },
+      attributes: {
+        mig: makeAttr(mig, migSave, 'dc20rpg.attributes.mig'),
+        agi: makeAttr(agi, agiSave, 'dc20rpg.attributes.agi'),
+        cha: makeAttr(cha, chaSave, 'dc20rpg.attributes.cha'),
+        int: makeAttr(int_, intSave, 'dc20rpg.attributes.int'),
+      },
+      journal: journalParts.join('') || '',
+    },
+    items,
+    effects: [],
+    flags: {},
+    ownership: { default: 0 },
+  };
+
+  return JSON.stringify(doc, null, 2);
+}
+
 export function generateObsidianYAML() {
   const pd     = Math.round(Number(creature.PD) || 0);
   const ad     = Math.round(Number(creature.AD) || 0);
