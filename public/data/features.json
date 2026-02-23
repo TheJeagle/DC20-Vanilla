@@ -14,7 +14,7 @@
       "actionDescription": "You fire a projectile at a target within range.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
-    "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
+    "tags": ["style/martial", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
   },
   {
     "id": "common-melee",
@@ -31,7 +31,7 @@
       "actionDescription": "You strike a creature within reach.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
-    "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
+    "tags": ["style/martial", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
   },
   {
     "id": "physical-resistance",
@@ -127,7 +127,7 @@
         "successEach5": "+1 HP."
       }
     },
-    "tags": ["attack/spellcaster", "ap-cost/2", "feature-cost/1", "role/support"]
+    "tags": ["role/support", "creature/fey", "attack/spellcaster", "ap-cost/2", "feature-cost/1"]
   },
   {
     "id": "translocate",
@@ -141,7 +141,7 @@
       "range": "3 Spaces",
       "actionDescription": "You step through the Fey Plane, disappearing and reappearing in an unoccupied space within 3 Spaces."
     },
-    "tags": ["attack/spellcaster", "ap-cost/1", "feature-cost/1"]
+    "tags": ["role/lurker", "creature/fey", "attack/spellcaster", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "entangling-vines",
@@ -157,7 +157,7 @@
       "target": "a 2 Space Sphere",
       "check": { "dc": 10 }
     },
-    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1", "status/hindered"]
+    "tags": ["role/controller", "creature/fey", "creature/plant", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1", "status/hindered"]
   },
   {
     "id": "umbral-blast",
@@ -176,7 +176,7 @@
         { "useBase": false, "modifier": 1, "type": "True" }
       ]
     },
-    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/1", "tier/apex"]
+    "tags": ["role/controller", "creature/undead", "creature/aberration", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/1", "tier/apex"]
   },
   {
     "id": "pack-instincts",
@@ -209,7 +209,7 @@
         "failureEach5": "+1 Space."
       }
     },
-    "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
+    "tags": ["role/controller", "attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "healing-burst",
@@ -230,7 +230,7 @@
         "successEach5": "+1 HP."
       }
     },
-    "tags": ["attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1", "role/support"]
+    "tags": ["role/support", "creature/celestial", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1"]
   },
   {
     "id": "fey-step",
@@ -244,7 +244,7 @@
       "range": "4 Spaces",
       "actionDescription": "You teleport to a location of your choice within 4 Spaces."
     },
-    "tags": ["attack/spellcaster", "ap-cost/1", "feature-cost/0"]
+    "tags": ["role/lurker", "creature/fey", "attack/spellcaster", "ap-cost/1", "feature-cost/0"]
   },
   {
     "id": "wing-blast",
@@ -301,7 +301,7 @@
         "successEach5": "Target +1 creature."
       }
     },
-    "tags": ["role/support", "attack/martial", "ap-cost/2", "feature-cost/1"]
+    "tags": ["role/support", "creature/humanoid", "attack/martial", "ap-cost/2", "feature-cost/1"]
   },
   {
     "id": "arcane-push",
@@ -335,7 +335,7 @@
       "cost": 2,
       "actionDescription": "You spend some time to charge up for a big move."
     },
-    "tags": ["ap-cost/2", "feature-cost/0"]
+    "tags": ["role/brute", "ap-cost/2", "feature-cost/0"]
   },
   {
     "id": "charged-radiance",
@@ -357,7 +357,7 @@
         "failure": "Targets are Blinded until the end of your next round."
       }
     },
-    "tags": ["attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/3", "feature-cost/2", "status/blinded"]
+    "tags": ["role/controller", "creature/celestial", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/3", "feature-cost/2", "status/blinded"]
   },
   {
     "id": "stab-and-run",
@@ -391,7 +391,7 @@
       "target": "a 4 Space line (2 Space tall wall)",
       "range": "5 Spaces"
     },
-    "tags": ["role/controller", "attack/spellcaster", "ap-cost/2", "feature-cost/2"]
+    "tags": ["role/controller", "creature/elemental", "attack/spellcaster", "ap-cost/2", "feature-cost/2"]
   },
   {
     "id": "earth-spike",
@@ -407,7 +407,7 @@
       "range": "5 Spaces",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
-    "tags": ["attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
+    "tags": ["role/artillerist", "creature/elemental", "attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "gemantic-aura",
@@ -418,7 +418,7 @@
     "effects": {
       "text": "When you cast spells you can do so as if you were standing in any Space over earth in your Aura, and any creature within your Aura has DisADV on Saves against you."
     },
-    "tags": ["creature/elemental", "feature-cost/1"]
+    "tags": ["role/controller", "creature/elemental", "feature-cost/1"]
   },
   {
     "id": "earth-walker",
@@ -429,7 +429,7 @@
     "effects": {
       "text": "Ignore Difficult Terrain created by rock, dirt, mud, or sand."
     },
-    "tags": ["creature/elemental", "feature-cost/1"]
+    "tags": ["role/skirmisher", "creature/elemental", "feature-cost/1"]
   },
 
   {
@@ -511,7 +511,7 @@
         "failure": "The target is knocked Prone."
       }
     },
-    "tags": ["role/brute", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/hindered"]
+    "tags": ["role/brute", "creature/giant", "creature/elemental", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/hindered"]
   },
   {
     "id": "grapple",
@@ -553,7 +553,7 @@
         "successEach5": "Frightened creatures also become Taunted."
       }
     },
-    "tags": ["role/brute", "attack/martial", "ap-cost/2", "feature-cost/1", "status/frightened"]
+    "tags": ["role/brute", "creature/humanoid", "creature/giant", "attack/martial", "ap-cost/2", "feature-cost/1", "status/frightened"]
   },
   {
     "id": "haymaker-throw",
@@ -575,7 +575,7 @@
         "successEach5": "+1 Space."
       }
     },
-    "tags": ["role/brute", "attack/martial", "ap-cost/1", "feature-cost/1"]
+    "tags": ["role/brute", "creature/giant", "attack/martial", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "body-block",
@@ -724,7 +724,7 @@
     "effects": {
       "text": "Creatures that start their turn within 3 Spaces of you must make a Cha Save or become Frightened of you until the start of their next turn."
     },
-    "tags": ["role/controller", "feature-cost/2", "status/frightened"]
+    "tags": ["role/controller", "creature/undead", "creature/fiend", "feature-cost/2", "status/frightened"]
   },
   {
     "id": "lingering-curse",
@@ -735,7 +735,7 @@
     "effects": {
       "text": "When a creature fails a Save against one of your effects, it has DisADV on its next Save against your effects."
     },
-    "tags": ["role/controller", "feature-cost/1"]
+    "tags": ["role/controller", "creature/fiend", "feature-cost/1"]
   },
   {
     "id": "mindbreak",
@@ -756,7 +756,7 @@
         "failure": "The target is Stunned until the end of its next turn."
       }
     },
-    "tags": ["role/controller", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/2", "status/stunned"]
+    "tags": ["role/controller", "creature/aberration", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/2", "status/stunned"]
   },
   {
     "id": "gravity-well",
@@ -777,7 +777,7 @@
         "successEach5": "Increase pull distance by 1 Space."
       }
     },
-    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "ap-cost/3", "feature-cost/2", "status/hindered"]
+    "tags": ["role/controller", "creature/aberration", "attack/spellcaster", "attack/aoe", "ap-cost/3", "feature-cost/2", "status/hindered"]
   },
   {
     "id": "frost-nova",
@@ -798,7 +798,7 @@
         "failure": "The target gains the Slowed condition until the end of its next turn."
       }
     },
-    "tags": ["role/controller", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/slowed"]
+    "tags": ["role/controller", "creature/elemental", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/slowed"]
   },
   {
     "id": "mass-confusion",
@@ -819,7 +819,7 @@
         "successEach5": "Target 1 additional creature."
       }
     },
-    "tags": ["role/controller", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/disoriented"]
+    "tags": ["role/controller", "creature/aberration", "creature/fey", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/disoriented"]
   },
 
   {
@@ -1120,7 +1120,7 @@
       "actionDescription": "You hurl a bolt of holy light at your enemy. Against Undead and Fiends, this attack deals +2 additional Radiant damage.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Radiant" }]
     },
-    "tags": ["role/support", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1"]
+    "tags": ["role/support", "creature/celestial", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1"]
   },
   {
     "id": "binding-bolt",
@@ -1141,7 +1141,7 @@
         "failure": "The target is Restrained until the end of its next turn."
       }
     },
-    "tags": ["role/support", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/1", "status/restrained"]
+    "tags": ["role/support", "creature/celestial", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/1", "status/restrained"]
   },
   {
     "id": "sacred-flame",
@@ -1162,7 +1162,7 @@
         "failure": "The target is Blinded until the end of its next turn."
       }
     },
-    "tags": ["role/support", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/blinded"]
+    "tags": ["role/support", "creature/celestial", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/blinded"]
   },
   {
     "id": "bless",
@@ -1183,7 +1183,7 @@
         "successEach5": "Target 1 additional ally."
       }
     },
-    "tags": ["role/support", "attack/spellcaster", "ap-cost/2", "feature-cost/1"]
+    "tags": ["role/support", "creature/celestial", "attack/spellcaster", "ap-cost/2", "feature-cost/1"]
   },
   {
     "id": "divine-shield",
@@ -1198,7 +1198,7 @@
       "range": "5 Spaces",
       "actionDescription": "You weave a divine barrier around an ally. The target gains +3 PD and AD until the start of your next turn."
     },
-    "tags": ["role/support", "attack/spellcaster", "ap-cost/1", "feature-cost/1"]
+    "tags": ["role/support", "creature/celestial", "attack/spellcaster", "ap-cost/1", "feature-cost/1"]
   },
 
   {
@@ -1260,7 +1260,7 @@
         "successEach5": "Affected creatures are Frightened for 1 minute instead."
       }
     },
-    "tags": ["creature/undead", "attack/spellcaster", "ap-cost/2", "feature-cost/1", "status/frightened"]
+    "tags": ["creature/undead", "role/controller", "attack/spellcaster", "ap-cost/2", "feature-cost/1", "status/frightened"]
   },
   {
     "id": "necrotic-aura",
@@ -1271,7 +1271,7 @@
     "effects": {
       "text": "Creatures that start their turn within 2 Spaces of you take 1 Necrotic damage."
     },
-    "tags": ["creature/undead", "feature-cost/1"]
+    "tags": ["creature/undead", "role/controller", "feature-cost/1"]
   },
 
   {
@@ -1405,7 +1405,7 @@
         "failure": "The target gains the Burning condition."
       }
     },
-    "tags": ["creature/fiend", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1", "status/burning"]
+    "tags": ["creature/fiend", "role/artillerist", "attack/spellcaster", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1", "status/burning"]
   },
   {
     "id": "hellfire-burst",
@@ -1427,7 +1427,7 @@
         "success": "The target takes half damage."
       }
     },
-    "tags": ["creature/fiend", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/3", "feature-cost/2", "status/burning"]
+    "tags": ["creature/fiend", "role/controller", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/3", "feature-cost/2", "status/burning"]
   },
   {
     "id": "infernal-gaze",
@@ -1448,7 +1448,7 @@
         "successEach5": "The Charmed duration increases by 1 round."
       }
     },
-    "tags": ["creature/fiend", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/charmed"]
+    "tags": ["creature/fiend", "role/controller", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/charmed"]
   },
 
   {
@@ -1563,7 +1563,7 @@
     "effects": {
       "text": "Creatures within 2 Spaces of you that take damage must make an Int Save or become Disoriented until the start of their next turn."
     },
-    "tags": ["creature/aberration", "feature-cost/1", "status/disoriented"]
+    "tags": ["creature/aberration", "role/controller", "feature-cost/1", "status/disoriented"]
   },
   {
     "id": "mind-blast",
@@ -1626,7 +1626,7 @@
         "successEach5": "The target is also Stunned for 1 round."
       }
     },
-    "tags": ["creature/aberration", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/frightened", "status/disoriented"]
+    "tags": ["creature/aberration", "role/controller", "attack/spellcaster", "ap-cost/2", "feature-cost/2", "status/frightened", "status/disoriented"]
   },
 
   {
@@ -1672,7 +1672,7 @@
         "failureEach5": "The Restrained duration increases by 1 round."
       }
     },
-    "tags": ["creature/plant", "attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1", "status/restrained"]
+    "tags": ["creature/plant", "role/controller", "attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1", "status/restrained"]
   },
   {
     "id": "thorn-lash",
@@ -1708,6 +1708,261 @@
       "range": "1 Space",
       "actionDescription": "You release a burst of toxic spores. The area becomes Heavily Obscured and Difficult Terrain. Creatures that start their turn in the area make a Mig Save or gain the Poisoned condition."
     },
-    "tags": ["creature/plant", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1", "status/poisoned"]
+    "tags": ["creature/plant", "role/controller", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/1", "status/poisoned"]
+  },
+
+  {
+    "id": "celestial-resilience",
+    "type": "modifier",
+    "name": "Celestial Resilience",
+    "featureDescription": "Blessed by divine power, this creature resists dark energies and cannot be charmed or frightened.",
+    "featureCost": 1,
+    "effects": {
+      "immunities": { "condition": ["Charmed", "Frightened"] },
+      "resistances": { "damage": ["Necrotic"] }
+    },
+    "tags": ["creature/celestial", "feature-cost/1"]
+  },
+  {
+    "id": "radiant-aura",
+    "type": "passive",
+    "name": "Radiant Aura",
+    "featureDescription": "Divine light radiates from this creature, searing enemies that draw near.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Creatures that start their turn within 2 Spaces of you take 1 Radiant damage."
+    },
+    "tags": ["creature/celestial", "role/support", "feature-cost/1"]
+  },
+  {
+    "id": "celestial-wings",
+    "type": "passive",
+    "name": "Celestial Wings",
+    "featureDescription": "Magnificent wings grant this creature the gift of flight.",
+    "featureCost": 1,
+    "effects": {
+      "text": "This creature has a Fly Speed equal to its Speed. While airborne, creatures cannot gain flanking bonuses against it."
+    },
+    "tags": ["creature/celestial", "role/skirmisher", "feature-cost/1"]
+  },
+  {
+    "id": "divine-judgment",
+    "type": "action-attack",
+    "name": "Divine Judgment",
+    "featureDescription": "Channel divine wrath into a melee strike of blinding radiance.",
+    "featureCost": 1,
+    "actionType": "Melee Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "1 Space",
+      "actionDescription": "You channel divine wrath into your touch, lashing out with searing holy light.",
+      "damageSegments": [{ "useBase": true, "modifier": 1, "type": "Radiant" }],
+      "save": {
+        "attribute": "Cha",
+        "failure": "The target is Blinded until the end of its next turn."
+      }
+    },
+    "tags": ["creature/celestial", "role/support", "attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/2", "feature-cost/1", "status/blinded"]
+  },
+
+  {
+    "id": "fey-resilience",
+    "type": "modifier",
+    "name": "Fey Resilience",
+    "featureDescription": "The creature's fey nature makes it resistant to poison and immune to enchantment.",
+    "featureCost": 1,
+    "effects": {
+      "immunities": { "condition": ["Charmed"] },
+      "resistances": { "damage": ["Poison"] }
+    },
+    "tags": ["creature/fey", "feature-cost/1"]
+  },
+  {
+    "id": "glamour",
+    "type": "passive",
+    "name": "Glamour",
+    "featureDescription": "This creature's fey glamour makes it hard to perceive clearly in combat.",
+    "featureCost": 2,
+    "effects": {
+      "text": "The first time each creature attacks you in a combat encounter, that attack has DisADV. Once a creature successfully hits you, this effect ends for that creature."
+    },
+    "tags": ["creature/fey", "role/lurker", "feature-cost/2"]
+  },
+  {
+    "id": "beguiling-gaze",
+    "type": "action-check-utility",
+    "name": "Beguiling Gaze",
+    "featureDescription": "Fix your shimmering fey eyes on a creature, bending its will.",
+    "featureCost": 1,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "target": "one creature",
+      "range": "5 Spaces",
+      "actionDescription": "Your eyes shimmer with fey magic as you fix your gaze on a creature, bending its will.",
+      "check": {
+        "dc": 10,
+        "failure": "Target resists.",
+        "success": "Target is Charmed by you until the end of its next turn.",
+        "successEach5": "The Charmed duration increases by 1 round."
+      }
+    },
+    "tags": ["creature/fey", "role/controller", "attack/spellcaster", "ap-cost/2", "feature-cost/1", "status/charmed"]
+  },
+  {
+    "id": "fey-curse",
+    "type": "action-check-utility",
+    "name": "Fey Curse",
+    "featureDescription": "Whisper a fey curse that twists luck against the target.",
+    "featureCost": 1,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 1,
+      "target": "one creature",
+      "range": "8 Spaces",
+      "actionDescription": "You weave a whispered curse of misfortune over the target.",
+      "check": {
+        "dc": 10,
+        "failure": "Target resists.",
+        "success": "Target has DisADV on its next attack roll or Save.",
+        "successEach5": "Target has DisADV on 1 additional roll."
+      }
+    },
+    "tags": ["creature/fey", "role/controller", "attack/spellcaster", "ap-cost/1", "feature-cost/1"]
+  },
+
+  {
+    "id": "giant-resilience",
+    "type": "modifier",
+    "name": "Giant Resilience",
+    "featureDescription": "Massive frame and dense muscle grant exceptional endurance.",
+    "featureCost": 2,
+    "effects": {
+      "hp": 15,
+      "pd": 1
+    },
+    "tags": ["creature/giant", "role/brute", "feature-cost/2"]
+  },
+  {
+    "id": "titanic-strength",
+    "type": "passive",
+    "name": "Titanic Strength",
+    "featureDescription": "This creature's immense size lets it overpower creatures much larger than normal.",
+    "featureCost": 1,
+    "effects": {
+      "text": "You can Grapple creatures of any size. Your Grapple checks have ADV."
+    },
+    "tags": ["creature/giant", "role/brute", "feature-cost/1"]
+  },
+  {
+    "id": "boulder-throw",
+    "type": "action-attack",
+    "name": "Boulder Throw",
+    "featureDescription": "Tear a massive rock from the earth and hurl it at a distant foe.",
+    "featureCost": 2,
+    "actionType": "Ranged Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "range": "10 / 20 Spaces",
+      "actionDescription": "You hurl an enormous boulder with crushing force.",
+      "damageSegments": [{ "useBase": true, "modifier": 2, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is knocked Prone.",
+        "failureEach5": "The target is also pushed 1 Space directly away from you."
+      }
+    },
+    "tags": ["creature/giant", "role/brute", "role/artillerist", "attack/martial", "attack/single-target", "target/ad", "ap-cost/2", "feature-cost/2", "status/hindered"]
+  },
+  {
+    "id": "stomp",
+    "type": "action-attack",
+    "name": "Stomp",
+    "featureDescription": "Crash a massive foot down, sending shockwaves through the ground.",
+    "featureCost": 1,
+    "actionType": "Area Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a 1 Space Sphere",
+      "range": "1 Space",
+      "actionDescription": "You bring your massive foot down with earth-shaking force.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Bludgeoning" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is knocked Prone."
+      }
+    },
+    "tags": ["creature/giant", "role/brute", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/1", "status/hindered"]
+  },
+
+  {
+    "id": "ooze-resilience",
+    "type": "modifier",
+    "name": "Ooze Resilience",
+    "featureDescription": "The creature's amorphous body redistributes impacts and resists many afflictions.",
+    "featureCost": 2,
+    "effects": {
+      "resistances": { "damage": ["Slashing", "Piercing", "Bludgeoning"] },
+      "immunities": { "condition": ["Prone", "Blinded", "Poisoned"] }
+    },
+    "tags": ["creature/ooze", "feature-cost/2"]
+  },
+  {
+    "id": "amorphous",
+    "type": "passive",
+    "name": "Amorphous",
+    "featureDescription": "This creature has no fixed form and can squeeze through incredibly small spaces.",
+    "featureCost": 1,
+    "effects": {
+      "text": "You can move through any space at least 1 inch wide without squeezing. You are immune to the Grappled and Prone conditions."
+    },
+    "tags": ["creature/ooze", "feature-cost/1"]
+  },
+  {
+    "id": "pseudopod",
+    "type": "action-attack",
+    "name": "Pseudopod",
+    "featureDescription": "Lash out with a mass of caustic ooze, engulfing the target.",
+    "featureCost": 1,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "range": "1 Space",
+      "actionDescription": "You extend a mass of your body, slamming into the target with corrosive force.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Poison" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is Grappled."
+      }
+    },
+    "tags": ["creature/ooze", "role/brute", "attack/martial", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/1", "status/grappled"]
+  },
+  {
+    "id": "acid-splash",
+    "type": "action-attack",
+    "name": "Acid Splash",
+    "featureDescription": "Spray a burst of corrosive acid on nearby creatures.",
+    "featureCost": 1,
+    "actionType": "Area Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a 2 Space Cone",
+      "range": "1 Space",
+      "actionDescription": "You expel a spray of caustic acid in a short burst.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Poison" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target gains the Poisoned condition."
+      }
+    },
+    "tags": ["creature/ooze", "role/controller", "attack/martial", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/1", "status/poisoned"]
   }
 ]
