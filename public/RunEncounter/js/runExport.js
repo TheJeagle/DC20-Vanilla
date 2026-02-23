@@ -648,7 +648,7 @@ export function printEncounterPdf(enc, creaturesMap) {
     /* ── Monster pages ── */
     .monster-page { page-break-before: always; padding: 1cm; }
     .monster-pair { display: flex; gap: 0.8cm; align-items: flex-start; }
-    .monster-pair > .statblock { flex: 1; min-width: 0; }
+    .monster-pair > .statblock { flex: 0 0 calc(50% - 0.4cm); min-width: 0; }
 
     /* ── Statblock — mirrors createCreature.css ── */
     .statblock { display: flex; flex-direction: column; gap: 0.3rem; font-size: 7.5pt; color: #101010; page-break-inside: avoid; }
