@@ -2218,5 +2218,248 @@
       }
     },
     "tags": ["creature/ooze", "attack/martial", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/2", "status/grappled"]
+  },
+
+  {
+    "id": "divine-constitution",
+    "type": "modifier",
+    "name": "Divine Constitution",
+    "featureDescription": "Divine grace fortifies this creature's body, reinforcing its defenses and making it harder to wound.",
+    "featureCost": 2,
+    "effects": {
+      "hp": 8,
+      "pd": 1,
+      "ad": 1
+    },
+    "tags": ["creature/celestial", "role/defender", "feature-cost/2"]
+  },
+  {
+    "id": "sanctuary-aura",
+    "type": "passive",
+    "name": "Sanctuary Aura",
+    "featureDescription": "This creature radiates a protective divine presence that bolsters the resolve and resilience of nearby allies.",
+    "featureCost": 2,
+    "effects": {
+      "text": "Allied creatures within 3 Spaces of you add +1 to all their Save rolls."
+    },
+    "tags": ["creature/celestial", "role/support", "feature-cost/2"]
+  },
+  {
+    "id": "holy-charge",
+    "type": "action-check-utility",
+    "name": "Holy Charge",
+    "featureDescription": "The celestial bursts forward in a line of divine light, scattering enemies from its path.",
+    "featureCost": 1,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 1,
+      "target": "all creatures in a 4 Space Line",
+      "actionDescription": "You charge up to 4 Spaces in a straight line. Each creature in your path is pushed 1 Space to either side.",
+      "check": {
+        "dc": 11,
+        "failure": "Creatures are pushed but remain standing.",
+        "success": "Pushed creatures are also knocked Prone.",
+        "successEach5": "Push 1 additional Space."
+      }
+    },
+    "tags": ["creature/celestial", "role/skirmisher", "attack/martial", "ap-cost/1", "feature-cost/1", "status/hindered"]
+  },
+
+  {
+    "id": "faerie-dart",
+    "type": "action-attack",
+    "name": "Faerie Dart",
+    "featureDescription": "A swift dart of raw fey magic — cheap and accurate, the signature attack of lesser fey.",
+    "featureCost": 0,
+    "actionType": "Ranged Spell Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "8 / 16 Spaces",
+      "actionDescription": "You flick a mote of crackling fey magic at your target.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "True" }]
+    },
+    "tags": ["creature/fey", "role/artillerist", "attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
+  },
+  {
+    "id": "thornwhip",
+    "type": "action-attack",
+    "name": "Thornwhip",
+    "featureDescription": "The creature lashes out with a vine of living thorns that can snag and hold its prey.",
+    "featureCost": 1,
+    "actionType": "Melee Spell Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "2 Spaces",
+      "actionDescription": "You snap a thorned vine at a creature within 2 Spaces.",
+      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }],
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is Grappled until the start of your next turn."
+      }
+    },
+    "tags": ["creature/fey", "creature/plant", "role/controller", "attack/spellcaster", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/1", "status/grappled"]
+  },
+  {
+    "id": "moonfire-burst",
+    "type": "action-attack",
+    "name": "Moonfire Burst",
+    "featureDescription": "The creature releases a burst of searing silver moonlight that blinds those caught in it.",
+    "featureCost": 2,
+    "actionType": "Area Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a 2 Space Sphere",
+      "range": "6 Spaces",
+      "actionDescription": "You release a pulse of cold silver fire that erupts at a point within range.",
+      "damageSegments": [{ "useBase": true, "modifier": -1, "type": "Radiant" }],
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target is Blinded until the end of its next turn.",
+        "failureEach5": "Blinded duration increases by 1 round."
+      }
+    },
+    "tags": ["creature/fey", "role/controller", "attack/spellcaster", "attack/aoe", "target/ad", "ap-cost/2", "feature-cost/2", "status/blinded"]
+  },
+  {
+    "id": "unseelie-vitality",
+    "type": "modifier",
+    "name": "Unseelie Vitality",
+    "featureDescription": "Exposure to the dark half of the Fey Plane toughens this creature against poison and the cold.",
+    "featureCost": 1,
+    "effects": {
+      "hp": 5,
+      "resistances": { "damage": ["Poison", "Cold"] }
+    },
+    "tags": ["creature/fey", "feature-cost/1"]
+  },
+  {
+    "id": "wild-heart",
+    "type": "passive",
+    "name": "Wild Heart",
+    "featureDescription": "This creature's fey instincts let it dart out of reach the instant an attack goes wide.",
+    "featureCost": 1,
+    "effects": {
+      "text": "Once per round, when a creature misses you with an attack, you may immediately move up to 2 Spaces as a free action. This movement does not provoke Opportunity Attacks."
+    },
+    "tags": ["creature/fey", "role/skirmisher", "feature-cost/1"]
+  },
+  {
+    "id": "acrobatic-sprint",
+    "type": "action-check-utility",
+    "name": "Acrobatic Sprint",
+    "featureDescription": "The creature dashes with fey swiftness, weaving through enemies without giving them an opening.",
+    "featureCost": 0,
+    "actionType": "Martial Utility",
+    "effects": {
+      "cost": 1,
+      "actionDescription": "You move up to your Speed. This movement does not provoke Opportunity Attacks."
+    },
+    "tags": ["creature/fey", "role/skirmisher", "attack/martial", "ap-cost/1", "feature-cost/0"]
+  },
+
+  {
+    "id": "thick-hide",
+    "type": "modifier",
+    "name": "Thick Hide",
+    "featureDescription": "Layers of dense skin and muscle shrug off crushing blows that would fell lesser creatures.",
+    "featureCost": 1,
+    "effects": {
+      "hp": 8,
+      "resistances": { "damage": ["Bludgeoning"] }
+    },
+    "tags": ["creature/giant", "role/brute", "feature-cost/1"]
+  },
+  {
+    "id": "immovable",
+    "type": "passive",
+    "name": "Immovable",
+    "featureDescription": "This creature's sheer mass makes it impossible to shove, push, or topple.",
+    "featureCost": 1,
+    "effects": {
+      "text": "This creature cannot be involuntarily moved by creature abilities or effects, and automatically succeeds on saves caused by Bull Rush, Shove, or similar physical displacement. It is also immune to the Prone condition from external sources."
+    },
+    "tags": ["creature/giant", "role/brute", "role/defender", "feature-cost/1"]
+  },
+  {
+    "id": "primal-surge",
+    "type": "action-check-utility",
+    "name": "Primal Surge",
+    "featureDescription": "The giant channels raw primal magic into the earth, sending a shockwave outward to topple nearby enemies.",
+    "featureCost": 2,
+    "actionType": "Spell Check",
+    "effects": {
+      "cost": 2,
+      "target": "all enemies within 2 Spaces",
+      "actionDescription": "You slam the ground and release a surge of primal energy. All enemies within 2 Spaces are knocked Prone.",
+      "check": {
+        "dc": 13,
+        "failure": "The surge fizzles — nothing happens.",
+        "success": "All enemies within 2 Spaces are knocked Prone.",
+        "successEach5": "The radius extends by 1 Space."
+      }
+    },
+    "tags": ["creature/giant", "role/controller", "attack/spellcaster", "attack/aoe", "ap-cost/2", "feature-cost/2", "status/hindered"]
+  },
+
+  {
+    "id": "viscous-mass",
+    "type": "modifier",
+    "name": "Viscous Mass",
+    "featureDescription": "This ooze's bulk has grown to an almost incomprehensible size, absorbing more damage before collapsing.",
+    "featureCost": 1,
+    "effects": {
+      "hp": 10
+    },
+    "tags": ["creature/ooze", "role/brute", "feature-cost/1"]
+  },
+  {
+    "id": "split",
+    "type": "passive",
+    "name": "Split",
+    "featureDescription": "When cut in half, this ooze does not die — it becomes two oozes.",
+    "featureCost": 3,
+    "effects": {
+      "text": "The first time this creature is reduced to half its maximum HP, it splits. A second ooze with HP equal to the triggering creature's current HP appears in an adjacent unoccupied space, sharing this creature's remaining statistics."
+    },
+    "tags": ["creature/ooze", "feature-cost/3"]
+  },
+  {
+    "id": "smother",
+    "type": "action-check-utility",
+    "name": "Smother",
+    "featureDescription": "The ooze presses its full mass over a grappled creature, suffocating it in acidic slime.",
+    "featureCost": 2,
+    "actionType": "Martial Check",
+    "effects": {
+      "cost": 2,
+      "target": "a Grappled creature",
+      "range": "1 Space",
+      "actionDescription": "You press down onto a Grappled creature, smothering it in acidic bulk.",
+      "check": {
+        "dc": 11,
+        "failure": "The target takes 1 Poison damage.",
+        "success": "The target is Restrained and takes 1 Poison damage at the start of each of its turns until it escapes the Grapple.",
+        "successEach5": "+1 ongoing Poison damage."
+      }
+    },
+    "tags": ["creature/ooze", "role/brute", "attack/martial", "ap-cost/2", "feature-cost/2", "status/restrained"]
+  },
+  {
+    "id": "viscous-trail",
+    "type": "action-check-utility",
+    "name": "Viscous Trail",
+    "featureDescription": "The ooze secretes a burning slick of acid as it moves, turning its path into a hazard.",
+    "featureCost": 1,
+    "actionType": "Martial Utility",
+    "effects": {
+      "cost": 1,
+      "actionDescription": "Until the end of your turn, each Space you move through is coated in corrosive slime. Any creature that enters a coated Space takes 1 Acid damage. Coated Spaces are Difficult Terrain until the start of your next turn."
+    },
+    "tags": ["creature/ooze", "role/controller", "attack/martial", "ap-cost/1", "feature-cost/1"]
   }
 ]
