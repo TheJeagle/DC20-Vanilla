@@ -10,7 +10,7 @@ import fetch from 'node-fetch';
 
 import firebaseConfig from '../src/firebase/config.mjs';
 
-const DEFAULT_FEATURE_FILE = path.resolve('data/features.json');
+const DEFAULT_FEATURE_FILE = path.resolve('public/data/features.json');
 const COLLECTION_NAME = 'VanillaFeatures';
 
 if (!globalThis.fetch) {
