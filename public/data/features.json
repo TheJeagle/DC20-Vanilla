@@ -3,7 +3,7 @@
     "id": "common-ranged-attack",
     "type": "action-attack",
     "name": "Ranged Attack",
-    "description": "A basic ranged attack.",
+    "featureDescription": "A basic ranged attack.",
     "featureCost": 0,
     "actionType": "Ranged Martial Attack",
     "effects": {
@@ -11,6 +11,7 @@
       "targetDefense": "PD",
       "target": "a creature",
       "range": "10 / 15 Spaces",
+      "actionDescription": "You fire a projectile at a target within range.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
     "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
@@ -19,13 +20,15 @@
     "id": "common-melee",
     "type": "action-attack",
     "name": "Melee Attack",
-    "description": "A basic melee strike.",
+    "featureDescription": "A basic melee strike.",
     "featureCost": 0,
     "actionType": "Melee Martial Attack",
     "effects": {
       "cost": 1,
       "targetDefense": "PD",
+      "target": "a creature",
       "range": "1 Space",
+      "actionDescription": "You strike a creature within reach.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Piercing" }]
     },
     "tags": ["attack/martial", "attack/single-target", "target/pd", "ap-cost/1", "feature-cost/0"]
@@ -34,7 +37,7 @@
     "id": "physical-resistance",
     "type": "modifier",
     "name": "Physical Resistance",
-    "description": "Take Half damage from Physical attacks.",
+    "featureDescription": "Take Half damage from Physical attacks.",
     "featureCost": 1,
     "effects": {
       "resistances": { "damage": ["Piercing", "Slashing", "Bludgeoning"] }
@@ -45,7 +48,7 @@
     "id": "battle-hardened",
     "type": "modifier",
     "name": "Battle Hardened",
-    "description": "Battle-scarred discipline hardens the creature's defenses.",
+    "featureDescription": "Battle-scarred discipline hardens the creature's defenses.",
     "featureCost": 2,
     "effects": { "hp": 12, "pd": 2, "ad": 2 },
     "tags": ["role/defender", "role/brute", "creature/humanoid", "feature-cost/2"]
@@ -54,7 +57,7 @@
     "id": "iron-hide",
     "type": "modifier",
     "name": "Iron Hide",
-    "description": "Thick plating bolsters the creature's hide.",
+    "featureDescription": "Thick plating bolsters the creature's hide.",
     "featureCost": 1,
     "effects": {
       "hp": 5,
@@ -67,7 +70,7 @@
     "id": "melee-bash",
     "type": "action-attack",
     "name": "Bash",
-    "description": "Bash a grappled creature into the ground.",
+    "featureDescription": "Bash a grappled creature into the ground.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -75,6 +78,7 @@
       "targetDefense": "AD",
       "target": "a grappled creature",
       "range": "1 Space",
+      "actionDescription": "You slam your weapon down on a Grappled creature with crushing force.",
       "damageSegments": [{ "useBase": true, "modifier": 1, "type": "Bludgeoning" }],
       "save": {
         "attribute": "Mig",
@@ -87,7 +91,7 @@
     "id": "covering-fire",
     "type": "action-attack",
     "name": "Covering Fire",
-    "description": "You loose a hail of arrows blanketing an area, potentially causing targets to bleed.",
+    "featureDescription": "A ranged AoE attack that causes Bleeding on failed saves.",
     "featureCost": 2,
     "actionType": "Area Martial Attack",
     "effects": {
@@ -95,6 +99,7 @@
       "targetDefense": "AD",
       "target": "a 3 Space Cube",
       "range": "5 Spaces",
+      "actionDescription": "You loose a volley of arrows that blanket the area, striking every creature within.",
       "damageSegments": [{ "useBase": true, "modifier": -1, "type": "Piercing" }],
       "save": {
         "attribute": "Agi",
@@ -128,10 +133,14 @@
     "id": "translocate",
     "type": "action-check-utility",
     "name": "Translocate",
-    "description": "You disappear and reappear in a new space within 3 Spaces, navigating the Fey Plane.",
+    "featureDescription": "Short range teleport, navigating the Fey Plane.",
     "featureCost": 1,
     "actionType": "Spell Utility",
-    "effects": { "cost": 1, "range": "3 Spaces" },
+    "effects": {
+      "cost": 1,
+      "range": "3 Spaces",
+      "actionDescription": "You step through the Fey Plane, disappearing and reappearing in an unoccupied space within 3 Spaces."
+    },
     "tags": ["attack/spellcaster", "ap-cost/1", "feature-cost/1"]
   },
   {
@@ -154,7 +163,7 @@
     "id": "umbral-blast",
     "type": "action-attack",
     "name": "Umbral Blast",
-    "description": "A magical AoE attack that deals Umbral and True damage.",
+    "featureDescription": "A magical AoE attack that deals Umbral and True damage.",
     "featureCost": 1,
     "actionType": "Area Spell Attack",
     "effects": {
@@ -173,7 +182,7 @@
     "id": "pack-instincts",
     "type": "passive",
     "name": "Pack Instincts",
-    "description": "The creature thrives when fighting alongside allies.",
+    "featureDescription": "The creature thrives when fighting alongside allies.",
     "featureCost": 1,
     "effects": {
       "text": "Gain ADV on attack rolls when an ally is adjacent to the target."
@@ -344,7 +353,7 @@
       "actionDescription": "Requires Charge. A bright line of radiant light burns a path in front of you.",
       "damageSegments": [{ "useBase": true, "modifier": 2, "type": "Radiant" }],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "Targets are Blinded until the end of your next round."
       }
     },
@@ -404,7 +413,7 @@
     "id": "gemantic-aura",
     "type": "passive",
     "name": "Gemantic Aura (3 Spaces)",
-    "description": "You emanate an aura of control over earth within a 3 Space Aura.",
+    "featureDescription": "You emanate an aura of control over earth within a 3 Space Aura.",
     "featureCost": 1,
     "effects": {
       "text": "When you cast spells you can do so as if you were standing in any Space over earth in your Aura, and any creature within your Aura has DisADV on Saves against you."
@@ -415,7 +424,7 @@
     "id": "earth-walker",
     "type": "passive",
     "name": "Earth Walker",
-    "description": "You're not affected by Difficult Terrain created by rock, dirt, mud, or sand.",
+    "featureDescription": "You're not affected by Difficult Terrain created by rock, dirt, mud, or sand.",
     "featureCost": 1,
     "effects": {
       "text": "Ignore Difficult Terrain created by rock, dirt, mud, or sand."
@@ -427,7 +436,7 @@
     "id": "brute-relentless",
     "type": "passive",
     "name": "Relentless",
-    "description": "This creature refuses to fall.",
+    "featureDescription": "This creature refuses to fall.",
     "featureCost": 2,
     "effects": {
       "text": "When reduced to 0 HP for the first time in combat, you instead drop to 1 HP. This effect can only occur once per encounter."
@@ -438,7 +447,7 @@
     "id": "bone-crusher",
     "type": "passive",
     "name": "Bone Crusher",
-    "description": "Grappled foes are crushed mercilessly.",
+    "featureDescription": "Grappled foes are crushed mercilessly.",
     "featureCost": 1,
     "effects": {
       "text": "Creatures you Grapple take 2 Bludgeoning damage at the start of each of your turns."
@@ -449,7 +458,7 @@
     "id": "heavy-strike",
     "type": "action-attack",
     "name": "Heavy Strike",
-    "description": "A devastating overhead blow that can topple even sturdy opponents.",
+    "featureDescription": "A devastating overhead blow that can topple even sturdy opponents.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -470,7 +479,7 @@
     "id": "lunge",
     "type": "action-attack",
     "name": "Lunge",
-    "description": "Charge forward and drive your weapon into your foe.",
+    "featureDescription": "Charge forward and drive your weapon into your foe.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -487,7 +496,7 @@
     "id": "tremor-strike",
     "type": "action-attack",
     "name": "Tremor Strike",
-    "description": "Slam the ground, sending shockwaves through the earth.",
+    "featureDescription": "Slam the ground, sending shockwaves through the earth.",
     "featureCost": 2,
     "actionType": "Area Martial Attack",
     "effects": {
@@ -508,7 +517,7 @@
     "id": "grapple",
     "type": "action-check-utility",
     "name": "Grapple",
-    "description": "Seize and hold a creature in place.",
+    "featureDescription": "Seize and hold a creature in place.",
     "featureCost": 0,
     "actionType": "Martial Check",
     "effects": {
@@ -529,7 +538,7 @@
     "id": "war-cry",
     "type": "action-check-utility",
     "name": "War Cry",
-    "description": "A terrifying battle cry that shakes the resolve of your enemies.",
+    "featureDescription": "A terrifying battle cry that shakes the resolve of your enemies.",
     "featureCost": 1,
     "actionType": "Martial Check",
     "effects": {
@@ -550,7 +559,7 @@
     "id": "haymaker-throw",
     "type": "action-check-utility",
     "name": "Haymaker Throw",
-    "description": "Hurl a Grappled creature into another target.",
+    "featureDescription": "Hurl a Grappled creature into another target.",
     "featureCost": 1,
     "actionType": "Martial Check",
     "required": ["grapple"],
@@ -572,7 +581,7 @@
     "id": "body-block",
     "type": "action-check-utility",
     "name": "Body Block",
-    "description": "Throw yourself in the path of an attack targeting an ally.",
+    "featureDescription": "Throw yourself in the path of an attack targeting an ally.",
     "featureCost": 1,
     "actionType": "Martial Utility",
     "isReaction": true,
@@ -589,7 +598,7 @@
     "id": "sharpshooter",
     "type": "passive",
     "name": "Sharpshooter",
-    "description": "Precise aim cuts through cover and leaves lasting wounds.",
+    "featureDescription": "Precise aim cuts through cover and leaves lasting wounds.",
     "featureCost": 1,
     "effects": {
       "text": "Your ranged attacks ignore cover bonuses to PD and AD. When your ranged attack deals damage, the target gains the Bleeding condition."
@@ -600,7 +609,7 @@
     "id": "sniper-shot",
     "type": "action-attack",
     "name": "Sniper Shot",
-    "description": "A precise shot aimed at exposed weak points from long distance.",
+    "featureDescription": "A precise shot aimed at exposed weak points from long distance.",
     "featureCost": 2,
     "actionType": "Ranged Martial Attack",
     "effects": {
@@ -617,7 +626,7 @@
     "id": "explosive-arrow",
     "type": "action-attack",
     "name": "Explosive Arrow",
-    "description": "An arrow tipped with a volatile substance that detonates on impact.",
+    "featureDescription": "An arrow tipped with a volatile substance that detonates on impact.",
     "featureCost": 2,
     "actionType": "Area Martial Attack",
     "effects": {
@@ -641,7 +650,7 @@
     "id": "chain-shot",
     "type": "action-attack",
     "name": "Chain Shot",
-    "description": "A weighted shot that passes through multiple enemies in a line.",
+    "featureDescription": "A weighted shot that passes through multiple enemies in a line.",
     "featureCost": 1,
     "actionType": "Ranged Martial Attack",
     "effects": {
@@ -658,7 +667,7 @@
     "id": "suppressive-fire",
     "type": "action-check-utility",
     "name": "Suppressive Fire",
-    "description": "Lay down a hail of fire to pin enemies in place.",
+    "featureDescription": "Lay down a hail of fire to pin enemies in place.",
     "featureCost": 2,
     "actionType": "Martial Check",
     "effects": {
@@ -679,7 +688,7 @@
     "id": "smoke-arrow",
     "type": "action-check-utility",
     "name": "Smoke Arrow",
-    "description": "Fire an arrow that bursts into concealing smoke on impact.",
+    "featureDescription": "Fire an arrow that bursts into concealing smoke on impact.",
     "featureCost": 1,
     "actionType": "Martial Utility",
     "effects": {
@@ -694,7 +703,7 @@
     "id": "caltrops",
     "type": "action-check-utility",
     "name": "Scatter Caltrops",
-    "description": "Scatter spiked caltrops across the battlefield.",
+    "featureDescription": "Scatter spiked caltrops across the battlefield.",
     "featureCost": 1,
     "actionType": "Martial Utility",
     "effects": {
@@ -710,7 +719,7 @@
     "id": "aura-of-dread",
     "type": "passive",
     "name": "Aura of Dread",
-    "description": "The creature exudes an aura of supernatural terror.",
+    "featureDescription": "The creature exudes an aura of supernatural terror.",
     "featureCost": 2,
     "effects": {
       "text": "Creatures that start their turn within 3 Spaces of you must make a Cha Save or become Frightened of you until the start of their next turn."
@@ -721,7 +730,7 @@
     "id": "lingering-curse",
     "type": "passive",
     "name": "Lingering Curse",
-    "description": "Failed saves leave lingering marks on the target.",
+    "featureDescription": "Failed saves leave lingering marks on the target.",
     "featureCost": 1,
     "effects": {
       "text": "When a creature fails a Save against one of your effects, it has DisADV on its next Save against your effects."
@@ -732,7 +741,7 @@
     "id": "mindbreak",
     "type": "action-attack",
     "name": "Mindbreak",
-    "description": "A focused psychic assault that overloads the target's mind.",
+    "featureDescription": "A focused psychic assault that overloads the target's mind.",
     "featureCost": 2,
     "actionType": "Ranged Spell Attack",
     "effects": {
@@ -753,7 +762,7 @@
     "id": "gravity-well",
     "type": "action-check-utility",
     "name": "Gravity Well",
-    "description": "Create a gravitational anomaly that drags creatures toward a point.",
+    "featureDescription": "Create a gravitational anomaly that drags creatures toward a point.",
     "featureCost": 2,
     "actionType": "Spell Check",
     "effects": {
@@ -774,7 +783,7 @@
     "id": "frost-nova",
     "type": "action-attack",
     "name": "Frost Nova",
-    "description": "An explosion of freezing energy that encases nearby enemies in ice.",
+    "featureDescription": "An explosion of freezing energy that encases nearby enemies in ice.",
     "featureCost": 2,
     "actionType": "Area Spell Attack",
     "effects": {
@@ -795,7 +804,7 @@
     "id": "mass-confusion",
     "type": "action-check-utility",
     "name": "Mass Confusion",
-    "description": "Scramble the senses of multiple creatures at once.",
+    "featureDescription": "Scramble the senses of multiple creatures at once.",
     "featureCost": 2,
     "actionType": "Spell Check",
     "effects": {
@@ -817,7 +826,7 @@
     "id": "guardian-stance",
     "type": "passive",
     "name": "Guardian Stance",
-    "description": "The creature's presence bolsters nearby allies.",
+    "featureDescription": "The creature's presence bolsters nearby allies.",
     "featureCost": 1,
     "effects": {
       "text": "Allies within 1 Space of you gain +1 to PD and AD."
@@ -828,7 +837,7 @@
     "id": "stalwart",
     "type": "passive",
     "name": "Stalwart",
-    "description": "This creature cannot be easily moved or shaken.",
+    "featureDescription": "This creature cannot be easily moved or shaken.",
     "featureCost": 1,
     "effects": {
       "text": "You cannot be knocked Prone or moved against your will by non-magical means. When a creature misses you with a melee attack, you may make a free melee attack against it as a Reaction."
@@ -839,7 +848,7 @@
     "id": "shield-slam",
     "type": "action-attack",
     "name": "Shield Slam",
-    "description": "Smash into a foe with your shield, knocking them off balance.",
+    "featureDescription": "Smash into a foe with your shield, knocking them off balance.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -860,7 +869,7 @@
     "id": "sweeping-guard",
     "type": "action-attack",
     "name": "Sweeping Guard",
-    "description": "A wide arc attack that punishes all creatures within reach.",
+    "featureDescription": "A wide arc attack that punishes all creatures within reach.",
     "featureCost": 1,
     "actionType": "Area Martial Attack",
     "effects": {
@@ -877,7 +886,7 @@
     "id": "retributive-strike",
     "type": "action-attack",
     "name": "Retributive Strike",
-    "description": "Strike back when an ally near you is attacked.",
+    "featureDescription": "Strike back when an ally near you is attacked.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "isReaction": true,
@@ -896,7 +905,7 @@
     "id": "taunt-strike",
     "type": "action-attack",
     "name": "Taunt Strike",
-    "description": "A calculated blow meant to draw the enemy's focus.",
+    "featureDescription": "A calculated blow meant to draw the enemy's focus.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -917,7 +926,7 @@
     "id": "interpose",
     "type": "action-check-utility",
     "name": "Interpose",
-    "description": "Throw yourself between an attack and an ally.",
+    "featureDescription": "Throw yourself between an attack and an ally.",
     "featureCost": 1,
     "actionType": "Martial Utility",
     "isReaction": true,
@@ -933,7 +942,7 @@
     "id": "fortress-stance",
     "type": "action-check-utility",
     "name": "Fortress Stance",
-    "description": "Plant your feet and become an immovable wall.",
+    "featureDescription": "Plant your feet and become an immovable wall.",
     "featureCost": 1,
     "actionType": "Martial Utility",
     "effects": {
@@ -947,7 +956,7 @@
     "id": "ambush-predator",
     "type": "passive",
     "name": "Ambush Predator",
-    "description": "The creature excels at striking from concealment.",
+    "featureDescription": "The creature excels at striking from concealment.",
     "featureCost": 1,
     "effects": {
       "text": "Your attacks deal +3 damage against creatures that have not yet acted in combat or that are unaware of you."
@@ -958,7 +967,7 @@
     "id": "shadow-step",
     "type": "passive",
     "name": "Shadow Step",
-    "description": "This creature flickers between patches of shadow with supernatural ease.",
+    "featureDescription": "This creature flickers between patches of shadow with supernatural ease.",
     "featureCost": 1,
     "effects": {
       "text": "Once per turn, when you move through dim light or darkness, you may attempt to Hide as part of that movement."
@@ -969,7 +978,7 @@
     "id": "backstab",
     "type": "action-attack",
     "name": "Backstab",
-    "description": "Drive a blade into an exposed flank for devastating effect.",
+    "featureDescription": "Drive a blade into an exposed flank for devastating effect.",
     "featureCost": 2,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -986,7 +995,7 @@
     "id": "garrote",
     "type": "action-attack",
     "name": "Garrote",
-    "description": "Loop a cord around the target's neck and choke.",
+    "featureDescription": "Loop a cord around the target's neck and choke.",
     "featureCost": 2,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -1007,7 +1016,7 @@
     "id": "poison-strike",
     "type": "action-attack",
     "name": "Poison Strike",
-    "description": "A swift strike coated in potent toxin.",
+    "featureDescription": "A swift strike coated in potent toxin.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -1028,7 +1037,7 @@
     "id": "shadow-pounce",
     "type": "action-attack",
     "name": "Shadow Pounce",
-    "description": "Leap from the shadows and slam into your prey.",
+    "featureDescription": "Leap from the shadows and slam into your prey.",
     "featureCost": 2,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -1049,7 +1058,7 @@
     "id": "smoke-cloud",
     "type": "action-check-utility",
     "name": "Smoke Cloud",
-    "description": "Conjure a thick cloud of smoke to obscure the battlefield.",
+    "featureDescription": "Conjure a thick cloud of smoke to obscure the battlefield.",
     "featureCost": 1,
     "actionType": "Spell Utility",
     "effects": {
@@ -1064,7 +1073,7 @@
     "id": "shadow-meld",
     "type": "action-check-utility",
     "name": "Shadow Meld",
-    "description": "Merge with nearby shadows, becoming impossible to see.",
+    "featureDescription": "Merge with nearby shadows, becoming impossible to see.",
     "featureCost": 1,
     "actionType": "Spell Utility",
     "effects": {
@@ -1078,7 +1087,7 @@
     "id": "aura-of-vitality",
     "type": "passive",
     "name": "Aura of Vitality",
-    "description": "This creature's presence accelerates the healing of nearby allies.",
+    "featureDescription": "This creature's presence accelerates the healing of nearby allies.",
     "featureCost": 2,
     "effects": {
       "text": "Allies that start their turn within 2 Spaces of you regain 1 HP."
@@ -1089,7 +1098,7 @@
     "id": "inspiring-presence",
     "type": "passive",
     "name": "Inspiring Presence",
-    "description": "The creature's courage shores up the resolve of nearby allies.",
+    "featureDescription": "The creature's courage shores up the resolve of nearby allies.",
     "featureCost": 1,
     "effects": {
       "text": "Allies within 2 Spaces of you have ADV on Saves against the Frightened and Charmed conditions."
@@ -1100,7 +1109,7 @@
     "id": "holy-smite",
     "type": "action-attack",
     "name": "Holy Smite",
-    "description": "Channel divine radiance into a searing bolt of light.",
+    "featureDescription": "Channel divine radiance into a searing bolt of light.",
     "featureCost": 1,
     "actionType": "Ranged Spell Attack",
     "effects": {
@@ -1117,7 +1126,7 @@
     "id": "binding-bolt",
     "type": "action-attack",
     "name": "Binding Bolt",
-    "description": "A crackling bolt of energy that locks the target in place.",
+    "featureDescription": "A crackling bolt of energy that locks the target in place.",
     "featureCost": 1,
     "actionType": "Ranged Spell Attack",
     "effects": {
@@ -1138,7 +1147,7 @@
     "id": "sacred-flame",
     "type": "action-attack",
     "name": "Sacred Flame",
-    "description": "A burst of divine fire that purges corruption from a wide area.",
+    "featureDescription": "A burst of divine fire that purges corruption from a wide area.",
     "featureCost": 2,
     "actionType": "Area Spell Attack",
     "effects": {
@@ -1159,7 +1168,7 @@
     "id": "bless",
     "type": "action-check-utility",
     "name": "Bless",
-    "description": "Call down divine favor on your allies.",
+    "featureDescription": "Call down divine favor on your allies.",
     "featureCost": 1,
     "actionType": "Spell Check",
     "effects": {
@@ -1180,7 +1189,7 @@
     "id": "divine-shield",
     "type": "action-check-utility",
     "name": "Divine Shield",
-    "description": "Cloak an ally in protective divine energy.",
+    "featureDescription": "Cloak an ally in protective divine energy.",
     "featureCost": 1,
     "actionType": "Spell Utility",
     "effects": {
@@ -1196,7 +1205,7 @@
     "id": "undying",
     "type": "passive",
     "name": "Undying",
-    "description": "This creature refuses to stay dead.",
+    "featureDescription": "This creature refuses to stay dead.",
     "featureCost": 2,
     "effects": {
       "text": "When reduced to 0 HP for the first time in combat, this creature instead drops to 1 HP. This effect can only occur once per encounter. The creature must be fully destroyed (reduced to 0 HP a second time) to be permanently slain."
@@ -1207,7 +1216,7 @@
     "id": "undead-resilience",
     "type": "modifier",
     "name": "Undead Resilience",
-    "description": "The creature's undead nature grants immunity to certain afflictions.",
+    "featureDescription": "The creature's undead nature grants immunity to certain afflictions.",
     "featureCost": 1,
     "effects": {
       "immunities": { "condition": ["Poisoned", "Charmed"] },
@@ -1219,7 +1228,7 @@
     "id": "life-drain",
     "type": "action-attack",
     "name": "Life Drain",
-    "description": "Drain the vital essence from a creature to fuel your own unlife.",
+    "featureDescription": "Drain the vital essence from a creature to fuel your own unlife.",
     "featureCost": 2,
     "actionType": "Melee Spell Attack",
     "effects": {
@@ -1236,7 +1245,7 @@
     "id": "terrifying-visage",
     "type": "action-check-utility",
     "name": "Terrifying Visage",
-    "description": "Reveal your true undead nature to strike terror into the living.",
+    "featureDescription": "Reveal your true undead nature to strike terror into the living.",
     "featureCost": 1,
     "actionType": "Spell Check",
     "effects": {
@@ -1257,7 +1266,7 @@
     "id": "necrotic-aura",
     "type": "passive",
     "name": "Necrotic Aura",
-    "description": "Death radiates from this creature's form.",
+    "featureDescription": "Death radiates from this creature's form.",
     "featureCost": 1,
     "effects": {
       "text": "Creatures that start their turn within 2 Spaces of you take 1 Necrotic damage."
@@ -1269,7 +1278,7 @@
     "id": "frightful-presence",
     "type": "passive",
     "name": "Frightful Presence",
-    "description": "The dragon's sheer presence terrifies lesser creatures.",
+    "featureDescription": "The dragon's sheer presence terrifies lesser creatures.",
     "featureCost": 2,
     "effects": {
       "text": "Any creature that starts its turn within 5 Spaces of you that is aware of you must make a Cha Save or become Frightened of you until the start of its next turn. A creature that succeeds is immune to this effect for 24 hours."
@@ -1280,7 +1289,7 @@
     "id": "dragon-scales",
     "type": "modifier",
     "name": "Dragon Scales",
-    "description": "Thick draconic scales provide exceptional natural armor.",
+    "featureDescription": "Thick draconic scales provide exceptional natural armor.",
     "featureCost": 1,
     "effects": {
       "hp": 5,
@@ -1294,7 +1303,7 @@
     "id": "fire-breath",
     "type": "action-attack",
     "name": "Fire Breath",
-    "description": "Unleash a devastating cone of scorching dragonfire.",
+    "featureDescription": "Unleash a devastating cone of scorching dragonfire.",
     "featureCost": 3,
     "actionType": "Area Spell Attack",
     "effects": {
@@ -1316,7 +1325,7 @@
     "id": "claw-rake",
     "type": "action-attack",
     "name": "Claw Rake",
-    "description": "Tear through a target with both claws in a raking strike.",
+    "featureDescription": "Tear through a target with both claws in a raking strike.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -1336,7 +1345,7 @@
     "id": "wing-sweep",
     "type": "action-check-utility",
     "name": "Wing Sweep",
-    "description": "Beat your massive wings to scatter nearby creatures.",
+    "featureDescription": "Beat your massive wings to scatter nearby creatures.",
     "featureCost": 1,
     "actionType": "Martial Check",
     "effects": {
@@ -1358,7 +1367,7 @@
     "id": "infernal-resilience",
     "type": "modifier",
     "name": "Infernal Resilience",
-    "description": "Born of hellfire, this creature shrugs off flame and poison.",
+    "featureDescription": "Born of hellfire, this creature shrugs off flame and poison.",
     "featureCost": 1,
     "effects": {
       "immunities": { "damage": ["Fire"] },
@@ -1370,7 +1379,7 @@
     "id": "dark-pact",
     "type": "passive",
     "name": "Dark Pact",
-    "description": "Striking this creature is a dangerous bargain.",
+    "featureDescription": "Striking this creature is a dangerous bargain.",
     "featureCost": 1,
     "effects": {
       "text": "Whenever a creature deals damage to you, it takes 1 Fire damage."
@@ -1381,7 +1390,7 @@
     "id": "hellfire-bolt",
     "type": "action-attack",
     "name": "Hellfire Bolt",
-    "description": "Hurl a bolt of crackling hellfire at a distant foe.",
+    "featureDescription": "Hurl a bolt of crackling hellfire at a distant foe.",
     "featureCost": 1,
     "actionType": "Ranged Spell Attack",
     "effects": {
@@ -1402,7 +1411,7 @@
     "id": "hellfire-burst",
     "type": "action-attack",
     "name": "Hellfire Burst",
-    "description": "Summon a pillar of infernal fire to immolate an area.",
+    "featureDescription": "Summon a pillar of infernal fire to immolate an area.",
     "featureCost": 2,
     "actionType": "Area Spell Attack",
     "effects": {
@@ -1424,7 +1433,7 @@
     "id": "infernal-gaze",
     "type": "action-check-utility",
     "name": "Infernal Gaze",
-    "description": "Lock eyes with a creature and overwhelm their will.",
+    "featureDescription": "Lock eyes with a creature and overwhelm their will.",
     "featureCost": 2,
     "actionType": "Spell Check",
     "effects": {
@@ -1446,7 +1455,7 @@
     "id": "thick-hide",
     "type": "modifier",
     "name": "Thick Hide",
-    "description": "Dense fur, scales, or chitinous plating absorbs punishment.",
+    "featureDescription": "Dense fur, scales, or chitinous plating absorbs punishment.",
     "featureCost": 1,
     "effects": {
       "hp": 8,
@@ -1459,7 +1468,7 @@
     "id": "pack-hunter",
     "type": "passive",
     "name": "Pack Hunter",
-    "description": "This creature coordinates with its packmates to bring down prey.",
+    "featureDescription": "This creature coordinates with its packmates to bring down prey.",
     "featureCost": 1,
     "effects": {
       "text": "When you make an attack against a creature that has an ally of yours adjacent to it, you deal +2 damage."
@@ -1470,7 +1479,7 @@
     "id": "pounce",
     "type": "action-attack",
     "name": "Pounce",
-    "description": "Leap onto your prey, bearing them to the ground.",
+    "featureDescription": "Leap onto your prey, bearing them to the ground.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -1491,7 +1500,7 @@
     "id": "venomous-bite",
     "type": "action-attack",
     "name": "Venomous Bite",
-    "description": "Sink venomous fangs into the target.",
+    "featureDescription": "Sink venomous fangs into the target.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -1515,7 +1524,7 @@
     "id": "fierce-roar",
     "type": "action-check-utility",
     "name": "Fierce Roar",
-    "description": "Let out a thunderous roar to shake nearby enemies.",
+    "featureDescription": "Let out a thunderous roar to shake nearby enemies.",
     "featureCost": 1,
     "actionType": "Martial Check",
     "effects": {
@@ -1537,7 +1546,7 @@
     "id": "aberrant-resilience",
     "type": "modifier",
     "name": "Aberrant Resilience",
-    "description": "The creature's alien biology resists mental manipulation.",
+    "featureDescription": "The creature's alien biology resists mental manipulation.",
     "featureCost": 1,
     "effects": {
       "immunities": { "condition": ["Charmed", "Frightened"] },
@@ -1549,7 +1558,7 @@
     "id": "psychic-aura",
     "type": "passive",
     "name": "Psychic Aura",
-    "description": "This creature's alien mind bleeds into the thoughts of those nearby.",
+    "featureDescription": "This creature's alien mind bleeds into the thoughts of those nearby.",
     "featureCost": 1,
     "effects": {
       "text": "Creatures within 2 Spaces of you that take damage must make an Int Save or become Disoriented until the start of their next turn."
@@ -1560,7 +1569,7 @@
     "id": "mind-blast",
     "type": "action-attack",
     "name": "Mind Blast",
-    "description": "Project a psychic shockwave that staggers all who feel it.",
+    "featureDescription": "Project a psychic shockwave that staggers all who feel it.",
     "featureCost": 2,
     "actionType": "Area Spell Attack",
     "effects": {
@@ -1581,7 +1590,7 @@
     "id": "tentacle-grab",
     "type": "action-attack",
     "name": "Tentacle Grab",
-    "description": "Lash out with a powerful tentacle to restrain prey.",
+    "featureDescription": "Lash out with a powerful tentacle to restrain prey.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -1602,7 +1611,7 @@
     "id": "void-gaze",
     "type": "action-check-utility",
     "name": "Void Gaze",
-    "description": "Fix your unfathomable gaze on a creature, filling them with existential dread.",
+    "featureDescription": "Fix your unfathomable gaze on a creature, filling them with existential dread.",
     "featureCost": 2,
     "actionType": "Spell Check",
     "effects": {
@@ -1624,7 +1633,7 @@
     "id": "plant-resilience",
     "type": "modifier",
     "name": "Plant Resilience",
-    "description": "The creature's plant nature grants unusual resistances.",
+    "featureDescription": "The creature's plant nature grants unusual resistances.",
     "featureCost": 1,
     "effects": {
       "resistances": { "damage": ["Bludgeoning", "Piercing"] },
@@ -1636,7 +1645,7 @@
     "id": "photosynthesis",
     "type": "passive",
     "name": "Photosynthesis",
-    "description": "This creature draws strength from natural light.",
+    "featureDescription": "This creature draws strength from natural light.",
     "featureCost": 1,
     "effects": {
       "text": "While in sunlight or bright natural light, you regain 1 HP at the start of each of your turns."
@@ -1647,7 +1656,7 @@
     "id": "vine-grapple",
     "type": "action-attack",
     "name": "Vine Grapple",
-    "description": "Shoot out binding vines to entangle a target.",
+    "featureDescription": "Shoot out binding vines to entangle a target.",
     "featureCost": 1,
     "actionType": "Ranged Spell Attack",
     "effects": {
@@ -1669,7 +1678,7 @@
     "id": "thorn-lash",
     "type": "action-attack",
     "name": "Thorn Lash",
-    "description": "Whip a barbed vine at a creature, tearing through flesh.",
+    "featureDescription": "Whip a barbed vine at a creature, tearing through flesh.",
     "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
@@ -1690,7 +1699,7 @@
     "id": "spore-cloud",
     "type": "action-check-utility",
     "name": "Spore Cloud",
-    "description": "Release a cloud of toxic spores to sicken nearby creatures.",
+    "featureDescription": "Release a cloud of toxic spores to sicken nearby creatures.",
     "featureCost": 1,
     "actionType": "Spell Utility",
     "effects": {
