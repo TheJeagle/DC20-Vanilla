@@ -1,18 +1,17 @@
 /**
  * runExport.js
  * Encounter export helpers for the RunEncounter page.
- * Reads from decoded Firestore creature docs (state.creatures map) — no extra fetches needed.
- *
- * Firestore creature shape used here:
- *   creature.stats.{HP, PD, PDHeavy, PDBrutal, AD, ADHeavy, ADBrutal, speed, AP, saveDC, check, damage}
- *   creature.attributes.values.{Mig, Agi, Cha, Int}
- *   creature.traits.{resistances, vulnerabilities, immunities, senses, skills}
- *   creature.featurePassives[], featureActions[], featureReactions[]
+ * Creature stats are recalculated for the effective level (baseLevel + levelDelta)
+ * so that user-adjusted levels produce correct HP/PD/AD/damage/etc.
  *
  * Action damage — two formats:
  *   New: {useBase, modifier, type}  → (useBase ? baseDamage : 0) + modifier
  *   Old: {amount, type}             → amount
  */
+import {
+  computeScaledStats,
+  applyNumericDeltas,
+} from '../../CreateCreature/js/createCreatureStats.js';
 
 const POWER_MULT = { minion: 0.5, weak: 0.7, normal: 1.0, apex: 2.0, legendary: 4.0 };
 
@@ -58,6 +57,78 @@ function effectiveLvl(monsterSlot, creature) {
     return Math.max(0, (monsterSlot.baseLevel || 0) + (monsterSlot.levelDelta || 0));
   }
   return creature.level ?? 1;
+}
+
+/**
+ * Recalculate creature stats for the effective level of a monster slot.
+ *
+ * The Firestore creature doc stores stats at the level it was originally saved.
+ * When the user changes the level in the encounter (via levelDelta), those stored
+ * stats are stale. This function:
+ *   1. Computes base stats at the original saved level.
+ *   2. Derives the "feature bonus" = stored stat − computed base (flat bonus from
+ *      modifier-type features that were baked into the stored stats at save time).
+ *   3. Computes base stats at the effective level.
+ *   4. Adds the preserved feature bonus back, yielding correct fully-scaled stats.
+ *
+ * @param {object} creature  Decoded Firestore creature doc
+ * @param {object} monsterSlot  Encounter monster slot (has baseLevel, levelDelta, role, power)
+ * @returns {{HP,PD,PDHeavy,PDBrutal,AD,ADHeavy,ADBrutal,damage,check,saveDC,AP,speed,attributes,attributeSaves}}
+ */
+function recalcStats(creature, monsterSlot) {
+  const stored   = creature.stats || {};
+  const origLevel = Number(creature.level) || 1;
+  const newLevel  = effectiveLvl(monsterSlot, creature);
+  const role   = (monsterSlot?.role  || creature.role  || 'none');
+  const power  = (monsterSlot?.power || creature.power || 'normal');
+  const size   = creature.size  || 'medium';
+  const type   = creature.type  || 'humanoid';
+  const deltas = creature.deltas || {};
+
+  function baseAt(level) {
+    const CM = Math.ceil(level / 2);
+    const computed = computeScaledStats({ level, role, power, size, type, deltas, combatMastery: CM });
+    const s = {
+      HP: computed.HP, PD: computed.PD, AD: computed.AD,
+      damage: computed.damage, check: computed.check,
+      saveDC: computed.saveDC, AP: computed.AP, speed: computed.speed,
+      deltas: computed.deltas,
+    };
+    applyNumericDeltas(s);
+    return { s, computed };
+  }
+
+  const { s: origBase } = baseAt(origLevel);
+  const { s: newBase, computed: newComputed } = baseAt(newLevel);
+
+  // Flat bonus that modifier-type features contributed at save time
+  const bonus = field => (Number(stored[field]) || 0) - origBase[field];
+
+  const HP     = newBase.HP     + bonus('HP');
+  const PD     = newBase.PD     + bonus('PD');
+  const AD     = newBase.AD     + bonus('AD');
+  const damage = newBase.damage + bonus('damage');
+  const check  = newBase.check  + bonus('check');
+  const saveDC = newBase.saveDC + bonus('saveDC');
+  const AP     = newBase.AP     + bonus('AP');
+  const speed  = newBase.speed  + bonus('speed');
+
+  return {
+    HP:       Math.round(HP),
+    PD:       Math.round(PD),
+    PDHeavy:  Math.round(PD + 5),
+    PDBrutal: Math.round(PD + 10),
+    AD:       Math.round(AD),
+    ADHeavy:  Math.round(AD + 5),
+    ADBrutal: Math.round(AD + 10),
+    damage,
+    check,
+    saveDC:   Math.round(saveDC),
+    AP:       Math.round(AP),
+    speed:    Math.round(speed),
+    attributes:     newComputed.attributes,
+    attributeSaves: newComputed.attributeSaves,
+  };
 }
 
 /**
@@ -116,28 +187,28 @@ function buildActionEntry(action, fallbackSaveDC, baseDamage) {
 // ── Obsidian YAML statblock ────────────────────────────────────────────────────
 
 function buildCreatureYaml(creature, monsterSlot) {
-  const stats    = creature.stats     || {};
-  const attrVals = creature.attributes?.values || {};
-  const traits   = creature.traits    || {};
+  const rs       = recalcStats(creature, monsterSlot);
+  const attrVals = rs.attributes;
+  const traits   = creature.traits || {};
 
-  const name   = monsterSlot?.name || creature.name || 'Unknown';
-  const level  = effectiveLvl(monsterSlot, creature);
-  const pd     = Math.round(Number(stats.PD)       || 0);
-  const pdH    = Math.round(Number(stats.PDHeavy)  || pd + 5);
-  const pdB    = Math.round(Number(stats.PDBrutal) || pd + 10);
-  const ad     = Math.round(Number(stats.AD)       || 0);
-  const adH    = Math.round(Number(stats.ADHeavy)  || ad + 5);
-  const adB    = Math.round(Number(stats.ADBrutal) || ad + 10);
-  const hp     = Math.round(Number(stats.HP)       || 0);
-  const ap     = Math.round(Number(stats.AP)       || 0);
-  const speed  = Math.round(Number(stats.speed)    || 0);
-  const saveDC = Math.round(Number(stats.saveDC)   || 0);
-  const attack = toSigned(stats.check);
-  const mig    = Math.round(Number(attrVals.Mig)   || 0);
-  const agi    = Math.round(Number(attrVals.Agi)   || 0);
-  const cha    = Math.round(Number(attrVals.Cha)   || 0);
-  const int_   = Math.round(Number(attrVals.Int)   || 0);
-  const baseDmg = Number(stats.damage) || 0;
+  const name    = monsterSlot?.name || creature.name || 'Unknown';
+  const level   = effectiveLvl(monsterSlot, creature);
+  const pd      = rs.PD;
+  const pdH     = rs.PDHeavy;
+  const pdB     = rs.PDBrutal;
+  const ad      = rs.AD;
+  const adH     = rs.ADHeavy;
+  const adB     = rs.ADBrutal;
+  const hp      = rs.HP;
+  const ap      = rs.AP;
+  const speed   = rs.speed;
+  const saveDC  = rs.saveDC;
+  const attack  = toSigned(rs.check);
+  const mig     = Math.round(Number(attrVals.Mig) || 0);
+  const agi     = Math.round(Number(attrVals.Agi) || 0);
+  const cha     = Math.round(Number(attrVals.Cha) || 0);
+  const int_    = Math.round(Number(attrVals.Int) || 0);
+  const baseDmg = rs.damage;
 
   const lines = [];
   lines.push('```statblock');
@@ -359,25 +430,25 @@ function buildActionSummary(action, saveDC, baseDmg) {
 }
 
 function buildStatblockHtml(creature, monsterSlot) {
-  const stats     = creature.stats              || {};
-  const attrVals  = creature.attributes?.values || {};
-  const attrSaves = creature.attributes?.saves  || {};
-  const traits    = creature.traits             || {};
+  const rs        = recalcStats(creature, monsterSlot);
+  const attrVals  = rs.attributes;
+  const attrSaves = rs.attributeSaves;
+  const traits    = creature.traits || {};
 
   const name    = monsterSlot?.name || creature.name || 'Unknown';
   const level   = effectiveLvl(monsterSlot, creature);
-  const pd      = Math.round(Number(stats.PD)       || 0);
-  const pdH     = Math.round(Number(stats.PDHeavy)  || pd + 5);
-  const pdB     = Math.round(Number(stats.PDBrutal) || pd + 10);
-  const ad      = Math.round(Number(stats.AD)       || 0);
-  const adH     = Math.round(Number(stats.ADHeavy)  || ad + 5);
-  const adB     = Math.round(Number(stats.ADBrutal) || ad + 10);
-  const hp      = Math.round(Number(stats.HP)       || 0);
-  const ap      = Math.round(Number(stats.AP)       || 0);
-  const speed   = Math.round(Number(stats.speed)    || 0);
-  const saveDC  = Math.round(Number(stats.saveDC)   || 0);
-  const attack  = toSigned(stats.check);
-  const baseDmg = Number(stats.damage) || 0;
+  const pd      = rs.PD;
+  const pdH     = rs.PDHeavy;
+  const pdB     = rs.PDBrutal;
+  const ad      = rs.AD;
+  const adH     = rs.ADHeavy;
+  const adB     = rs.ADBrutal;
+  const hp      = rs.HP;
+  const ap      = rs.AP;
+  const speed   = rs.speed;
+  const saveDC  = rs.saveDC;
+  const attack  = toSigned(rs.check);
+  const baseDmg = rs.damage;
   const mig     = Math.round(Number(attrVals.Mig)   || 0);
   const agi     = Math.round(Number(attrVals.Agi)   || 0);
   const cha     = Math.round(Number(attrVals.Cha)   || 0);
