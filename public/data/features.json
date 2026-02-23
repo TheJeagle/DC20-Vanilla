@@ -1914,12 +1914,13 @@
   },
   {
     "id": "amorphous",
-    "type": "passive",
+    "type": "modifier",
     "name": "Amorphous",
     "featureDescription": "This creature has no fixed form and can squeeze through incredibly small spaces.",
     "featureCost": 1,
     "effects": {
-      "text": "You can move through any space at least 1 inch wide without squeezing. You are immune to the Grappled and Prone conditions."
+      "text": "You can move through any space at least 1 inch wide without squeezing. You are immune to the Grappled and Prone conditions.",
+      "immunities": { "condition": ["Prone", "Grappled"] }
     },
     "tags": ["creature/ooze", "feature-cost/1"]
   },
@@ -1934,11 +1935,11 @@
       "cost": 1,
       "targetDefense": "AD",
       "target": "a creature",
-      "range": "1 Space",
+      "range": "2 Spaces",
       "actionDescription": "You extend a mass of your body, slamming into the target with corrosive force.",
-      "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Poison" }],
+      "damageSegments": [{ "useBase": true, "modifier": 0.5, "type": "Poison" }],
       "save": {
-        "attribute": "Mig",
+        "attribute": "Agi",
         "failure": "The target is Grappled."
       }
     },
@@ -1954,7 +1955,7 @@
     "effects": {
       "cost": 2,
       "targetDefense": "AD",
-      "target": "a 2 Space Cone",
+      "target": "a 3 Space Cone",
       "range": "1 Space",
       "actionDescription": "You expel a spray of caustic acid in a short burst.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Poison" }],
@@ -2213,8 +2214,8 @@
       "actionDescription": "Your form surges outward, attempting to envelop the attacker.",
       "damageSegments": [{ "useBase": true, "modifier": 0, "type": "Poison" }],
       "save": {
-        "attribute": "Mig",
-        "failure": "The target is Grappled."
+        "attribute": "Repeated Mig",
+        "failure": "The target is Restrained."
       }
     },
     "tags": ["creature/ooze", "attack/martial", "attack/single-target", "target/ad", "ap-cost/1", "feature-cost/2", "status/grappled"]
@@ -2458,7 +2459,7 @@
     "actionType": "Martial Utility",
     "effects": {
       "cost": 1,
-      "actionDescription": "Until the end of your turn, each Space you move through is coated in corrosive slime. Any creature that enters a coated Space takes 1 Acid damage. Coated Spaces are Difficult Terrain until the start of your next turn."
+      "actionDescription": "Until the end of your turn, each Space you move through is coated in corrosive slime. Any creature that enters a coated Space takes 1 Corrosive damage. Coated Spaces are Difficult Terrain until the start of your next turn."
     },
     "tags": ["creature/ooze", "role/controller", "attack/martial", "ap-cost/1", "feature-cost/1"]
   }
