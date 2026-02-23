@@ -1907,6 +1907,7 @@
     "featureDescription": "The creature's amorphous body redistributes impacts and resists many afflictions.",
     "featureCost": 2,
     "effects": {
+      "text": "You have resistance to physical damage, and gain immunity to the Prone, Blinded and Poisoned conditions.",
       "resistances": { "damage": ["Slashing", "Piercing", "Bludgeoning"] },
       "immunities": { "condition": ["Prone", "Blinded", "Poisoned"] }
     },

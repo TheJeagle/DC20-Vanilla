@@ -30,6 +30,7 @@ import {
   setupTraitPickers,
   collectTraitGroup,
   syncTraitCheckboxes,
+  markFeatureGrantedTraits,
 } from './createCreatureTraits.js';
 import {
   computeScaledStats,
@@ -750,6 +751,13 @@ function recomputeCreatureFromInputs() {
   creature.selectedFeatures = [...featureState.selectedIds];
   applyFeatureEffects(creature, selectedFeatures);
 
+  // Capture which traits came purely from features (before merging user picks).
+  const featureGrantedTraits = {
+    resistances:     { damage: [...creature.resistances.damage],     condition: [...creature.resistances.condition] },
+    vulnerabilities: { damage: [...creature.vulnerabilities.damage], condition: [...creature.vulnerabilities.condition] },
+    immunities:      { damage: [...creature.immunities.damage],      condition: [...creature.immunities.condition] },
+  };
+
   // Merge user-selected traits back in (feature-granted ones are already present).
   const mergeTraits = (target, userPicked) => {
     userPicked.damage   .forEach(v => { if (!target.damage   .includes(v)) target.damage   .push(v); });
@@ -759,9 +767,14 @@ function recomputeCreatureFromInputs() {
   mergeTraits(creature.vulnerabilities, userTraits.vulnerabilities);
   mergeTraits(creature.immunities,      userTraits.immunities);
 
+  // Sync checkboxes to the combined state, then mark feature-granted ones so
+  // collectTraitGroup skips them and they don't bleed into future userTraits snapshots.
   syncTraitCheckboxes('resistances',     creature.resistances);
   syncTraitCheckboxes('vulnerabilities', creature.vulnerabilities);
   syncTraitCheckboxes('immunities',      creature.immunities);
+  markFeatureGrantedTraits('resistances',     featureGrantedTraits.resistances);
+  markFeatureGrantedTraits('vulnerabilities', featureGrantedTraits.vulnerabilities);
+  markFeatureGrantedTraits('immunities',      featureGrantedTraits.immunities);
 }
 
 // High-level flow: read inputs → update state → refresh UI.

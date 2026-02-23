@@ -91,6 +91,10 @@ function collectTraitGroup(trait) {
   const collected = { damage: [], condition: [] };
 
   document.querySelectorAll(`#creatureInputs input[name="${trait}"]:checked`).forEach((input) => {
+    // Skip checkboxes checked only because a feature grants this trait — those are
+    // not user-picked and must not survive a feature being removed.
+    if (input.dataset.featureGranted === '1') return;
+
     const category = input.dataset.category;
     if (category !== 'damage' && category !== 'condition') return;
 
@@ -122,7 +126,31 @@ function syncTraitCheckboxes(trait, group) {
         : false;
 
     checkbox.checked = isChecked;
+    // Clear any stale feature-granted marker — markFeatureGrantedTraits sets it fresh each cycle.
+    checkbox.dataset.featureGranted = '';
   });
 }
 
-export { setupTraitPickers, collectTraitGroup, syncTraitCheckboxes };
+// Mark checkboxes that are checked solely because a feature grants the trait.
+// collectTraitGroup skips these so they are never treated as user-picked.
+function markFeatureGrantedTraits(trait, group) {
+  const damageValues = group && Array.isArray(group.damage) ? group.damage : [];
+  const conditionValues = group && Array.isArray(group.condition) ? group.condition : [];
+
+  document.querySelectorAll(`#creatureInputs input[name="${trait}"]`).forEach((checkbox) => {
+    const category = checkbox.dataset.category;
+    const label = checkbox.dataset.label || checkbox.value;
+    if (!category || !label) return;
+
+    const isFeatureGranted =
+      category === 'damage'
+        ? damageValues.includes(label)
+        : category === 'condition'
+        ? conditionValues.includes(label)
+        : false;
+
+    if (isFeatureGranted) checkbox.dataset.featureGranted = '1';
+  });
+}
+
+export { setupTraitPickers, collectTraitGroup, syncTraitCheckboxes, markFeatureGrantedTraits };
