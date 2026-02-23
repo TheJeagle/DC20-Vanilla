@@ -64,7 +64,7 @@ export function buildBench() {
       type: 'monster',
       id: `group-${gId}`,
       label: gName,
-      sublabel: `${members[0].name} ×${members.length} · ${lvlText}`,
+      sublabel: `${buildGroupSublabel(members)} · ${lvlText}`,
       sourceData: members,
       isGroup: true,
       groupId: gId,
@@ -111,6 +111,18 @@ export function renderBench(container, onAdd = null) {
 }
 
 // ── Private helpers ───────────────────────────────────────────────────────────
+
+/** Build a sublabel string listing each distinct creature name with its count. */
+function buildGroupSublabel(members) {
+  const counts = {};
+  for (const m of members) {
+    const n = m.name || '?';
+    counts[n] = (counts[n] || 0) + 1;
+  }
+  return Object.entries(counts)
+    .map(([name, count]) => count > 1 ? `${name} ×${count}` : name)
+    .join(' · ');
+}
 
 function appendBenchSection(container, title, items, onAdd) {
   const section = document.createElement('div');

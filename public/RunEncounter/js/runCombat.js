@@ -242,41 +242,45 @@ export function addCombatant(benchItem) {
     });
   } else {
     const members = benchItem.isGroup ? benchItem.sourceData : [benchItem.sourceData];
-    const first   = members[0];
-    let creature  = state.creatures[first.creatureId] || null;
-    if (creature) {
-      const baseLevel      = creature.level ?? 0;
-      const effectiveLevel = Math.max(0, (first.baseLevel ?? baseLevel) + (first.levelDelta ?? 0));
-      if (effectiveLevel !== baseLevel) {
-        creature = rescaleCreature(creature, effectiveLevel);
+    for (const member of members) {
+      let creature = state.creatures[member.creatureId] || null;
+      if (creature) {
+        const baseLevel      = creature.level ?? 0;
+        const effectiveLevel = Math.max(0, (member.baseLevel ?? baseLevel) + (member.levelDelta ?? 0));
+        if (effectiveLevel !== baseLevel) {
+          creature = rescaleCreature(creature, effectiveLevel);
+        }
       }
-    }
-    const stats    = creature?.stats             || {};
-    const attrVals = creature?.attributes?.values || {};  // keys: Mig, Agi, Cha, Int
-    const maxHp    = stats.HP ?? 0;
-    const maxAp    = stats.AP ?? 2;
+      const stats    = creature?.stats             || {};
+      const attrVals = creature?.attributes?.values || {};  // keys: Mig, Agi, Cha, Int
+      const maxHp    = stats.HP ?? 0;
+      const maxAp    = stats.AP ?? 2;
+      const effectiveLv   = Math.max(0, (member.baseLevel || 0) + (member.levelDelta || 0));
+      const sublabelParts = [`Lv${effectiveLv}`];
+      if (member.role && member.role !== 'none') sublabelParts.push(member.role);
 
-    state.combat.push({
-      type:       'monster',
-      benchId:    benchItem.id,
-      label:      benchItem.label,
-      sublabel:   benchItem.sublabel,
-      currentHp:  maxHp,
-      maxHp,
-      currentPd:  stats.PD  ?? 0,
-      currentAd:  stats.AD  ?? 0,
-      currentMig: attrVals.Mig ?? 0,
-      currentAgi: attrVals.Agi ?? 0,
-      currentCha: attrVals.Cha ?? 0,
-      currentInt: attrVals.Int ?? 0,
-      maxAp,
-      currentAp:  maxAp,
-      dodgeState: 0,   // 0 = none, 1 = dodging, 2 = full dodge
-      expanded:   false,
-      sourceData: benchItem.sourceData,
-      creatureId: first.creatureId,
-      creature,         // rescaled (or original) creature doc for statblock rendering
-    });
+      state.combat.push({
+        type:       'monster',
+        benchId:    benchItem.id,
+        label:      member.name || creature?.name || 'Monster',
+        sublabel:   sublabelParts.join(' · '),
+        currentHp:  maxHp,
+        maxHp,
+        currentPd:  stats.PD  ?? 0,
+        currentAd:  stats.AD  ?? 0,
+        currentMig: attrVals.Mig ?? 0,
+        currentAgi: attrVals.Agi ?? 0,
+        currentCha: attrVals.Cha ?? 0,
+        currentInt: attrVals.Int ?? 0,
+        maxAp,
+        currentAp:  maxAp,
+        dodgeState: 0,   // 0 = none, 1 = dodging, 2 = full dodge
+        expanded:   false,
+        sourceData: member,
+        creatureId: member.creatureId,
+        creature,         // rescaled (or original) creature doc for statblock rendering
+      });
+    }
   }
 }
 
@@ -331,10 +335,14 @@ function buildCombatCard(combatant, index, container, refreshBench) {
   removeBtn.textContent = '← Bench';
   removeBtn.title = 'Return to bench';
   removeBtn.addEventListener('click', () => {
-    const benchItem = state.bench.find(b => b.id === combatant.benchId);
-    if (benchItem) benchItem.inCombat = false;
     const idx = state.combat.indexOf(combatant);
     if (idx !== -1) state.combat.splice(idx, 1);
+    // Only return the bench item when no more entries from this group remain in combat
+    const anyLeft = state.combat.some(c => c.benchId === combatant.benchId);
+    if (!anyLeft) {
+      const benchItem = state.bench.find(b => b.id === combatant.benchId);
+      if (benchItem) benchItem.inCombat = false;
+    }
     refreshBench();
     renderCombat(container, refreshBench);
   });
