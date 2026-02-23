@@ -219,6 +219,39 @@ function buildCreatureYaml(creature, monsterSlot) {
   return lines.join('\n');
 }
 
+// ── Unique monster group helpers ───────────────────────────────────────────────
+
+/**
+ * Build an array of unique monster entries grouped by (creatureId, effectiveLevel).
+ * Entries with multiple monsters at the same level get a "×N" count appended.
+ * Different levels of the same creature each produce a separate entry.
+ */
+function buildUniqueMonsterEntries(enc, creaturesMap) {
+  // Count occurrences per (creatureId, effectiveLevel) key
+  const groupMap = new Map();
+  for (const m of enc.monsters || []) {
+    if (!m.creatureId) continue;
+    const creature = creaturesMap[m.creatureId];
+    if (!creature) continue;
+    const lvl = effectiveLvl(m, creature);
+    const key = `${m.creatureId}:${lvl}`;
+    if (!groupMap.has(key)) {
+      groupMap.set(key, { creature, slot: m, count: 0, level: lvl });
+    }
+    groupMap.get(key).count++;
+  }
+
+  // Build display entries
+  const entries = [];
+  for (const { creature, slot, count } of groupMap.values()) {
+    const baseName = slot.name || creature.name || 'Unknown';
+    const displayName = count > 1 ? `${baseName} ×${count}` : baseName;
+    const displaySlot = { ...slot, name: displayName };
+    entries.push({ creature, slot: displaySlot });
+  }
+  return entries;
+}
+
 // ── Obsidian .md export ────────────────────────────────────────────────────────
 
 function generateEncounterMd(enc, creaturesMap) {
@@ -247,16 +280,10 @@ function generateEncounterMd(enc, creaturesMap) {
     lines.push('');
   }
 
-  const seen = new Set();
-  for (const m of enc.monsters || []) {
-    if (!m.creatureId || seen.has(m.creatureId)) continue;
-    seen.add(m.creatureId);
-    const creature = creaturesMap[m.creatureId];
-    if (!creature) continue;
-
+  for (const { creature, slot } of buildUniqueMonsterEntries(enc, creaturesMap)) {
     lines.push('---');
     lines.push('');
-    lines.push(buildCreatureYaml(creature, m));
+    lines.push(buildCreatureYaml(creature, slot));
     lines.push('');
   }
 
@@ -279,6 +306,71 @@ export function downloadEncounterMd(enc, creaturesMap) {
 
 // ── PDF (print window) ────────────────────────────────────────────────────────
 
+function buildActionHtml(action, saveDC, baseDmg) {
+  const cost = action.cost != null ? ` (${action.cost} AP)` : '';
+  const nameHtml = escapeHtml(`${action.name || 'Action'}${cost}`);
+
+  const lines = [];
+
+  // Attack / type line
+  const typeParts = [];
+  if (action.actionType) typeParts.push(escapeHtml(action.actionType));
+  if (action.targetDefense) typeParts.push(`vs <strong>${escapeHtml(action.targetDefense)}</strong>`);
+  if (action.check?.dc != null && !action.targetDefense) typeParts.push(`DC <strong>${action.check.dc}</strong>`);
+
+  const segments = Array.isArray(action.damage) ? action.damage : [];
+  if (segments.length) {
+    const base = Number(baseDmg) || 0;
+    const dmgStr = segments.map(d => {
+      const amt = d.useBase !== undefined
+        ? (d.useBase ? base : 0) + (Number(d.modifier) || 0)
+        : Number(d.amount) || 0;
+      const type = d.type ? ` ${escapeHtml(d.type)}` : '';
+      return `<strong>${Math.floor(amt)}${type}</strong>`;
+    }).join(' + ');
+    typeParts.push(`${dmgStr} damage on hit`);
+  }
+  if (typeParts.length) lines.push(typeParts.join('. ') + '.');
+
+  // Target / range line
+  if (action.target || action.range) {
+    const parts = ['Target'];
+    if (action.target) parts.push(escapeHtml(action.target));
+    if (action.range) parts.push(`within ${escapeHtml(action.range)}`);
+    lines.push(parts.join(' ') + '.');
+  }
+
+  // Reaction trigger
+  if (action.reactionTrigger) lines.push(`<em>Trigger:</em> ${escapeHtml(action.reactionTrigger)}`);
+
+  // Save block
+  if (action.save?.attribute) {
+    const dc = action.save.dc ?? saveDC;
+    lines.push(`${escapeHtml(action.save.attribute)} Save, DC: <strong>${dc}</strong>.`);
+    if (action.save.failure) lines.push(`<em>Failure:</em> ${escapeHtml(action.save.failure)}`);
+    if (action.save.failureEach5) lines.push(`<em>Failure (Each 5):</em> ${escapeHtml(action.save.failureEach5)}`);
+    if (action.save.success) lines.push(`<em>Success:</em> ${escapeHtml(action.save.success)}`);
+    if (action.save.successEach5) lines.push(`<em>Success (Each 5):</em> ${escapeHtml(action.save.successEach5)}`);
+  }
+
+  // Check block
+  if (action.check?.dc != null && action.targetDefense) {
+    lines.push(`Check DC: <strong>${action.check.dc}</strong>.`);
+  }
+  if (action.check) {
+    if (action.check.failure) lines.push(`<em>Failure:</em> ${escapeHtml(action.check.failure)}`);
+    if (action.check.failureEach5) lines.push(`<em>Failure (Each 5):</em> ${escapeHtml(action.check.failureEach5)}`);
+    if (action.check.success) lines.push(`<em>Success:</em> ${escapeHtml(action.check.success)}`);
+    if (action.check.successEach5) lines.push(`<em>Success (Each 5):</em> ${escapeHtml(action.check.successEach5)}`);
+  }
+
+  // Description
+  if (action.description) lines.push(escapeHtml(action.description));
+
+  const bodyHtml = lines.map(l => `<div class="sb-action-line">${l}</div>`).join('');
+  return `<p class="sb-action"><span class="sb-action-name">${nameHtml}:</span>${bodyHtml}</p>`;
+}
+
 function buildStatblockHtml(creature, monsterSlot) {
   const stats    = creature.stats     || {};
   const attrVals = creature.attributes?.values || {};
@@ -287,7 +379,11 @@ function buildStatblockHtml(creature, monsterSlot) {
   const name   = monsterSlot?.name || creature.name || 'Unknown';
   const level  = effectiveLvl(monsterSlot, creature);
   const pd     = Math.round(Number(stats.PD)       || 0);
+  const pdH    = Math.round(Number(stats.PDHeavy)  || pd + 5);
+  const pdB    = Math.round(Number(stats.PDBrutal) || pd + 10);
   const ad     = Math.round(Number(stats.AD)       || 0);
+  const adH    = Math.round(Number(stats.ADHeavy)  || ad + 5);
+  const adB    = Math.round(Number(stats.ADBrutal) || ad + 10);
   const hp     = Math.round(Number(stats.HP)       || 0);
   const ap     = Math.round(Number(stats.AP)       || 0);
   const speed  = Math.round(Number(stats.speed)    || 0);
@@ -312,10 +408,7 @@ function buildStatblockHtml(creature, monsterSlot) {
 
   function renderActionGroup(actions, title) {
     if (!actions.length) return '';
-    const rows = actions.map(a => {
-      const cost = a.cost != null ? ` (${a.cost} AP)` : '';
-      return `<p class="sb-action"><span class="sb-action-name">${escapeHtml((a.name || 'Action') + cost)}.</span> ${escapeHtml(buildActionDesc(a, saveDC, baseDmg))}</p>`;
-    }).join('');
+    const rows = actions.map(a => buildActionHtml(a, saveDC, baseDmg)).join('');
     return `<div class="sb-divider"></div><p class="sb-section-title">${title}</p>${rows}`;
   }
 
@@ -352,8 +445,8 @@ function buildStatblockHtml(creature, monsterSlot) {
   <div class="sb-divider"></div>
   <div class="sb-core-row">
     <div class="sb-core-block"><div class="sb-core-val">${hp}</div><div class="sb-core-lbl">HP</div></div>
-    <div class="sb-core-block"><div class="sb-core-val">${pd}</div><div class="sb-core-lbl">PD</div></div>
-    <div class="sb-core-block"><div class="sb-core-val">${ad}</div><div class="sb-core-lbl">AD</div></div>
+    <div class="sb-core-block"><div class="sb-core-val">${pd}/${pdH}/${pdB}</div><div class="sb-core-lbl">PD</div></div>
+    <div class="sb-core-block"><div class="sb-core-val">${ad}/${adH}/${adB}</div><div class="sb-core-lbl">AD</div></div>
     <div class="sb-core-block"><div class="sb-core-val">${ap}</div><div class="sb-core-lbl">AP</div></div>
     <div class="sb-core-block"><div class="sb-core-val">${speed}</div><div class="sb-core-lbl">Speed</div></div>
     <div class="sb-core-block"><div class="sb-core-val">${attack}</div><div class="sb-core-lbl">Attack</div></div>
@@ -380,25 +473,44 @@ export function printEncounterPdf(enc, creaturesMap) {
   const diff      = computeDifficulty(enc);
   const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
 
+  // ── Encounter info page ──────────────────────────────────────────────────
   let textContent = `<h1 class="enc-title">${encName}</h1>`;
-  textContent += `<p class="enc-meta">${diffLabel} Encounter &nbsp;·&nbsp; ${(enc.party || []).length} Players &nbsp;·&nbsp; ${(enc.monsters || []).length} Monsters</p>`;
+  textContent += `<div class="enc-badges"><span class="enc-badge enc-badge--${diff}">${diffLabel} Encounter</span></div>`;
 
-  if (enc.description) textContent += `<h2>Description</h2><p>${escapeHtml(enc.description)}</p>`;
+  if (enc.description) textContent += `<h2>Description</h2><p>${escapeHtml(enc.description).replace(/\n/g, '<br>')}</p>`;
   if (enc.info)        textContent += `<h2>GM Notes</h2><p>${escapeHtml(enc.info).replace(/\n/g, '<br>')}</p>`;
-  if (enc.rewards)     textContent += `<h2>Rewards</h2><p>${escapeHtml(enc.rewards)}</p>`;
+  if (enc.rewards)     textContent += `<h2>Rewards</h2><p>${escapeHtml(enc.rewards).replace(/\n/g, '<br>')}</p>`;
 
-  const uniqueMonsters = [];
-  const seen = new Set();
-  for (const m of enc.monsters || []) {
-    if (!m.creatureId || seen.has(m.creatureId)) continue;
-    seen.add(m.creatureId);
-    const c = creaturesMap[m.creatureId];
-    if (c) uniqueMonsters.push({ creature: c, slot: m });
+  // Party table
+  const party = enc.party || [];
+  if (party.length) {
+    textContent += `<h2>Party (${party.length})</h2>`;
+    textContent += `<table class="info-table"><thead><tr><th>Name</th><th>Class</th><th>Level</th><th>HP</th><th>PD</th><th>AD</th></tr></thead><tbody>`;
+    party.forEach(p => {
+      textContent += `<tr><td>${escapeHtml(p.name || '—')}</td><td>${escapeHtml(p.class || '—')}</td><td>${p.level ?? '—'}</td><td>${p.hp ?? '—'}</td><td>${p.pd ?? '—'}</td><td>${p.ad ?? '—'}</td></tr>`;
+    });
+    textContent += `</tbody></table>`;
   }
 
+  // Monster summary table (unique groups with counts)
+  const uniqueEntries = buildUniqueMonsterEntries(enc, creaturesMap);
+  if (uniqueEntries.length) {
+    textContent += `<h2>Monsters</h2>`;
+    textContent += `<table class="info-table"><thead><tr><th>Name</th><th>Level</th><th>Power</th><th>Role</th><th>HP</th><th>PD</th><th>AD</th></tr></thead><tbody>`;
+    uniqueEntries.forEach(({ creature, slot }) => {
+      const stats = creature.stats || {};
+      const lvl   = effectiveLvl(slot, creature);
+      const power = toTitleCase(slot.power || creature.power || '');
+      const role  = toTitleCase(slot.role  || creature.role  || '');
+      textContent += `<tr><td>${escapeHtml(slot.name || creature.name || '—')}</td><td>${lvl}</td><td>${escapeHtml(power)}</td><td>${escapeHtml(role)}</td><td>${Math.round(Number(stats.HP) || 0)}</td><td>${Math.round(Number(stats.PD) || 0)}</td><td>${Math.round(Number(stats.AD) || 0)}</td></tr>`;
+    });
+    textContent += `</tbody></table>`;
+  }
+
+  // ── Statblock pages ──────────────────────────────────────────────────────
   let monsterPagesHtml = '';
-  for (let i = 0; i < uniqueMonsters.length; i += 2) {
-    const pair = uniqueMonsters.slice(i, i + 2);
+  for (let i = 0; i < uniqueEntries.length; i += 2) {
+    const pair = uniqueEntries.slice(i, i + 2);
     monsterPagesHtml += `<div class="monster-page">
   <div class="monster-pair">
     ${pair.map(({ creature, slot }) => buildStatblockHtml(creature, slot)).join('\n    ')}
@@ -415,34 +527,47 @@ export function printEncounterPdf(enc, creaturesMap) {
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Georgia, serif; font-size: 10pt; color: #1a1a1a; background: #fff; }
 
-    /* Encounter text page */
+    /* ── Encounter info page ── */
     .text-page { padding: 2cm; }
-    .enc-title { font-size: 22pt; color: #4a1a6a; border-bottom: 2px solid #4a1a6a; padding-bottom: 6px; margin-bottom: 14px; }
-    .enc-meta  { font-size: 9pt; color: #555; margin-bottom: 18px; font-style: italic; }
-    h2 { font-size: 12pt; color: #4a1a6a; margin: 18px 0 6px; border-bottom: 1px solid #c8a0e0; padding-bottom: 3px; }
-    p  { line-height: 1.6; }
+    .enc-title { font-size: 20pt; font-weight: bold; color: #8c2a2a; border-bottom: 3px solid #8c2a2a; padding-bottom: 6px; margin-bottom: 12px; }
+    .enc-badges { margin-bottom: 16px; }
+    .enc-badge { display: inline-block; padding: 3px 10px; border-radius: 3px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+    .enc-badge--easy    { background: #d4edda; color: #155724; }
+    .enc-badge--fair    { background: #fff3cd; color: #856404; }
+    .enc-badge--hard    { background: #ffe0b2; color: #7a3800; }
+    .enc-badge--deadly  { background: #f8d7da; color: #721c24; }
+    h2 { font-size: 11pt; font-weight: bold; color: #8c2a2a; margin: 16px 0 6px; border-bottom: 1px solid #c8a0a0; padding-bottom: 3px; }
+    p  { line-height: 1.6; margin-bottom: 6px; }
+    .info-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 6px; }
+    .info-table th { background: #8c2a2a; color: #fff; padding: 4px 8px; text-align: left; font-weight: bold; }
+    .info-table td { padding: 3px 8px; border-bottom: 1px solid #e8d8d0; }
+    .info-table tr:nth-child(even) td { background: #fdf6ee; }
 
-    /* Monster pages */
+    /* ── Monster pages ── */
     .monster-page { page-break-before: always; padding: 1cm; }
-    .monster-pair { display: flex; gap: 1cm; align-items: flex-start; }
-    .monster-pair > .statblock { flex: 1; }
+    .monster-pair { display: flex; gap: 0.8cm; align-items: flex-start; }
+    .monster-pair > .statblock { flex: 1; min-width: 0; }
 
-    /* Statblock */
-    .statblock { border: 2px solid #8c2a2a; background: #fdf6ee; font-size: 8.5pt; }
-    .sb-header  { background: #8c2a2a; color: #fff; padding: 6px 10px; }
-    .sb-name    { font-size: 12pt; font-weight: bold; }
-    .sb-subtitle { font-size: 7pt; font-style: italic; opacity: 0.9; margin-top: 1px; }
-    .sb-divider { height: 2px; background: #8c2a2a; }
-    .sb-core-row { display: flex; background: #f5e8d0; padding: 6px 2px; }
-    .sb-core-block { flex: 1; text-align: center; }
-    .sb-core-val { font-size: 11pt; font-weight: bold; color: #8c2a2a; line-height: 1.1; }
-    .sb-core-lbl { font-size: 6pt; text-transform: uppercase; letter-spacing: 0.4px; color: #666; }
-    .sb-attrs { display: flex; gap: 16px; padding: 4px 10px; background: #f5e8d0; }
+    /* ── Statblock ── */
+    .statblock { border: 2px solid #8c2a2a; background: #fdf6ee; font-size: 8pt; page-break-inside: avoid; }
+    .sb-header   { background: #8c2a2a; color: #fff; padding: 6px 10px; }
+    .sb-name     { font-size: 11pt; font-weight: bold; }
+    .sb-subtitle { font-size: 7pt; font-style: italic; opacity: 0.9; margin-top: 2px; }
+    .sb-divider  { height: 2px; background: #8c2a2a; }
+    .sb-core-row { display: flex; background: #f5e8d0; padding: 5px 2px; }
+    .sb-core-block { flex: 1; text-align: center; min-width: 0; }
+    .sb-core-val { font-size: 9pt; font-weight: bold; color: #8c2a2a; line-height: 1.2; white-space: nowrap; }
+    .sb-core-lbl { font-size: 5.5pt; text-transform: uppercase; letter-spacing: 0.3px; color: #666; }
+    .sb-attrs    { display: flex; gap: 12px; padding: 3px 10px; background: #f5e8d0; font-size: 8pt; }
     .sb-attr-lbl { font-weight: bold; color: #8c2a2a; }
-    .sb-chars { padding: 3px 10px; font-size: 7.5pt; color: #333; line-height: 1.5; }
-    .sb-section-title { font-variant: small-caps; font-weight: bold; color: #8c2a2a; font-size: 8.5pt; padding: 3px 10px 0; }
-    .sb-action, .sb-passive { padding: 2px 10px; margin: 1px 0; line-height: 1.4; }
-    .sb-action-name, .sb-passive-name { font-weight: bold; font-style: italic; }
+    .sb-chars    { padding: 3px 10px; font-size: 7.5pt; color: #333; line-height: 1.5; }
+    .sb-section-title { font-variant: small-caps; font-weight: bold; color: #8c2a2a; font-size: 8pt; padding: 3px 10px 1px; }
+    .sb-action   { padding: 2px 10px 3px; margin: 0; line-height: 1.4; }
+    .sb-passive  { padding: 2px 10px 3px; margin: 0; line-height: 1.4; }
+    .sb-action-name  { font-weight: bold; font-style: italic; }
+    .sb-passive-name { font-weight: bold; font-style: italic; }
+    .sb-action-line  { margin: 0; }
+    .sb-action-line + .sb-action-line { margin-top: 1px; }
 
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

@@ -16,7 +16,7 @@ function yamlQuote(str) {
   return '"' + String(str ?? '').replace(/"/g, '\\"') + '"';
 }
 
-function buildActionDesc(action, fallbackSaveDC) {
+function buildActionDesc(action, fallbackSaveDC, baseDamage) {
   const parts = [];
 
   if (action.actionType) parts.push(action.actionType);
@@ -25,10 +25,13 @@ function buildActionDesc(action, fallbackSaveDC) {
   if (action.range) parts.push(action.range);
 
   if (Array.isArray(action.damage) && action.damage.length) {
+    const base = Number(baseDamage) || 0;
     const dmg = action.damage
       .map((d) => {
-        const amt = Math.floor(Number(d.amount) || 0);
-        return d.type ? `${amt} ${d.type}` : String(amt);
+        const amt = d.useBase !== undefined
+          ? (d.useBase ? base : 0) + (Number(d.modifier) || 0)
+          : Number(d.amount) || 0;
+        return d.type ? `${Math.floor(amt)} ${d.type}` : String(Math.floor(amt));
       })
       .join(' + ');
     parts.push(`${dmg} damage`);
@@ -54,10 +57,10 @@ function buildActionDesc(action, fallbackSaveDC) {
   return parts.filter(Boolean).join(', ');
 }
 
-function buildActionEntry(action, fallbackSaveDC) {
+function buildActionEntry(action, fallbackSaveDC, baseDamage) {
   const cost = action.cost != null ? ` (${action.cost})` : '';
   const name = `${action.name || 'Action'}${cost}`;
-  const desc = buildActionDesc(action, fallbackSaveDC);
+  const desc = buildActionDesc(action, fallbackSaveDC, baseDamage);
   return `  - name: ${name}\n    desc: ${yamlQuote(desc)}`;
 }
 
@@ -73,6 +76,7 @@ export function generateObsidianYAML() {
   const agi    = Math.round(Number(creature.attributes?.Agi) || 0);
   const cha    = Math.round(Number(creature.attributes?.Cha) || 0);
   const int_   = Math.round(Number(creature.attributes?.Int) || 0);
+  const baseDmg = Number(creature.damage) || 0;
 
   const lines = [];
   lines.push('```statblock');
@@ -152,22 +156,22 @@ export function generateObsidianYAML() {
 
   if (regular.length) {
     lines.push('attacks_spells:');
-    regular.forEach((a) => lines.push(buildActionEntry(a, saveDC)));
+    regular.forEach((a) => lines.push(buildActionEntry(a, saveDC, baseDmg)));
   }
 
   if (allReactions.length) {
     lines.push('reactions:');
-    allReactions.forEach((a) => lines.push(buildActionEntry(a, saveDC)));
+    allReactions.forEach((a) => lines.push(buildActionEntry(a, saveDC, baseDmg)));
   }
 
   if (legendary.length) {
     lines.push('legendary_actions:');
-    legendary.forEach((a) => lines.push(buildActionEntry(a, saveDC)));
+    legendary.forEach((a) => lines.push(buildActionEntry(a, saveDC, baseDmg)));
   }
 
   if (apex.length) {
     lines.push('apex_actions:');
-    apex.forEach((a) => lines.push(buildActionEntry(a, saveDC)));
+    apex.forEach((a) => lines.push(buildActionEntry(a, saveDC, baseDmg)));
   }
 
   lines.push('```');
