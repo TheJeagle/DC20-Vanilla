@@ -55,16 +55,17 @@ function featureMatchesCurrentCreature(feature) {
   const typeTags = extractTagValues(tags, CREATURE_TAG_PREFIX);
   const sizeTags = extractTagValues(tags, SIZE_TAG_PREFIX);
 
-  if (roleTags.length) {
-    if (!matchesTagRequirement(roleTags, creature.role, { allowNone: true })) {
-      return false;
-    }
-  }
+  // Role and type are OR'd: a feature is visible if it matches the creature's
+  // role OR its type (so picking Ooze shows all ooze features regardless of role).
+  const roleMatch = !roleTags.length || matchesTagRequirement(roleTags, creature.role, { allowNone: true });
+  const typeMatch = !typeTags.length || matchesTagRequirement(typeTags, creature.type);
 
-  if (typeTags.length) {
-    if (!matchesTagRequirement(typeTags, creature.type)) {
-      return false;
-    }
+  if (roleTags.length && typeTags.length) {
+    // Has both — show if either matches
+    if (!roleMatch && !typeMatch) return false;
+  } else {
+    // Has only one — must match that one
+    if (!roleMatch || !typeMatch) return false;
   }
 
   if (sizeTags.length) {
