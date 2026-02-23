@@ -26,15 +26,17 @@ function buildActionDesc(action, fallbackSaveDC, baseDamage) {
 
   if (Array.isArray(action.damage) && action.damage.length) {
     const base = Number(baseDamage) || 0;
+    let heavyHit = false;
     const dmg = action.damage
       .map((d) => {
         const amt = d.useBase !== undefined
           ? (d.useBase ? base : 0) + (Number(d.modifier) || 0)
           : Number(d.amount) || 0;
+        if (amt % 1 !== 0) heavyHit = true;
         return d.type ? `${Math.floor(amt)} ${d.type}` : String(Math.floor(amt));
       })
       .join(' + ');
-    parts.push(`${dmg} damage`);
+    parts.push(`${dmg} damage${heavyHit ? ', +1 on heavy hits' : ''}`);
   }
 
   if (action.save?.attribute) {
