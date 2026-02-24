@@ -10,7 +10,7 @@ import { state } from './js/runState.js';
 import { loadEncounterForRun, fetchCreatures } from './js/runFirebase.js';
 import { buildBench, renderBench } from './js/runBench.js';
 import { initCombat, addCombatant, renderCombat } from './js/runCombat.js';
-import { downloadEncounterMd, printEncounterPdf, downloadEncounterFoundryVTT } from './js/runExport.js';
+import { downloadEncounterMd, printEncounterPdf, downloadEncounterFoundryVTT, downloadEncounterNotion } from './js/runExport.js';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
@@ -164,6 +164,8 @@ async function init() {
 
     document.getElementById('exportMdBtn')?.addEventListener('click',
       () => downloadEncounterMd(state.encounter, state.creatures));
+    document.getElementById('exportNotionBtn')?.addEventListener('click',
+      () => downloadEncounterNotion(state.encounter, state.creatures));
     document.getElementById('exportPdfBtn')?.addEventListener('click',
       () => printEncounterPdf(state.encounter, state.creatures));
     document.getElementById('exportFoundryBtn')?.addEventListener('click',

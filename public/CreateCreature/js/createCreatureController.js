@@ -51,7 +51,7 @@ import {
   toggleFeatureSelection,
 } from './createCreatureFeatures.js';
 import { fetchCreatureDocument, saveCreatureDocument } from './createCreatureFirebase.js';
-import { generateObsidianYAML, generateFoundryJSON } from './createCreatureExport.js';
+import { generateObsidianYAML, generateFoundryJSON, generateNotionMarkdown } from './createCreatureExport.js';
 
 /**
  * Convert arbitrary text into title case for display.
@@ -874,6 +874,19 @@ function initializeEventHandlers() {
       try {
         await navigator.clipboard.writeText(yaml);
         setSaveStatus('Copied Obsidian statblock to clipboard!', 'success', { sticky: false });
+      } catch {
+        setSaveStatus('Could not write to clipboard.', 'error', { sticky: false });
+      }
+    });
+  }
+
+  if (dom.copyNotionButton) {
+    dom.copyNotionButton.addEventListener('click', async () => {
+      updateStatblock();
+      const md = generateNotionMarkdown();
+      try {
+        await navigator.clipboard.writeText(md);
+        setSaveStatus('Copied Notion statblock to clipboard!', 'success', { sticky: false });
       } catch {
         setSaveStatus('Could not write to clipboard.', 'error', { sticky: false });
       }

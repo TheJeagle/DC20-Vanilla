@@ -390,6 +390,195 @@ export function generateFoundryJSON() {
   return JSON.stringify(doc, null, 2);
 }
 
+// ---------------------------------------------------------------------------
+// Notion Markdown export
+// ---------------------------------------------------------------------------
+
+function buildNotionActionDesc(action, fallbackSaveDC, baseDamage) {
+  const mechanical = [];
+
+  if (action.actionType)    mechanical.push(action.actionType);
+  if (action.targetDefense) mechanical.push(`vs ${action.targetDefense}`);
+  if (action.target)        mechanical.push(action.target);
+  if (action.range)         mechanical.push(action.range);
+
+  if (Array.isArray(action.damage) && action.damage.length) {
+    const base = Number(baseDamage) || 0;
+    let heavyHit = false;
+    const dmg = action.damage.map((d) => {
+      const amt = d.useBase !== undefined
+        ? (d.useBase ? base : 0) + (Number(d.modifier) || 0)
+        : Number(d.amount) || 0;
+      if (amt % 1 !== 0) heavyHit = true;
+      return d.type ? `${Math.floor(amt)} ${d.type}` : String(Math.floor(amt));
+    }).join(' + ');
+    mechanical.push(`${dmg} damage on hit${heavyHit ? ', +1 on heavy hits' : ''}`);
+  }
+
+  if (action.reactionTrigger) mechanical.push(`Trigger: ${action.reactionTrigger}`);
+
+  const results = [];
+
+  if (action.save?.attribute) {
+    const dc = action.save.dc ?? fallbackSaveDC;
+    mechanical.push(`target makes ${action.save.attribute} Save DC ${dc}`);
+    if (action.save.failure)      results.push(`**Failure:** ${action.save.failure}`);
+    if (action.save.failureEach5) results.push(`**Failure (Each 5):** ${action.save.failureEach5}`);
+    if (action.save.success)      results.push(`**Success:** ${action.save.success}`);
+    if (action.save.successEach5) results.push(`**Success (Each 5):** ${action.save.successEach5}`);
+  }
+
+  if (action.check?.dc != null) {
+    mechanical.push(`Check DC ${action.check.dc}`);
+    if (action.check.failure)      results.push(`**Failure:** ${action.check.failure}`);
+    if (action.check.failureEach5) results.push(`**Failure (Each 5):** ${action.check.failureEach5}`);
+    if (action.check.success)      results.push(`**Success:** ${action.check.success}`);
+    if (action.check.successEach5) results.push(`**Success (Each 5):** ${action.check.successEach5}`);
+  }
+
+  if (action.description) results.push(action.description);
+
+  const parts = [];
+  if (mechanical.length) parts.push(mechanical.join(', '));
+  if (results.length)    parts.push(results.join('. '));
+  return parts.filter(Boolean).join('. ');
+}
+
+export function generateNotionMarkdown() {
+  const pd      = Math.round(Number(creature.PD) || 0);
+  const ad      = Math.round(Number(creature.AD) || 0);
+  const hp      = Math.round(Number(creature.HP) || 0);
+  const ap      = Math.round(Number(creature.AP) || 0);
+  const speed   = Math.round(Number(creature.speed) || 0);
+  const saveDC  = Math.round(Number(creature.saveDC) || 0);
+  const attack  = toSigned(creature.check);
+  const mig     = Math.round(Number(creature.attributes?.Mig) || 0);
+  const agi     = Math.round(Number(creature.attributes?.Agi) || 0);
+  const cha     = Math.round(Number(creature.attributes?.Cha) || 0);
+  const int_    = Math.round(Number(creature.attributes?.Int) || 0);
+  const migSave = Math.round(Number(creature.attributeSaves?.Mig) || 0);
+  const agiSave = Math.round(Number(creature.attributeSaves?.Agi) || 0);
+  const chaSave = Math.round(Number(creature.attributeSaves?.Cha) || 0);
+  const intSave = Math.round(Number(creature.attributeSaves?.Int) || 0);
+  const baseDmg = Number(creature.damage) || 0;
+
+  const name  = creature.name || 'Unnamed';
+  const size  = toTitleCase(creature.size);
+  const type  = toTitleCase(creature.type);
+  const level = creature.level ?? 1;
+  const role  = toTitleCase(creature.role);
+  const power = toTitleCase(creature.power);
+  const signed = n => `${n >= 0 ? '+' : ''}${n}`;
+
+  const lines = [];
+
+  // ── Description block ─────────────────────────────────────────────────────
+  lines.push(`## ${name}`);
+  lines.push('');
+  if (creature.shortDescription) lines.push(`**Description:** ${creature.shortDescription}`);
+  if (creature.longDescription)  lines.push(`**Lore:** ${creature.longDescription}`);
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+
+  // ── Stat block ────────────────────────────────────────────────────────────
+  lines.push(`### ${name}`);
+  lines.push('');
+  const infoRight = `Level ${level}${power && power !== 'Normal' ? ` ${power}` : ''}${role ? ` ${role}` : ''}`;
+  lines.push(`${size} ${type} | *${infoRight}*`.trim());
+  lines.push('');
+  lines.push(`**HP:** ${hp}   **PD:** ${pd}/${pd + 5}/${pd + 10}   **AD:** ${ad}/${ad + 5}/${ad + 10}`);
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+  lines.push(`**MIG** ${signed(mig)} (${signed(migSave)})   **AGI** ${signed(agi)} (${signed(agiSave)})   **CHA** ${signed(cha)} (${signed(chaSave)})   **INT** ${signed(int_)} (${signed(intSave)})`);
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+
+  // ── Traits ────────────────────────────────────────────────────────────────
+  const pushTrait = (label, group) => {
+    const all = [...(group?.damage || []), ...(group?.condition || [])].filter(Boolean);
+    if (all.length) lines.push(`**${label}:** ${all.join(', ')}`);
+  };
+  pushTrait('Resistances',     creature.resistances);
+  pushTrait('Vulnerabilities', creature.vulnerabilities);
+  pushTrait('Immunities',      creature.immunities);
+  if (Array.isArray(creature.skills) && creature.skills.length) {
+    lines.push(`**Skills:** ${creature.skills.map(toTitleCase).join(', ')}`);
+  }
+  if (Array.isArray(creature.senses) && creature.senses.length) {
+    lines.push(`**Senses:** ${creature.senses.join(', ')}`);
+  }
+  lines.push('');
+
+  // ── Features (passives + modifier summaries) ──────────────────────────────
+  const uniqueFeatures = new Map();
+  if (Array.isArray(creature.featurePassives)) {
+    creature.featurePassives.forEach((f) => {
+      if (f?.id && !uniqueFeatures.has(f.id)) uniqueFeatures.set(f.id, f);
+    });
+  }
+  featureState.selectedIds.forEach((id) => {
+    const f = featureState.byId[id];
+    if (f?.type === FEATURE_TYPES.MODIFIER && !uniqueFeatures.has(f.id)) {
+      uniqueFeatures.set(f.id, f);
+    }
+  });
+  const features = Array.from(uniqueFeatures.values());
+  if (features.length) {
+    lines.push('### Features');
+    lines.push('');
+    features.forEach((f) => {
+      lines.push(`**${f.name}:** ${getFeatureSummary(f) || ''}`);
+    });
+    lines.push('');
+  }
+
+  // ── Actions ───────────────────────────────────────────────────────────────
+  const allActions   = Array.isArray(creature.featureActions)   ? creature.featureActions   : [];
+  const allReactions = Array.isArray(creature.featureReactions) ? creature.featureReactions : [];
+  const regular   = allActions.filter((a) => !a.isLegendaryAction && !a.isApexAction);
+  const legendary = allActions.filter((a) => a.isLegendaryAction);
+  const apex      = allActions.filter((a) => a.isApexAction);
+
+  if (regular.length || legendary.length) {
+    let heading = `### Actions (${ap} AP)`;
+    if (legendary.length) heading += ` | Legendary (${legendary.length})`;
+    lines.push(heading);
+    lines.push('');
+    lines.push(`**Attack:** ${attack}   **Save DC:** ${saveDC}   **Speed:** ${speed}`);
+    lines.push('');
+    [...regular, ...legendary].forEach((a) => {
+      const prefix = a.cost != null ? `(${a.cost}) ` : '';
+      lines.push(`**${prefix}${a.name || 'Action'}:** ${buildNotionActionDesc(a, saveDC, baseDmg)}`);
+    });
+    lines.push('');
+  }
+
+  if (allReactions.length) {
+    lines.push('### Reactions');
+    lines.push('');
+    allReactions.forEach((a) => {
+      const prefix = a.cost != null ? `(${a.cost}) ` : '';
+      lines.push(`**${prefix}${a.name || 'Action'}:** ${buildNotionActionDesc(a, saveDC, baseDmg)}`);
+    });
+    lines.push('');
+  }
+
+  if (apex.length) {
+    lines.push('### Apex Actions *(see glossary)*');
+    lines.push('');
+    apex.forEach((a) => {
+      const prefix = a.cost != null ? `(${a.cost}) ` : '';
+      lines.push(`**${prefix}${a.name || 'Action'}:** ${buildNotionActionDesc(a, saveDC, baseDmg)}`);
+    });
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
 export function generateObsidianYAML() {
   const pd     = Math.round(Number(creature.PD) || 0);
   const ad     = Math.round(Number(creature.AD) || 0);
