@@ -25,6 +25,7 @@ export const ui = {
   monsterFilterLevelMax: 10,
   monsterFilterRole: '',          // '' = any
   monsterFilterPower: '',         // '' = any
+  monsterFilterType: '',          // '' = any
   myCreatures: [],                // raw docs from Firestore
   communityCreatures: [],
   currentUser: null,              // Firebase User object

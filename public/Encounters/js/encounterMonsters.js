@@ -68,6 +68,7 @@ function applyClientFilters(creatures) {
   const maxLevel = Number.isFinite(levelMax) && levelMax > 0 ? levelMax : Infinity;
   const role     = ui.monsterFilterRole;
   const power    = ui.monsterFilterPower;
+  const type     = ui.monsterFilterType;
 
   return creatures.filter(c => {
     if (search && !String(c.name || '').toLowerCase().includes(search)) return false;
@@ -76,6 +77,7 @@ function applyClientFilters(creatures) {
     if (lvl > maxLevel) return false;
     if (role  && c.role  !== role)  return false;
     if (power && c.power !== power) return false;
+    if (type  && String(c.type || '').toLowerCase() !== type) return false;
     return true;
   });
 }

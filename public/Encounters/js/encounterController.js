@@ -232,6 +232,14 @@ function wireMonsterLibrary() {
       applyFilters();
     });
   });
+
+  // Type radio pills
+  document.querySelectorAll('input[name="mType"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      ui.monsterFilterType = radio.value;
+      applyFilters();
+    });
+  });
 }
 
 // ── Save ──────────────────────────────────────────────────────────────────────
