@@ -544,7 +544,7 @@ function buildActionItem(action, onApSpend, baseDamage = 0) {
 
     // ── Save block ─────────────────────────────────────────
     if (action.save?.attribute) {
-      appendOutcomeLine(item, `${action.save.attribute} Save, DC ${action.save.dc ?? '—'}`);
+      appendOutcomeLine(item, `${action.save.attribute} Save, DC ${action.save.dc ?? stats.saveDC}`);
       if (action.save.failure)      appendOutcomeLine(item, 'Failure',            action.save.failure);
       if (action.save.failureEach5) appendOutcomeLine(item, 'Failure (Each 5)',   action.save.failureEach5);
       if (action.save.success)      appendOutcomeLine(item, 'Success',            action.save.success);
