@@ -280,12 +280,12 @@ export function buildStatblockEl(creature, combatant = null, { onApSpend = null,
 
   // ── Actions ─────────────────────────────────────────────
   if (actions.length > 0) {
-    el.appendChild(buildActionsSection('Actions', actions, onApSpend, stats.check ?? null, onDodge, stats.damage ?? 0));
+    el.appendChild(buildActionsSection('Actions', actions, onApSpend, stats.check ?? null, onDodge, stats.damage ?? 0, stats.saveDC ?? null));
   }
 
   // ── Reactions ───────────────────────────────────────────
   if (reactions.length > 0) {
-    el.appendChild(buildActionsSection('Reactions', reactions, onApSpend, null, null, stats.damage ?? 0));
+    el.appendChild(buildActionsSection('Reactions', reactions, onApSpend, null, null, stats.damage ?? 0, stats.saveDC ?? null));
   }
 
   return el;
@@ -388,7 +388,7 @@ const COMMON_ACTIONS = ['Move', 'Advantage', 'Dodge', 'Grapple', 'Hide', 'Help',
 
 // ── Actions section ───────────────────────────────────────────────────────────
 
-function buildActionsSection(title, items, onApSpend, checkBonus = null, onDodge = null, baseDamage = 0) {
+function buildActionsSection(title, items, onApSpend, checkBonus = null, onDodge = null, baseDamage = 0, saveDC = null) {
   const sec = document.createElement('div');
   sec.className = 'statblock-actions-section';
 
@@ -438,14 +438,14 @@ function buildActionsSection(title, items, onApSpend, checkBonus = null, onDodge
   list.className = 'statblock-actions-list';
 
   for (const action of items) {
-    list.appendChild(buildActionItem(action, onApSpend, baseDamage));
+    list.appendChild(buildActionItem(action, onApSpend, baseDamage, saveDC));
   }
 
   sec.appendChild(list);
   return sec;
 }
 
-function buildActionItem(action, onApSpend, baseDamage = 0) {
+function buildActionItem(action, onApSpend, baseDamage = 0, saveDC = null) {
   const item = document.createElement('div');
   item.className = 'statblock-action-item';
 
@@ -544,7 +544,7 @@ function buildActionItem(action, onApSpend, baseDamage = 0) {
 
     // ── Save block ─────────────────────────────────────────
     if (action.save?.attribute) {
-      appendOutcomeLine(item, `${action.save.attribute} Save, DC ${action.save.dc ?? stats.saveDC}`);
+      appendOutcomeLine(item, `${action.save.attribute} Save, DC ${action.save.dc ?? saveDC ?? '—'}`);
       if (action.save.failure)      appendOutcomeLine(item, 'Failure',            action.save.failure);
       if (action.save.failureEach5) appendOutcomeLine(item, 'Failure (Each 5)',   action.save.failureEach5);
       if (action.save.success)      appendOutcomeLine(item, 'Success',            action.save.success);
