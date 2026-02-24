@@ -135,7 +135,7 @@
     "name": "Translocate",
     "featureDescription": "Short range teleport, navigating the Fey Plane.",
     "featureCost": 1,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "effects": {
       "cost": 1,
       "range": "3 Spaces",
@@ -238,7 +238,7 @@
     "name": "Fey Step",
     "featureDescription": "Short range teleport.",
     "featureCost": 0,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "effects": {
       "cost": 1,
       "range": "4 Spaces",
@@ -384,7 +384,7 @@
     "name": "Wall of Earth",
     "featureDescription": "Conjure a 4 Space long, 2 Space tall earthen wall.",
     "featureCost": 2,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "effects": {
       "cost": 2,
       "actionDescription": "Conjure a 4 Space long, 2 Space tall wall of earth that fills an unoccupied area within 5 Spaces. The wall has PD 15, AD 15, 3 HP, and resistance 1 to Physical damage.",
@@ -1060,7 +1060,7 @@
     "name": "Smoke Cloud",
     "featureDescription": "Conjure a thick cloud of smoke to obscure the battlefield.",
     "featureCost": 1,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "effects": {
       "cost": 1,
       "target": "a 2 Space Sphere",
@@ -1075,7 +1075,7 @@
     "name": "Shadow Meld",
     "featureDescription": "Merge with nearby shadows, becoming impossible to see.",
     "featureCost": 1,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "effects": {
       "cost": 1,
       "actionDescription": "You step into a shadow and become Invisible until the start of your next turn or until you make an attack or cast a spell."
@@ -1191,7 +1191,7 @@
     "name": "Divine Shield",
     "featureDescription": "Cloak an ally in protective divine energy.",
     "featureCost": 1,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "effects": {
       "cost": 1,
       "target": "one ally",
@@ -1701,7 +1701,7 @@
     "name": "Spore Cloud",
     "featureDescription": "Release a cloud of toxic spores to sicken nearby creatures.",
     "featureCost": 1,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "effects": {
       "cost": 2,
       "target": "a 2 Space Sphere",
@@ -2016,7 +2016,7 @@
     "name": "Protective Ward",
     "featureDescription": "Shield an ally from incoming harm with a burst of divine energy.",
     "featureCost": 1,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "isReaction": true,
     "reactionTrigger": "When an ally within 3 Spaces takes damage",
     "effects": {
@@ -2033,7 +2033,7 @@
     "name": "Evasive Step",
     "featureDescription": "Dart out of reach the moment an attacker commits to their strike.",
     "featureCost": 1,
-    "actionType": "Spell Utility",
+    "actionType": "Spell Check",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by a melee attack",
     "effects": {

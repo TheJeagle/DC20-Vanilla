@@ -22,14 +22,85 @@ const ATTR_DEFS = [
  * @param {object|null} combatant - run-encounter combatant state (optional)
  * @returns {HTMLDivElement}
  */
+// Normalize a raw feature object (from VanillaFeatures) into the built-action
+// shape expected by buildActionItem. Raw features are recognisable by having an
+// `effects` field; properly built actions do not. This handles creatures that
+// were saved before buildAction() was applied at persist time.
+function coerceToBuiltAction(raw) {
+  if (!raw || !raw.effects) return raw; // already a built action
+
+  const e = raw.effects;
+  const actionType = raw.actionType ?? e.actionType ?? 'Attack';
+  const actionTypeLabel = String(actionType).toLowerCase();
+  const isAttackType = actionTypeLabel.includes('attack');
+
+  const segments = Array.isArray(e.damageSegments) ? e.damageSegments : [];
+  const mappedSegments = segments
+    .map((seg) =>
+      typeof seg.amount === 'number'
+        ? { amount: seg.amount, type: seg.type ?? '' }
+        : { useBase: Boolean(seg.useBase), modifier: Number(seg.modifier) || 0, type: seg.type ?? '' }
+    )
+    .filter((seg) => seg.useBase || (seg.modifier ?? 0) !== 0 || seg.type || seg.amount != null);
+  const damage =
+    mappedSegments.length > 0
+      ? mappedSegments
+      : isAttackType
+        ? [{ useBase: true, modifier: 0, type: e.damageType ?? '' }]
+        : [];
+
+  const description =
+    (typeof e.actionDescription === 'string' ? e.actionDescription : null) ??
+    (typeof raw.description === 'string' ? raw.description : null) ??
+    (typeof raw.featureDescription === 'string' ? raw.featureDescription : null) ??
+    '';
+
+  return {
+    id: raw.id,
+    name: raw.name || raw.id || 'Unnamed Action',
+    description: description.trim(),
+    cost: typeof e.cost === 'number' ? e.cost : Number(e.cost) || 0,
+    actionType,
+    damage,
+    targetDefense: e.targetDefense ?? (isAttackType ? 'PD' : ''),
+    target: e.target ?? '',
+    range: e.range ?? '',
+    dc: e.dc ?? null,
+    check: e.check
+      ? {
+          dc: typeof e.check.dc === 'number' ? e.check.dc : Number(e.check.dc) || null,
+          failure:      e.check.failure      ?? '',
+          failureEach5: e.check.failureEach5 ?? '',
+          success:      e.check.success      ?? '',
+          successEach5: e.check.successEach5 ?? '',
+        }
+      : null,
+    save: e.save
+      ? {
+          attribute:    e.save.attribute ?? '',
+          dc:           null, // creature saveDC used at render time
+          failure:      e.save.failure ?? e.save.effect ?? '',
+          failureEach5: e.save.failureEach5 ?? '',
+          success:      e.save.success ?? '',
+          successEach5: e.save.successEach5 ?? '',
+        }
+      : null,
+    featureCost:       raw.featureCost ?? 0,
+    isReaction:        Boolean(raw.isReaction        || e.isReaction),
+    reactionTrigger:   raw.reactionTrigger ?? e.reactionTrigger ?? '',
+    isLegendaryAction: Boolean(raw.isLegendaryAction || e.isLegendaryAction),
+    isApexAction:      Boolean(raw.isApexAction      || e.isApexAction),
+  };
+}
+
 export function buildStatblockEl(creature, combatant = null, { onApSpend = null, onDodge = null } = {}) {
   const stats    = creature.stats     || {};
   const attrVals = creature.attributes?.values || {}; // keys: Mig, Agi, Cha, Int
   const saves    = creature.attributes?.saves  || {}; // keys: Mig, Agi, Cha, Int
   const traits   = creature.traits    || {};
   const passives  = creature.featurePassives  || [];
-  const actions   = creature.featureActions   || [];
-  const reactions = creature.featureReactions || [];
+  const actions   = (creature.featureActions   || []).map(coerceToBuiltAction);
+  const reactions = (creature.featureReactions || []).map(coerceToBuiltAction);
 
   const el = document.createElement('div');
   el.className = 'statblock statblock--condensed';
