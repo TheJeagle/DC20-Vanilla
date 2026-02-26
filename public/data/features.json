@@ -140,7 +140,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mig",
         "failure": "The target is knocked Prone."
       }
     },
@@ -175,7 +175,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target gains the Bleeding condition."
       }
     },
@@ -550,7 +550,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "Targets are Blinded until the end of your next round."
       }
     },
@@ -727,7 +727,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mig",
         "failure": "The target is knocked Prone."
       }
     },
@@ -986,7 +986,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target gains the Burning condition."
       }
     },
@@ -1216,7 +1216,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Agi",
         "failure": "The target gains the Slowed condition until the end of its next turn."
       }
     },
@@ -1309,7 +1309,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mig",
         "failure": "The target is knocked Prone and pushed 1 Space directly away from you."
       }
     },
@@ -1406,7 +1406,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target gains the Taunted condition, targeting only you with its next attack."
       }
     },
@@ -1571,7 +1571,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mig",
         "failure": "The target gains the Poisoned condition."
       }
     },
@@ -1606,7 +1606,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Int",
         "failure": "The target is knocked Prone and Dazed until end of its next turn."
       }
     },
@@ -1773,7 +1773,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Blinded until the end of its next turn."
       }
     },
@@ -2005,7 +2005,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target gains the Burning condition.",
         "success": "The target takes half damage."
       }
@@ -2143,7 +2143,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target gains the Burning condition."
       }
     },
@@ -2179,7 +2179,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target gains the Burning condition.",
         "success": "The target takes half damage."
       }
@@ -2278,7 +2278,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target is knocked Prone."
       }
     },
@@ -2318,7 +2318,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mig",
         "failure": "The target gains the Poisoned condition."
       }
     },
@@ -2457,7 +2457,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mig",
         "failure": "The target is Restrained. It can free itself with a DC 12 Mig Check on its turn."
       }
     },
@@ -2596,7 +2596,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target gains the Bleeding condition."
       }
     },
@@ -2708,7 +2708,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Blinded until the end of its next turn."
       }
     },
@@ -2990,7 +2990,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target is Grappled."
       }
     },
@@ -3531,7 +3531,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mental",
         "failure": "The target is Grappled until the start of your next turn."
       }
     },
@@ -3568,7 +3568,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Int",
         "failure": "The target is Blinded until the end of its next turn.",
         "failureEach5": "Blinded duration increases by 1 round."
       }
@@ -3986,7 +3986,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Blinded until the start of your next turn."
       }
     },
@@ -4211,7 +4211,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Frightened of you until the end of its next turn."
       }
     },
@@ -4246,7 +4246,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Agi",
         "failure": "The target gains the Burning condition."
       }
     },
@@ -4281,7 +4281,7 @@
         }
       ],
       "save": {
-        "attribute": "Mig",
+        "attribute": "Physical",
         "failure": "The target is knocked Prone."
       }
     },
@@ -4316,7 +4316,7 @@
         }
       ],
       "save": {
-        "attribute": "Mig",
+        "attribute": "Physical",
         "failure": "The target is knocked Prone."
       }
     },
@@ -4350,7 +4350,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mig",
         "failure": "The target is Grappled."
       }
     },
@@ -4385,7 +4385,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Blinded until the start of your next turn."
       }
     },
@@ -4420,7 +4420,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Int",
         "failure": "The target is Disoriented until the end of its next turn."
       }
     },
@@ -4455,7 +4455,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Frightened of you until the end of its next turn."
       }
     },
@@ -4522,7 +4522,7 @@
         }
       ],
       "save": {
-        "attribute": "Cha",
+        "attribute": "Int",
         "failure": "The target grants Combat Advantage until the start of your next turn."
       }
     },
@@ -4616,7 +4616,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Int",
         "failure": "The target is Hindered until the end of its next turn."
       }
     },
@@ -4652,7 +4652,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Frightened of you until the end of its next turn."
       }
     },
@@ -4717,7 +4717,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Int",
         "failure": "The target is Disoriented until the end of its next turn."
       }
     },
@@ -4782,7 +4782,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mental",
         "failure": "The target's PD is reduced by 1 until the end of its next turn."
       }
     },
@@ -4816,7 +4816,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Int",
         "failure": "The target is Dazed until the end of its next turn."
       }
     },
@@ -4852,7 +4852,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Int",
         "failure": "The target is Blinded until the start of your next turn."
       }
     },
@@ -4888,7 +4888,7 @@
         }
       ],
       "save": {
-        "attribute": "Cha",
+        "attribute": "Mental",
         "failure": "The target grants Combat Advantage to all allies until the start of your next turn."
       }
     },
@@ -4922,7 +4922,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Charmed by you until the end of your next turn."
       }
     },
@@ -5026,7 +5026,7 @@
         }
       ],
       "save": {
-        "attribute": "Physical",
+        "attribute": "Mental",
         "failure": "The target's AD is reduced by 1 until the end of its next turn."
       }
     },
@@ -5717,7 +5717,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Cha",
         "failure": "The target is Blinded until the start of your next turn."
       }
     },
@@ -5754,7 +5754,7 @@
         }
       ],
       "save": {
-        "attribute": "Mental",
+        "attribute": "Int",
         "failure": "The target has Disadvantage on its next attack roll."
       }
     },
