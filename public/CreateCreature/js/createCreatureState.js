@@ -42,6 +42,7 @@ const featureState = {
   communityFeatures: [],
   communityFeaturesLoaded: false,
   activeTab: 'library',
+  likedFeatureIds: new Set(),
 };
 
 const controllerState = {
@@ -96,6 +97,10 @@ function setCommunityFeatures(features) {
   featureState.communityFeaturesLoaded = true;
 }
 
+function setLikedFeatureIds(ids) {
+  featureState.likedFeatureIds = ids instanceof Set ? ids : new Set(Array.isArray(ids) ? ids : []);
+}
+
 export {
   TITLE_FALLBACK,
   CREATURE_COLLECTION,
@@ -113,4 +118,5 @@ export {
   clearStoredCreatureDraft,
   setBankFeatures,
   setCommunityFeatures,
+  setLikedFeatureIds,
 };

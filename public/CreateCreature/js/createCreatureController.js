@@ -27,6 +27,7 @@ import {
   setPendingLoadedCreature,
   setBankFeatures,
   setCommunityFeatures,
+  setLikedFeatureIds,
 } from './createCreatureState.js';
 import {
   setupTraitPickers,
@@ -59,7 +60,7 @@ import {
   setBrowseCommunityHandler,
   setLikeCommunityFeatureHandler,
 } from './createCreatureFeatures.js';
-import { saveToBank, loadUserBank, publishFeature, loadCommunityFeatures, toggleFeatureLike } from './featureBank.js';
+import { saveToBank, loadUserBank, publishFeature, loadCommunityFeatures, toggleFeatureLike, getLikedFeatureIds } from './featureBank.js';
 import {
   openCustomFeatureBuilder,
   setCustomFeatureSaveHandler,
@@ -1074,12 +1075,17 @@ function initializeEventHandlers() {
     renderFeatureControls();
   });
 
-  // Browse community handler — lazily load community features
+  // Browse community handler — lazily load community features + liked IDs
   setBrowseCommunityHandler(async () => {
     if (featureState.communityFeaturesLoaded) return;
     try {
       const features = await loadCommunityFeatures();
       setCommunityFeatures(features);
+      const user = getCurrentUser();
+      if (user && features.length) {
+        const likedIds = await getLikedFeatureIds(features.map((f) => f.id), user.uid);
+        setLikedFeatureIds(likedIds);
+      }
     } catch (err) {
       console.error('Failed to load community features', err);
     }
@@ -1091,18 +1097,26 @@ function initializeEventHandlers() {
     const user = getCurrentUser();
     if (!user) {
       setSaveStatus('Sign in to like community features.', 'info', { sticky: false });
+      renderFeatureControls();
       return;
     }
     try {
       const result = await toggleFeatureLike(feature, user);
+      // Update liked set
       if (result.liked) {
+        featureState.likedFeatureIds.add(feature.id);
         const bankFeatures = await loadUserBank(user.uid);
         setBankFeatures(bankFeatures);
+      } else {
+        featureState.likedFeatureIds.delete(feature.id);
       }
-      renderFeatureControls();
+      // Sync totalLikes in cached community features
+      const cached = featureState.communityFeatures.find((f) => f.id === feature.id);
+      if (cached) cached.totalLikes = result.totalLikes;
     } catch (err) {
       console.error('Failed to toggle like', err);
     }
+    renderFeatureControls();
   });
 
   // Publish handler wired on the custom feature builder's Publish button

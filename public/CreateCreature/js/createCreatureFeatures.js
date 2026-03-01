@@ -418,9 +418,10 @@ function createBankFeatureCard(bankFeature) {
  * @returns {HTMLButtonElement}
  */
 function createCommunityFeatureCard(feature) {
-  const card = document.createElement('button');
-  card.type = 'button';
+  // Use a div (not button) so the nested like <button> is valid HTML
+  const card = document.createElement('div');
   card.className = 'feature-card feature-card--community';
+  card.tabIndex = 0;
 
   // Show as selected when this community feature is already on the creature
   const stableId = `community-${feature.id}`;
@@ -445,22 +446,56 @@ function createCommunityFeatureCard(feature) {
   desc.className = 'feature-card-description';
   desc.textContent = getFeatureSummary(feature) || 'No description available.';
 
-  const metaEl = document.createElement('div');
-  metaEl.className = 'feature-card-meta';
-  metaEl.textContent = `by ${feature.creatorName || 'Unknown'}`;
+  // Meta row: creator on left, like button on right
+  const metaRow = document.createElement('div');
+  metaRow.className = 'feature-card-community-meta';
 
-  card.append(header, desc, metaEl);
+  const creatorEl = document.createElement('span');
+  creatorEl.className = 'feature-card-meta';
+  creatorEl.textContent = `by ${feature.creatorName || 'Unknown'}`;
+
+  const isLiked = featureState.likedFeatureIds instanceof Set && featureState.likedFeatureIds.has(feature.id);
+  const likeBtn = document.createElement('button');
+  likeBtn.type = 'button';
+  likeBtn.className = 'feature-card-like-btn' + (isLiked ? ' is-liked' : '');
+  likeBtn.title = isLiked ? 'Unlike' : 'Like';
+  likeBtn.innerHTML = `${isLiked ? '♥' : '♡'}&thinsp;${feature.totalLikes ?? 0}`;
+
+  likeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    onLikeCommunityFeature(feature);
+    // Optimistic UI update
+    const nowLiked = !featureState.likedFeatureIds.has(feature.id);
+    if (nowLiked) {
+      featureState.likedFeatureIds.add(feature.id);
+      feature.totalLikes = (feature.totalLikes ?? 0) + 1;
+    } else {
+      featureState.likedFeatureIds.delete(feature.id);
+      feature.totalLikes = Math.max(0, (feature.totalLikes ?? 0) - 1);
+    }
+    likeBtn.classList.toggle('is-liked', nowLiked);
+    likeBtn.title = nowLiked ? 'Unlike' : 'Like';
+    likeBtn.innerHTML = `${nowLiked ? '♥' : '♡'}&thinsp;${feature.totalLikes}`;
+  });
+
+  metaRow.append(creatorEl, likeBtn);
+  card.append(header, desc, metaRow);
 
   const footer = createFeatureCardFooter(feature);
   if (footer) card.appendChild(footer);
 
-  card.addEventListener('click', () => {
+  // Card body click = add/remove from creature
+  const handleCardClick = () => {
     const currentlyAdded = Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === stableId);
     if (currentlyAdded) {
       onRemoveBankFeature(stableId);
     } else {
       onAddBankFeature(feature);
     }
+  };
+  card.addEventListener('click', handleCardClick);
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); }
   });
 
   return card;

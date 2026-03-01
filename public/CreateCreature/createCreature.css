@@ -1938,6 +1938,44 @@ body{
   flex-shrink: 0;
 }
 
+/* Meta row inside community cards: creator name + like button */
+.feature-card-community-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.feature-card-like-btn {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 0.9rem;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  line-height: 1.4;
+}
+
+.feature-card-like-btn:hover {
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.feature-card-like-btn.is-liked {
+  color: #e87777;
+  border-color: rgba(232,119,119,0.4);
+  background: rgba(232,119,119,0.1);
+}
+
+.feature-card-like-btn.is-liked:hover {
+  background: rgba(232,119,119,0.18);
+  border-color: rgba(232,119,119,0.6);
+}
+
 /* Search section labels in combined search view */
 .picker-search-section-label {
   font-size: 0.8rem;
