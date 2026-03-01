@@ -436,30 +436,16 @@ function createCommunityFeatureCard(feature) {
   nameEl.className = 'feature-card-name';
   nameEl.textContent = feature.name || 'Unnamed';
 
-  const communityIcon = document.createElement('span');
-  communityIcon.className = 'feature-card-community-icon';
-  communityIcon.textContent = '🌐';
-  communityIcon.title = 'Community feature';
-  header.append(nameEl, communityIcon);
-
-  const desc = document.createElement('div');
-  desc.className = 'feature-card-description';
-  desc.textContent = getFeatureSummary(feature) || 'No description available.';
-
-  // Meta row: creator on left, like button on right
-  const metaRow = document.createElement('div');
-  metaRow.className = 'feature-card-community-meta';
-
-  const creatorEl = document.createElement('span');
-  creatorEl.className = 'feature-card-meta';
-  creatorEl.textContent = `by ${feature.creatorName || 'Unknown'}`;
+  // Right side of header: like button + globe icon
+  const headerRight = document.createElement('div');
+  headerRight.className = 'feature-card-community-header-right';
 
   const isLiked = featureState.likedFeatureIds instanceof Set && featureState.likedFeatureIds.has(feature.id);
   const likeBtn = document.createElement('button');
   likeBtn.type = 'button';
   likeBtn.className = 'feature-card-like-btn' + (isLiked ? ' is-liked' : '');
   likeBtn.title = isLiked ? 'Unlike' : 'Like';
-  likeBtn.innerHTML = `${isLiked ? '♥' : '♡'}&thinsp;${feature.totalLikes ?? 0}`;
+  likeBtn.textContent = `${isLiked ? '♥' : '♡'} ${feature.totalLikes ?? 0}`;
 
   likeBtn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -475,11 +461,26 @@ function createCommunityFeatureCard(feature) {
     }
     likeBtn.classList.toggle('is-liked', nowLiked);
     likeBtn.title = nowLiked ? 'Unlike' : 'Like';
-    likeBtn.innerHTML = `${nowLiked ? '♥' : '♡'}&thinsp;${feature.totalLikes}`;
+    likeBtn.textContent = `${nowLiked ? '♥' : '♡'} ${feature.totalLikes}`;
   });
 
-  metaRow.append(creatorEl, likeBtn);
-  card.append(header, desc, metaRow);
+  const communityIcon = document.createElement('span');
+  communityIcon.className = 'feature-card-community-icon';
+  communityIcon.textContent = '🌐';
+  communityIcon.title = 'Community feature';
+
+  headerRight.append(likeBtn, communityIcon);
+  header.append(nameEl, headerRight);
+
+  const desc = document.createElement('div');
+  desc.className = 'feature-card-description';
+  desc.textContent = getFeatureSummary(feature) || 'No description available.';
+
+  const creatorEl = document.createElement('div');
+  creatorEl.className = 'feature-card-meta';
+  creatorEl.textContent = `by ${feature.creatorName || 'Unknown'}`;
+
+  card.append(header, desc, creatorEl);
 
   const footer = createFeatureCardFooter(feature);
   if (footer) card.appendChild(footer);

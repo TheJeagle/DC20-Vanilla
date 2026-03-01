@@ -1938,42 +1938,43 @@ body{
   flex-shrink: 0;
 }
 
-/* Meta row inside community cards: creator name + like button */
-.feature-card-community-meta {
+/* Right side of community card header: like button + globe icon */
+.feature-card-community-header-right {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 0.25rem;
+  gap: 0.35rem;
+  flex-shrink: 0;
 }
 
 .feature-card-like-btn {
-  flex-shrink: 0;
-  font-size: 0.78rem;
+  font-size: 0.7rem;
+  font-weight: 700;
   padding: 0.1rem 0.45rem;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
   border-radius: 0.9rem;
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.75);
   cursor: pointer;
   transition: color 0.15s, background 0.15s, border-color 0.15s;
-  line-height: 1.4;
+  line-height: 1.5;
+  white-space: nowrap;
 }
 
 .feature-card-like-btn:hover {
-  color: rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.3);
+  color: #fff;
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.45);
 }
 
 .feature-card-like-btn.is-liked {
   color: #e87777;
-  border-color: rgba(232,119,119,0.4);
-  background: rgba(232,119,119,0.1);
+  border-color: rgba(232,119,119,0.5);
+  background: rgba(232,119,119,0.15);
 }
 
 .feature-card-like-btn.is-liked:hover {
-  background: rgba(232,119,119,0.18);
-  border-color: rgba(232,119,119,0.6);
+  background: rgba(232,119,119,0.25);
+  border-color: rgba(232,119,119,0.7);
 }
 
 /* Search section labels in combined search view */
