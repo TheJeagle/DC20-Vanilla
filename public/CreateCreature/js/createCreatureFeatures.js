@@ -122,9 +122,15 @@ const collapsedGroups = new Set();
 /**
  * Wire a heading as a toggle for its wrapper element.
  * Restores collapsed state from collapsedGroups and registers a click handler.
+ * When collapsed and count > 0, appends "(N features)" to the heading text.
  */
-function wireToggle(wrapperEl, headingEl, key) {
-  if (collapsedGroups.has(key)) wrapperEl.classList.add('is-collapsed');
+function wireToggle(wrapperEl, headingEl, key, count = 0) {
+  if (collapsedGroups.has(key)) {
+    wrapperEl.classList.add('is-collapsed');
+    if (count > 0) {
+      headingEl.textContent += ` (${count})`;
+    }
+  }
   headingEl.addEventListener('click', () => {
     if (collapsedGroups.has(key)) collapsedGroups.delete(key);
     else collapsedGroups.add(key);
@@ -617,7 +623,8 @@ function renderLibraryFeatures(container, visibleIds) {
     otherGroups.get(type).push(feature);
   });
 
-  const hasActionFeatures = Object.values(actionBuckets).some((entries) => entries.length);
+  const totalActionCount = Object.values(actionBuckets).reduce((sum, arr) => sum + arr.length, 0);
+  const hasActionFeatures = totalActionCount > 0;
   if (hasActionFeatures) {
     const actionsWrapper = document.createElement('section');
     actionsWrapper.className = 'feature-group';
@@ -626,7 +633,7 @@ function renderLibraryFeatures(container, visibleIds) {
     actionsHeading.className = 'feature-group-title';
     actionsHeading.textContent = 'Actions';
     actionsWrapper.appendChild(actionsHeading);
-    wireToggle(actionsWrapper, actionsHeading, 'Actions');
+    wireToggle(actionsWrapper, actionsHeading, 'Actions', totalActionCount);
 
     const sections = [
       {
@@ -656,11 +663,12 @@ function renderLibraryFeatures(container, visibleIds) {
       const sectionWrapper = document.createElement('div');
       sectionWrapper.className = 'feature-section-wrapper';
 
+      const sectionCount = activeBuckets.reduce((sum, { key }) => sum + actionBuckets[key].length, 0);
       const sectionHeading = document.createElement('h2');
       sectionHeading.className = 'feature-group-subtitle';
       sectionHeading.textContent = section.title;
       sectionWrapper.appendChild(sectionHeading);
-      wireToggle(sectionWrapper, sectionHeading, `Actions > ${section.title}`);
+      wireToggle(sectionWrapper, sectionHeading, `Actions > ${section.title}`, sectionCount);
 
       const showBucketHeading = activeBuckets.length > 1;
       activeBuckets.forEach(({ key, title }) => {
@@ -713,7 +721,7 @@ function renderLibraryFeatures(container, visibleIds) {
     const groupLabel = typeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1);
     heading.textContent = groupLabel;
     groupWrapper.appendChild(heading);
-    wireToggle(groupWrapper, heading, groupLabel);
+    wireToggle(groupWrapper, heading, groupLabel, featureList.length);
 
     const grid = document.createElement('div');
     grid.className = 'feature-group-grid';
