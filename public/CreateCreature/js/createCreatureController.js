@@ -1052,10 +1052,10 @@ function initializeEventHandlers() {
 
   // Add bank feature to creature handler
   setAddBankFeatureHandler((feature) => {
-    // Owned features reuse their ID (they authored it, it's unique to them).
-    // Non-owned (community / liked) use a stable derived ID so clicking the same
-    // card twice upserts rather than duplicating on the statblock.
-    const id = feature.isOwned ? feature.id : `community-${feature.id}`;
+    // Always use the same stable ID scheme for any bank or community feature so that
+    // adding the same feature from "My Features" and from the Community tab both
+    // resolve to the same creature entry and upsert rather than duplicate.
+    const id = `community-${feature.id}`;
     const copy = {
       ...feature,
       id,

@@ -359,8 +359,10 @@ function createBankFeatureCard(bankFeature) {
   card.type = 'button';
   card.className = 'feature-card feature-card--bank';
 
-  // Show as selected when this feature is already on the creature
-  const stableId = bankFeature.isOwned ? bankFeature.id : `community-${bankFeature.id}`;
+  // Show as selected when this feature is already on the creature.
+  // Always use community-${id} to match the controller's stable ID scheme,
+  // so owned bank features and community cards for the same feature share the same key.
+  const stableId = `community-${bankFeature.id}`;
   const isAdded = Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === stableId);
   if (isAdded) card.classList.add('selected');
   card.title = isAdded ? 'Click to remove from creature' : 'Click to add to creature';
