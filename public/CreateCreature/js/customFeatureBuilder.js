@@ -12,8 +12,18 @@ const DAMAGE_TYPES = [
   'Poison', 'Psychic', 'Radiant', 'Umbral',
 ];
 
-
 const SAVE_ATTRIBUTES = ['Mig', 'Agi', 'Cha', 'Int', 'Physical', 'Mental'];
+
+const ROLE_VALUES = [
+  'artillerist', 'brute', 'controller', 'defender',
+  'leader', 'lurker', 'skirmisher', 'support',
+];
+
+const CREATURE_TYPE_VALUES = [
+  'aberration', 'beast', 'celestial', 'construct', 'dragon',
+  'elemental', 'fey', 'fiend', 'giant', 'humanoid',
+  'ooze', 'plant', 'undead',
+];
 
 let panelEl = null;
 let onSaveCallback = () => {};
@@ -131,6 +141,10 @@ function renderPanel(existingFeature) {
   body.appendChild(formArea);
 
   renderFormForCategory(formArea, featureCategory, existingFeature, isReactionHint);
+
+  // Tags section (role / creature type) — persists across feature type changes
+  const existingTags = Array.isArray(existingFeature?.tags) ? existingFeature.tags : [];
+  renderTagsSection(body, existingTags);
 
   // Re-render form when type changes
   body.querySelectorAll('input[name="cfpType"]').forEach((radio) => {
@@ -438,6 +452,55 @@ function renderActionForm(container, existing, isReactionHint) {
 }
 
 // ---------------------------------------------------------------------------
+// Tags section (role / creature type)
+// ---------------------------------------------------------------------------
+
+function renderTagsSection(container, existingTags) {
+  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const section = makeElement('div', 'cfp-tags-section');
+
+  const roleLabelEl = makeElement('span', 'cfp-label', 'Role tags:');
+  section.appendChild(roleLabelEl);
+  const roleGrid = makeElement('div', 'cfp-checkbox-grid cfp-checkbox-grid--tags');
+  ROLE_VALUES.forEach((role) => {
+    const cbId = `cfpRole-${role}`;
+    const cb = makeElement('input');
+    cb.type = 'checkbox';
+    cb.id = cbId;
+    cb.name = 'cfpRoleTags';
+    cb.value = role;
+    cb.checked = existingTags.includes(`role/${role}`);
+    const lbl = makeElement('label', 'cfp-checkbox-label');
+    lbl.setAttribute('for', cbId);
+    lbl.textContent = capitalize(role);
+    roleGrid.appendChild(cb);
+    roleGrid.appendChild(lbl);
+  });
+  section.appendChild(roleGrid);
+
+  const typeLabelEl = makeElement('span', 'cfp-label', 'Creature type tags:');
+  section.appendChild(typeLabelEl);
+  const typeGrid = makeElement('div', 'cfp-checkbox-grid cfp-checkbox-grid--tags');
+  CREATURE_TYPE_VALUES.forEach((type) => {
+    const cbId = `cfpCtype-${type}`;
+    const cb = makeElement('input');
+    cb.type = 'checkbox';
+    cb.id = cbId;
+    cb.name = 'cfpTypeTags';
+    cb.value = type;
+    cb.checked = existingTags.includes(`creature/${type}`);
+    const lbl = makeElement('label', 'cfp-checkbox-label');
+    lbl.setAttribute('for', cbId);
+    lbl.textContent = capitalize(type);
+    typeGrid.appendChild(cb);
+    typeGrid.appendChild(lbl);
+  });
+  section.appendChild(typeGrid);
+
+  container.appendChild(section);
+}
+
+// ---------------------------------------------------------------------------
 // DOM helpers
 // ---------------------------------------------------------------------------
 
@@ -588,10 +651,16 @@ function readFormData(body) {
   const category = radio('cfpType') || 'passive';
   const name = val('cfpName');
 
+  // Tags — shared across all categories
+  const tags = [];
+  body.querySelectorAll('input[name="cfpRoleTags"]:checked').forEach((cb) => tags.push(`role/${cb.value}`));
+  body.querySelectorAll('input[name="cfpTypeTags"]:checked').forEach((cb) => tags.push(`creature/${cb.value}`));
+
   if (category === 'passive') {
     return {
       type: 'passive',
       name,
+      tags,
       effects: { text: val('cfpPassiveText') },
     };
   }
@@ -627,7 +696,7 @@ function readFormData(body) {
     const vuln = collectChecked('cfpVulnerabilities');
     if (vuln.length) effects.vulnerabilities = { damage: vuln, condition: [] };
 
-    return { type: 'modifier', name, effects };
+    return { type: 'modifier', name, tags, effects };
   }
 
   // action
@@ -708,6 +777,7 @@ function readFormData(body) {
   return {
     type: 'action',
     name,
+    tags,
     isReaction,
     isLegendaryAction: checked('cfpIsLegendary'),
     isApexAction: checked('cfpIsApex'),

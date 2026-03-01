@@ -296,6 +296,52 @@ function toggleFeatureSelection(id, isSelected) {
 }
 
 /**
+ * Build the footer element with role/type pills and reaction chip, matching library card footers.
+ * Returns null when the feature has no tags or reaction flag to display.
+ * @param {object} feature - Feature object with optional tags[] and isReaction.
+ * @returns {HTMLElement|null}
+ */
+function createFeatureCardFooter(feature) {
+  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const tags = Array.isArray(feature.tags) ? feature.tags : [];
+  const roleSources = tags.filter((t) => t.startsWith('role/')).map((t) => capitalize(t.slice(5)));
+  const typeSources = tags.filter((t) => t.startsWith('creature/')).map((t) => capitalize(t.slice(9)));
+  const isReaction = Boolean(feature.isReaction || feature.effects?.isReaction);
+
+  if (!isReaction && !roleSources.length && !typeSources.length) return null;
+
+  const footer = document.createElement('div');
+  footer.className = 'feature-card-footer';
+
+  if (isReaction) {
+    const reactionEl = document.createElement('span');
+    reactionEl.className = 'feature-card-reaction';
+    reactionEl.textContent = 'Reaction';
+    footer.appendChild(reactionEl);
+  }
+
+  if (roleSources.length || typeSources.length) {
+    const sourcesEl = document.createElement('div');
+    sourcesEl.className = 'feature-card-sources';
+    for (const role of roleSources) {
+      const pill = document.createElement('span');
+      pill.className = 'feature-card-source feature-card-source--role';
+      pill.textContent = role;
+      sourcesEl.appendChild(pill);
+    }
+    for (const type of typeSources) {
+      const pill = document.createElement('span');
+      pill.className = 'feature-card-source feature-card-source--type';
+      pill.textContent = type;
+      sourcesEl.appendChild(pill);
+    }
+    footer.appendChild(sourcesEl);
+  }
+
+  return footer;
+}
+
+/**
  * Create a bank feature card button for the My Features section.
  * Clicking it copies the bank feature to creature.customFeatures and opens the builder.
  * @param {object} bankFeature - Feature object from the user's bank.
@@ -328,6 +374,9 @@ function createBankFeatureCard(bankFeature) {
   typeEl.textContent = (bankFeature.type || 'passive').charAt(0).toUpperCase() + (bankFeature.type || 'passive').slice(1);
 
   card.append(header, desc, typeEl);
+
+  const footer = createFeatureCardFooter(bankFeature);
+  if (footer) card.appendChild(footer);
 
   card.addEventListener('click', () => {
     onAddBankFeature(bankFeature);
@@ -369,6 +418,9 @@ function createCommunityFeatureCard(feature) {
   metaEl.textContent = `by ${feature.creatorName || 'Unknown'}`;
 
   card.append(header, desc, metaEl);
+
+  const footer = createFeatureCardFooter(feature);
+  if (footer) card.appendChild(footer);
 
   card.addEventListener('click', () => {
     onAddBankFeature(feature);

@@ -1423,6 +1423,20 @@ body{
   accent-color: #8e44ad;
 }
 
+/* Tags section (role / creature type) in the custom feature builder */
+.cfp-tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.cfp-checkbox-grid--tags {
+  gap: 0.3rem 0.75rem;
+}
+
 /* Damage segments */
 .cfp-damage-section {
   display: flex;
@@ -1676,47 +1690,36 @@ body{
    My Features bank section in the feature picker
    ==================================================================== */
 .feature-group--bank {
-  border: 1px solid rgba(180,140,20,0.35);
+  border: 1px solid rgba(180,140,20,0.3);
   border-radius: 0.75rem;
   padding: 0.6rem;
-  background: rgba(255,248,220,0.45);
+  background: rgba(180,140,20,0.05);
   margin-bottom: 0.25rem;
 }
 
 .feature-group--bank .feature-group-title {
-  color: #7a5c00;
+  color: #c9a830;
 }
 
 .feature-card--bank {
-  border-color: rgba(180,140,20,0.4);
-  background: rgba(255,252,230,0.9);
+  border-left: 3px solid rgba(180,140,20,0.55);
+  border-color: rgba(180,140,20,0.3);
 }
 
 .feature-card--bank:hover {
-  border-color: rgba(180,140,20,0.7);
-  background: rgba(255,248,210,1);
+  border-color: rgba(180,140,20,0.6);
+  background: rgba(180,140,20,0.08);
 }
 
 .feature-card--bank:active {
   transform: translateY(0);
   box-shadow: none;
-  background: rgba(200,160,10,0.25);
-  border-color: rgba(180,140,20,0.9);
-}
-
-/* Dark text overrides — bank cards have a light background, not the dark theme default */
-.feature-card--bank .feature-card-name {
-  color: #2a1a00;
-}
-.feature-card--bank .feature-card-description {
-  color: #4a3010;
-}
-.feature-card--bank .feature-card-meta {
-  color: #7a5c00;
+  background: rgba(180,140,20,0.12);
+  border-color: rgba(180,140,20,0.8);
 }
 
 .feature-card-bank-icon {
-  color: #c09010;
+  color: #c9a830;
   font-size: 0.8rem;
   margin-left: auto;
   flex-shrink: 0;
@@ -1724,7 +1727,6 @@ body{
 
 .feature-card-bank-type {
   font-size: 0.75rem;
-  color: #7a5c00;
   opacity: 0.75;
   margin-top: 0.15rem;
 }
@@ -1895,57 +1897,45 @@ body{
 .picker-tab {
   flex: 1;
   padding: 8px 10px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 0.5rem;
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.7);
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
   text-align: center;
 }
 
 .picker-tab.active {
-  background: rgba(92,83,168,0.45);
+  background: rgba(92,83,168,0.5);
   color: #fff;
-  border-color: rgba(255,255,255,0.25);
+  border-color: rgba(142,68,173,0.45);
 }
 
 .picker-tab:hover:not(.active) {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.9);
 }
 
 /* ====================================================================
    Community feature cards in the picker
    ==================================================================== */
 .feature-card--community {
-  border-color: rgba(30,100,210,0.4);
-  background: rgba(220,232,255,0.9);
+  border-left: 3px solid rgba(30,100,210,0.5);
+  border-color: rgba(30,100,210,0.3);
 }
 
 .feature-card--community:hover {
-  border-color: rgba(30,100,210,0.7);
-  background: rgba(210,228,255,1);
+  border-color: rgba(30,100,210,0.6);
+  background: rgba(30,100,210,0.07);
 }
 
 .feature-card--community:active {
   transform: translateY(0);
   box-shadow: none;
-  background: rgba(180,205,255,0.9);
-}
-
-.feature-card--community .feature-card-name {
-  color: #001840;
-}
-
-.feature-card--community .feature-card-description {
-  color: #0a1e50;
-}
-
-.feature-card--community .feature-card-meta {
-  color: #1545a0;
+  background: rgba(30,100,210,0.11);
 }
 
 .feature-card-community-icon {
