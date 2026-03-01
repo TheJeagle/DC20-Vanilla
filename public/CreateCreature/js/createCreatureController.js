@@ -1049,8 +1049,15 @@ function initializeEventHandlers() {
 
   // Add bank feature to creature handler
   setAddBankFeatureHandler((bankFeature) => {
-    // Create a new instance (new UUID) from the bank template
-    const copy = { ...bankFeature, id: `custom-${crypto.randomUUID()}`, isCustom: true };
+    // Create a new instance (new UUID) from the bank template.
+    // sourceFeatureId tracks provenance: for community-sourced features it's already set;
+    // for self-authored bank features fall back to the bank entry's own id.
+    const copy = {
+      ...bankFeature,
+      id: `custom-${crypto.randomUUID()}`,
+      isCustom: true,
+      sourceFeatureId: bankFeature.sourceFeatureId ?? bankFeature.id,
+    };
     addCustomFeature(copy);
     openCustomFeatureBuilder({}, copy);
   });

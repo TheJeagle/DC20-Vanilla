@@ -22,6 +22,30 @@ service cloud.firestore {
       allow write: if false; // admin-only via scripts
     }
 
+    // ── User-made features (community sharing) ────────────────────────────────
+    match /VanillaUsermadeFeatures/{featureId} {
+      allow read: if true;
+      // Only the author can create their own features
+      allow create: if request.auth != null
+                    && request.resource.data.createdBy == request.auth.uid;
+      // Owner can update anything; any authenticated user can update totalLikes only
+      allow update: if request.auth != null
+                    && (resource.data.createdBy == request.auth.uid
+                        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalLikes']));
+      allow delete: if request.auth != null
+                    && resource.data.createdBy == request.auth.uid;
+
+      match /likes/{userId} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // ── User data (personal feature bank) ────────────────────────────────────
+    match /VanillaUsers/{userId}/featureBank/{featureId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     // ── Encounters ────────────────────────────────────────────────────────────
     match /VanillaEncounters/{docId} {
       // Allow all reads so unauthenticated users can query the collection for

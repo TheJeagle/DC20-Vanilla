@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "VanillaUsermadeFeatures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isPublic", "order": "ASCENDING" },
+        { "fieldPath": "totalLikes", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

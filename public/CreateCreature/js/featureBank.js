@@ -119,19 +119,26 @@ export async function publishFeature(feature, user) {
   const bankRef = doc(db, USERS_COLLECTION, user.uid, 'featureBank', feature.id);
   const snapshot = buildFeatureSnapshot(feature);
 
-  const publishData = {
-    ...snapshot,
-    isPublic: true,
-    createdBy: user.uid,
-    creatorName: user.displayName || user.email || '',
-    createdAt: new Date().toISOString(),
-    totalLikes: 0,
-  };
+  await runTransaction(db, async (transaction) => {
+    // Read first (Firestore requires all reads before writes in a transaction)
+    const communitySnap = await transaction.get(communityRef);
 
-  await setDoc(communityRef, publishData, { merge: true });
-  await setDoc(
-    bankRef,
-    {
+    // Preserve totalLikes and original createdAt on re-publish
+    const existingTotalLikes = communitySnap.exists() ? (communitySnap.data().totalLikes ?? 0) : 0;
+    const createdAt = communitySnap.exists()
+      ? communitySnap.data().createdAt
+      : new Date().toISOString();
+
+    transaction.set(communityRef, {
+      ...snapshot,
+      isPublic: true,
+      createdBy: user.uid,
+      creatorName: user.displayName || user.email || '',
+      createdAt,
+      totalLikes: existingTotalLikes,
+    });
+
+    transaction.set(bankRef, {
       ...snapshot,
       savedAt: new Date().toISOString(),
       sourceFeatureId: feature.id,
@@ -139,9 +146,8 @@ export async function publishFeature(feature, user) {
       isPublic: true,
       createdBy: user.uid,
       creatorName: user.displayName || user.email || '',
-    },
-    { merge: true }
-  );
+    });
+  });
 
   return feature.id;
 }
