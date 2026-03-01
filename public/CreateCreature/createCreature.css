@@ -1637,3 +1637,230 @@ body{
   }
 }
 /* Print End */
+
+/* ====================================================================
+   Feature Bank — Save to Bank button on statblock custom feature cards
+   ==================================================================== */
+.statblock-bank-btn {
+  position: absolute;
+  top: 0.35rem;
+  right: 3.35rem; /* edit is at 1.85rem, remove at 0.35rem — bank sits further left */
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.1);
+  color: rgba(180,130,20,0.6);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.statblock-feature-item:hover .statblock-bank-btn,
+.statblock-action-item:hover .statblock-bank-btn {
+  opacity: 1;
+}
+
+.statblock-bank-btn:hover {
+  background: rgba(180,140,20,0.16);
+  color: #a07010;
+}
+
+/* ====================================================================
+   My Features bank section in the feature picker
+   ==================================================================== */
+.feature-group--bank {
+  border: 1px solid rgba(180,140,20,0.35);
+  border-radius: 0.75rem;
+  padding: 0.6rem;
+  background: rgba(255,248,220,0.45);
+  margin-bottom: 0.25rem;
+}
+
+.feature-group--bank .feature-group-title {
+  color: #7a5c00;
+}
+
+.feature-card--bank {
+  border-color: rgba(180,140,20,0.4);
+  background: rgba(255,252,230,0.9);
+}
+
+.feature-card--bank:hover {
+  border-color: rgba(180,140,20,0.7);
+  background: rgba(255,248,210,1);
+}
+
+.feature-card-bank-icon {
+  color: #c09010;
+  font-size: 0.8rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.feature-card-bank-type {
+  font-size: 0.75rem;
+  color: #7a5c00;
+  opacity: 0.75;
+  margin-top: 0.15rem;
+}
+
+/* ====================================================================
+   Browse Community button at the bottom of the feature picker
+   ==================================================================== */
+.browse-community-btn {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.65rem 1rem;
+  border: 1px dashed rgba(91,44,111,0.4);
+  border-radius: 0.5rem;
+  background: rgba(91,44,111,0.05);
+  color: #5b2c6f;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.browse-community-btn:hover {
+  background: rgba(91,44,111,0.12);
+  border-color: rgba(91,44,111,0.6);
+}
+
+/* ====================================================================
+   Publish button in custom feature builder footer
+   ==================================================================== */
+.cfp-publish-btn {
+  flex: 0 0 auto;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(91,44,111,0.4);
+  border-radius: 0.5rem;
+  background: rgba(91,44,111,0.08);
+  color: #5b2c6f;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cfp-publish-btn:hover {
+  background: rgba(91,44,111,0.16);
+}
+
+/* ====================================================================
+   Community Browse Panel
+   ==================================================================== */
+.community-browse-panel {
+  width: min(540px, 100vw);
+}
+
+.community-feature-card {
+  background: #f9f7fd;
+  border: 1px solid #e0d8f0;
+  border-radius: 0.6rem;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.community-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.community-card-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.community-card-meta {
+  font-size: 0.8rem;
+  color: #7a6a8a;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.community-card-type {
+  font-size: 0.78rem;
+  color: #8e44ad;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.community-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.community-like-btn,
+.community-bank-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(91,44,111,0.35);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.community-like-btn {
+  background: #f7f3fc;
+  color: #5b2c6f;
+}
+
+.community-like-btn.is-liked {
+  background: rgba(142,68,173,0.15);
+  color: #8e44ad;
+  border-color: rgba(142,68,173,0.5);
+}
+
+.community-like-btn:hover:not(:disabled) {
+  background: rgba(142,68,173,0.1);
+}
+
+.community-bank-btn {
+  background: #f0f7f0;
+  color: #2a6f3a;
+  border-color: rgba(40,100,60,0.3);
+}
+
+.community-bank-btn:hover:not(:disabled) {
+  background: rgba(40,100,60,0.1);
+}
+
+.community-bank-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.community-loading,
+.community-error,
+.community-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: #7a6a8a;
+  font-size: 0.95rem;
+}
+
+.community-error {
+  color: #a02030;
+}
+
+/* Hide community panel from print */
+@media print {
+  .community-browse-panel { display: none !important; }
+  .statblock-bank-btn { display: none !important; }
+  .browse-community-btn { display: none !important; }
+}
+/* Feature Bank / Community End */

@@ -25,6 +25,7 @@ import {
   setFeaturesLoaded,
   getPendingLoadedCreature,
   setPendingLoadedCreature,
+  setBankFeatures,
 } from './createCreatureState.js';
 import {
   setupTraitPickers,
@@ -41,7 +42,7 @@ import {
   arraysEqual,
   ATTRIBUTE_KEYS,
 } from './createCreatureStats.js';
-import { renderCreatureStatblock, setFeatureReorderHandler, setFeatureRemoveHandler, initStatblockSectionToggles, setCustomFeatureEditHandler, setCustomFeatureAddHandler } from './createCreatureStatblock.js';
+import { renderCreatureStatblock, setFeatureReorderHandler, setFeatureRemoveHandler, initStatblockSectionToggles, setCustomFeatureEditHandler, setCustomFeatureAddHandler, setSaveToBankHandler } from './createCreatureStatblock.js';
 import {
   renderFeatureControls,
   ensureSelectedFeatureDependencies,
@@ -52,7 +53,10 @@ import {
   addCustomFeature,
   updateCustomFeature,
   removeCustomFeature,
+  setAddBankFeatureHandler,
+  setBrowseCommunityHandler,
 } from './createCreatureFeatures.js';
+import { saveToBank, loadUserBank, publishFeature, renderCommunityBrowser, toggleFeatureLike, addToBank } from './featureBank.js';
 import {
   openCustomFeatureBuilder,
   setCustomFeatureSaveHandler,
@@ -851,11 +855,24 @@ function initializeAuthHandling() {
   updateSaveButtonState(null);
   updateSavePromptForAuth(null);
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     setCurrentUser(user);
     updateNavAuth(user);
     updateSaveButtonState(user);
     updateSavePromptForAuth(user);
+
+    if (user) {
+      try {
+        const bankFeatures = await loadUserBank(user.uid);
+        setBankFeatures(bankFeatures);
+        if (isFeaturesLoaded()) renderFeatureControls();
+      } catch (err) {
+        console.error('Failed to load feature bank', err);
+      }
+    } else {
+      setBankFeatures([]);
+      if (isFeaturesLoaded()) renderFeatureControls();
+    }
   });
 }
 
@@ -989,6 +1006,9 @@ function initializeEventHandlers() {
       addCustomFeature(feature);
     }
     updateStatblock();
+    // Track last saved feature id for Publish button
+    const panel = document.getElementById('customFeaturePanel');
+    if (panel) panel.dataset.lastSavedFeatureId = feature.id;
   });
 
   setCustomFeatureCancelHandler(() => {
@@ -1007,6 +1027,83 @@ function initializeEventHandlers() {
     // Restore original customFeatures (updateStatblock doesn't modify this array)
     creature.customFeatures = savedCustomFeatures;
   });
+
+  // Save to Bank handler
+  setSaveToBankHandler(async (feature) => {
+    const user = getCurrentUser();
+    if (!user) {
+      setSaveStatus('Sign in to save features to your bank.', 'info', { sticky: false });
+      return;
+    }
+    try {
+      await saveToBank(feature, user);
+      setSaveStatus(`"${feature.name}" saved to your feature bank.`, 'success', { sticky: false });
+      const bankFeatures = await loadUserBank(user.uid);
+      setBankFeatures(bankFeatures);
+      renderFeatureControls();
+    } catch (err) {
+      console.error('Failed to save feature to bank', err);
+      setSaveStatus('Failed to save feature to bank.', 'error', { sticky: false });
+    }
+  });
+
+  // Add bank feature to creature handler
+  setAddBankFeatureHandler((bankFeature) => {
+    // Create a new instance (new UUID) from the bank template
+    const copy = { ...bankFeature, id: `custom-${crypto.randomUUID()}`, isCustom: true };
+    addCustomFeature(copy);
+    openCustomFeatureBuilder({}, copy);
+  });
+
+  // Browse community handler
+  setBrowseCommunityHandler(() => {
+    openCommunityPanel();
+  });
+
+  // Community browse panel close button
+  const communityCloseBtn = document.getElementById('communityBrowseCloseBtn');
+  if (communityCloseBtn) {
+    communityCloseBtn.addEventListener('click', closeCommunityPanel);
+  }
+
+  // Publish handler wired on the custom feature builder's Publish button
+  const publishBtn = document.getElementById('cfpPublishBtn');
+  if (publishBtn) {
+    publishBtn.addEventListener('click', async () => {
+      const panel = document.getElementById('customFeaturePanel');
+      const body = panel?.querySelector('.cfp-body');
+      if (!body) return;
+      // The builder exposes a way to get current feature data; we store the last saved feature id
+      // via a data attribute set when the builder saves
+      const lastFeatureId = panel?.dataset.lastSavedFeatureId;
+      if (!lastFeatureId) {
+        setSaveStatus('Save the feature first before publishing.', 'info', { sticky: false });
+        return;
+      }
+      const feature = Array.isArray(creature.customFeatures)
+        ? creature.customFeatures.find((f) => f.id === lastFeatureId)
+        : null;
+      if (!feature) {
+        setSaveStatus('Feature not found. Save it to the creature first.', 'info', { sticky: false });
+        return;
+      }
+      const user = getCurrentUser();
+      if (!user) {
+        setSaveStatus('Sign in to publish features.', 'info', { sticky: false });
+        return;
+      }
+      try {
+        await publishFeature(feature, user);
+        setSaveStatus(`"${feature.name}" published to the community!`, 'success', { sticky: false });
+        const bankFeatures = await loadUserBank(user.uid);
+        setBankFeatures(bankFeatures);
+        renderFeatureControls();
+      } catch (err) {
+        console.error('Failed to publish feature', err);
+        setSaveStatus('Failed to publish feature.', 'error', { sticky: false });
+      }
+    });
+  }
 
   initStatblockSectionToggles();
 
@@ -1067,6 +1164,59 @@ function initializePendingLoad(requestedCreatureId) {
   if (requestedCreatureId) {
     loadCreatureById(requestedCreatureId).catch(() => {});
   }
+}
+
+// ---------------------------------------------------------------------------
+// Community browse panel
+// ---------------------------------------------------------------------------
+
+let communityPanelEl = null;
+
+function getCommunityPanel() {
+  if (!communityPanelEl) communityPanelEl = document.getElementById('communityBrowsePanel');
+  return communityPanelEl;
+}
+
+function closeCommunityPanel() {
+  const panel = getCommunityPanel();
+  if (!panel) return;
+  panel.classList.remove('is-open');
+  setTimeout(() => {
+    if (!panel.classList.contains('is-open')) panel.setAttribute('hidden', '');
+  }, 300);
+}
+
+async function openCommunityPanel() {
+  const panel = getCommunityPanel();
+  if (!panel) return;
+  panel.removeAttribute('hidden');
+  panel.classList.add('is-open');
+
+  const body = panel.querySelector('#communityBrowseBody');
+  if (!body) return;
+
+  await renderCommunityBrowser(body, getCurrentUser(), {
+    onLike: async (feature) => {
+      const user = getCurrentUser();
+      if (!user) return;
+      const result = await toggleFeatureLike(feature, user);
+      // Refresh bank in case it was added
+      if (result.liked) {
+        const bankFeatures = await loadUserBank(user.uid);
+        setBankFeatures(bankFeatures);
+        if (isFeaturesLoaded()) renderFeatureControls();
+      }
+      return result;
+    },
+    onAddToBank: async (feature) => {
+      const user = getCurrentUser();
+      if (!user) return;
+      await addToBank(feature, user);
+      const bankFeatures = await loadUserBank(user.uid);
+      setBankFeatures(bankFeatures);
+      if (isFeaturesLoaded()) renderFeatureControls();
+    },
+  });
 }
 
 // Entry point – wire everything up once per page load.

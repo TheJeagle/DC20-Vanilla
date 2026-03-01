@@ -5,6 +5,20 @@ import { FEATURE_TYPES, getFeatureSummary } from '../../features.js';
 /** Callback invoked when feature selection changes. */
 let onSelectionChange = () => {};
 
+/** Callback invoked when a bank feature is clicked to add to creature. */
+let onAddBankFeature = () => {};
+
+export function setAddBankFeatureHandler(cb) {
+  onAddBankFeature = typeof cb === 'function' ? cb : () => {};
+}
+
+/** Callback invoked when the Browse Community button is clicked. */
+let onBrowseCommunity = () => {};
+
+export function setBrowseCommunityHandler(cb) {
+  onBrowseCommunity = typeof cb === 'function' ? cb : () => {};
+}
+
 /**
  * Register a callback fired after any feature selection change.
  * @param {(nextIds: string[]) => void} callback - Invoked post-selection toggle; noop if invalid.
@@ -275,6 +289,47 @@ function toggleFeatureSelection(id, isSelected) {
 }
 
 /**
+ * Create a bank feature card button for the My Features section.
+ * Clicking it copies the bank feature to creature.customFeatures and opens the builder.
+ * @param {object} bankFeature - Feature object from the user's bank.
+ * @returns {HTMLButtonElement}
+ */
+function createBankFeatureCard(bankFeature) {
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'feature-card feature-card--bank';
+
+  const header = document.createElement('div');
+  header.className = 'feature-card-header';
+
+  const nameEl = document.createElement('span');
+  nameEl.className = 'feature-card-name';
+  nameEl.textContent = bankFeature.name || 'Unnamed';
+
+  const bankIcon = document.createElement('span');
+  bankIcon.className = 'feature-card-bank-icon';
+  bankIcon.textContent = '★';
+  bankIcon.title = 'From your feature bank';
+  header.append(nameEl, bankIcon);
+
+  const desc = document.createElement('div');
+  desc.className = 'feature-card-description';
+  desc.textContent = getFeatureSummary(bankFeature) || 'No description available.';
+
+  const typeEl = document.createElement('div');
+  typeEl.className = 'feature-card-meta feature-card-bank-type';
+  typeEl.textContent = (bankFeature.type || 'passive').charAt(0).toUpperCase() + (bankFeature.type || 'passive').slice(1);
+
+  card.append(header, desc, typeEl);
+
+  card.addEventListener('click', () => {
+    onAddBankFeature(bankFeature);
+  });
+
+  return card;
+}
+
+/**
  * Render the grouped feature cards (actions, modifiers, passives, etc.).
  * Reads featureState.filteredIds/byId to build the UI grid.
  */
@@ -282,6 +337,27 @@ function renderFeatureControls() {
   const { featureControls } = dom;
   if (!featureControls) return;
   featureControls.innerHTML = '';
+
+  // My Features bank section (always at the top, bypasses role/type filters)
+  if (Array.isArray(featureState.bankFeatures) && featureState.bankFeatures.length) {
+    const bankWrapper = document.createElement('section');
+    bankWrapper.className = 'feature-group feature-group--bank';
+
+    const bankHeading = document.createElement('h1');
+    bankHeading.className = 'feature-group-title';
+    bankHeading.textContent = '★ My Features';
+    bankWrapper.appendChild(bankHeading);
+    wireToggle(bankWrapper, bankHeading, '__bank__');
+
+    const bankGrid = document.createElement('div');
+    bankGrid.className = 'feature-group-grid';
+    featureState.bankFeatures.forEach((bankFeature) => {
+      bankGrid.appendChild(createBankFeatureCard(bankFeature));
+    });
+
+    bankWrapper.appendChild(bankGrid);
+    featureControls.appendChild(bankWrapper);
+  }
 
   const baseIds = featureState.filteredIds && featureState.filteredIds.length
     ? featureState.filteredIds
@@ -557,6 +633,17 @@ function renderFeatureControls() {
     groupWrapper.appendChild(grid);
     featureControls.appendChild(groupWrapper);
   });
+
+  // Browse Community button at the bottom of the picker
+  const browseBtn = document.createElement('button');
+  browseBtn.type = 'button';
+  browseBtn.id = 'browseCommunityBtn';
+  browseBtn.className = 'browse-community-btn';
+  browseBtn.textContent = '🌐 Browse Community Features';
+  browseBtn.addEventListener('click', () => {
+    onBrowseCommunity();
+  });
+  featureControls.appendChild(browseBtn);
 }
 
 /**
@@ -674,4 +761,6 @@ export {
   addCustomFeature,
   updateCustomFeature,
   removeCustomFeature,
+  setAddBankFeatureHandler,
+  setBrowseCommunityHandler,
 };

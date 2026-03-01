@@ -38,6 +38,7 @@ const featureState = {
   filteredIds: [],
   searchTerm: '',
   selectedIds: [],
+  bankFeatures: [],
 };
 
 const controllerState = {
@@ -83,6 +84,10 @@ function clearStoredCreatureDraft() {
   removeItem(CREATURE_EDITOR_STORAGE_KEY);
 }
 
+function setBankFeatures(features) {
+  featureState.bankFeatures = Array.isArray(features) ? features : [];
+}
+
 export {
   TITLE_FALLBACK,
   CREATURE_COLLECTION,
@@ -98,4 +103,5 @@ export {
   loadStoredCreatureDraft,
   persistCreatureDraft,
   clearStoredCreatureDraft,
+  setBankFeatures,
 };

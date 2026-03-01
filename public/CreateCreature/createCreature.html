@@ -354,7 +354,19 @@
       </div>
       <div class="cfp-footer">
         <button type="button" id="cfpSaveBtn" class="cfp-save-btn">Save Feature</button>
+        <button type="button" id="cfpPublishBtn" class="cfp-publish-btn" title="Publish to community (save first)">Publish</button>
         <button type="button" id="cfpCancelBtn" class="cfp-cancel-btn">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Community Browse slide-out panel -->
+    <div id="communityBrowsePanel" class="custom-feature-panel community-browse-panel" hidden aria-label="Community features">
+      <div class="cfp-header">
+        <h2 class="cfp-title">Community Features</h2>
+        <button type="button" id="communityBrowseCloseBtn" class="cfp-close" title="Close">✕</button>
+      </div>
+      <div class="cfp-body" id="communityBrowseBody">
+        <!-- Rendered dynamically by featureBank.js renderCommunityBrowser() -->
       </div>
     </div>
 

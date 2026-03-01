@@ -27,6 +27,12 @@ export function setCustomFeatureAddHandler(cb) {
   onCustomFeatureAdd = typeof cb === 'function' ? cb : () => {};
 }
 
+/** Called when a custom feature's bank (★) button is clicked. Receives the feature object. */
+let onSaveToBank = () => {};
+export function setSaveToBankHandler(cb) {
+  onSaveToBank = typeof cb === 'function' ? cb : () => {};
+}
+
 export function initStatblockSectionToggles() {
   const featureSection = dom.statblockFeatures?.closest('.statblock-feature-section');
   const featureHeading = featureSection?.querySelector('.statblock-feature-heading');
@@ -281,6 +287,13 @@ function renderFeatureSummary() {
       editBtn.textContent = '✏';
       editBtn.addEventListener('click', (e) => { e.stopPropagation(); onCustomFeatureEdit(feature); });
 
+      const bankBtn = document.createElement('button');
+      bankBtn.type = 'button';
+      bankBtn.className = 'statblock-bank-btn';
+      bankBtn.title = 'Save to my feature bank';
+      bankBtn.textContent = '★';
+      bankBtn.addEventListener('click', (e) => { e.stopPropagation(); onSaveToBank(feature); });
+
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.className = 'statblock-remove-btn';
@@ -288,7 +301,7 @@ function renderFeatureSummary() {
       removeBtn.textContent = '×';
       removeBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(feature.id); });
 
-      wrapper.append(nameRow, description, editBtn, removeBtn);
+      wrapper.append(nameRow, description, editBtn, bankBtn, removeBtn);
     } else {
       // Library features: drag handle + remove button
       attachDragHandlers(wrapper, feature.id);
@@ -398,6 +411,18 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
         onCustomFeatureEdit(orig || action);
       });
       wrapper.appendChild(utilEditBtn);
+
+      const utilBankBtn = document.createElement('button');
+      utilBankBtn.type = 'button';
+      utilBankBtn.className = 'statblock-bank-btn';
+      utilBankBtn.title = 'Save to my feature bank';
+      utilBankBtn.textContent = '★';
+      utilBankBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const orig = (creature.customFeatures || []).find((f) => f.id === action.id);
+        onSaveToBank(orig || action);
+      });
+      wrapper.appendChild(utilBankBtn);
     }
     const utilRemoveBtn = document.createElement('button');
     utilRemoveBtn.type = 'button';
@@ -554,6 +579,18 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
       onCustomFeatureEdit(orig || action);
     });
     wrapper.appendChild(editBtn);
+
+    const bankBtn = document.createElement('button');
+    bankBtn.type = 'button';
+    bankBtn.className = 'statblock-bank-btn';
+    bankBtn.title = 'Save to my feature bank';
+    bankBtn.textContent = '★';
+    bankBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const orig = (creature.customFeatures || []).find((f) => f.id === action.id);
+      onSaveToBank(orig || action);
+    });
+    wrapper.appendChild(bankBtn);
   }
 
   const removeBtn = document.createElement('button');

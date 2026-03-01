@@ -1,3 +1,12 @@
+import {
+  openCustomFeatureBuilder,
+  closeCustomFeatureBuilder,
+  setCustomFeatureSaveHandler,
+  setCustomFeatureCancelHandler,
+  setCustomFeatureLivePreviewHandler,
+} from '../CreateCreature/js/customFeatureBuilder.js';
+import { getFeatureSummary } from '../features.js';
+
 const STORAGE_KEY = 'dc20-creature-editor';
 const sessionStore = (() => {
   try {
@@ -109,6 +118,61 @@ let baselineRankValues = [];
 let workingRankValues = [];
 let rankValueDeltas = {};
 let currentAttributeTotals = {};
+
+/** Working copy of custom features — updated as features are added/edited/removed. */
+let workingCustomFeatures = [];
+
+const customFeaturesListEl = document.querySelector('#customFeaturesList');
+const addCustomFeatureBtn = document.querySelector('#addCustomFeatureBtn');
+
+function renderCustomFeatures() {
+  if (!customFeaturesListEl) return;
+  customFeaturesListEl.innerHTML = '';
+
+  if (!workingCustomFeatures.length) {
+    const empty = document.createElement('p');
+    empty.className = 'note';
+    empty.textContent = 'No custom features yet.';
+    customFeaturesListEl.appendChild(empty);
+    return;
+  }
+
+  workingCustomFeatures.forEach((feature) => {
+    const item = document.createElement('div');
+    item.className = 'panel-field';
+    item.style.cssText = 'display:flex;align-items:flex-start;gap:0.75rem;';
+
+    const info = document.createElement('div');
+    info.style.flex = '1';
+    const name = document.createElement('strong');
+    name.textContent = feature.name || 'Unnamed Feature';
+    const desc = document.createElement('div');
+    desc.className = 'baseline';
+    desc.textContent = getFeatureSummary(feature) || '—';
+    info.append(name, desc);
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'chip-button';
+    editBtn.textContent = '✏ Edit';
+    editBtn.addEventListener('click', () => {
+      openCustomFeatureBuilder({}, feature);
+    });
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'chip-button';
+    removeBtn.textContent = '× Remove';
+    removeBtn.style.color = '#a02030';
+    removeBtn.addEventListener('click', () => {
+      workingCustomFeatures = workingCustomFeatures.filter((f) => f.id !== feature.id);
+      renderCustomFeatures();
+    });
+
+    item.append(info, editBtn, removeBtn);
+    customFeaturesListEl.appendChild(item);
+  });
+}
 
 function recomputeRankDeltas() {
   const updated = {};
@@ -274,10 +338,17 @@ function loadDraft() {
 
     initializeRankData();
     delete workingDeltas.attributes;
+
+    // Restore custom features from draft
+    workingCustomFeatures = Array.isArray(draft.customFeatures)
+      ? draft.customFeatures.map((f) => ({ ...f }))
+      : [];
+
     renderBaseInfo();
     renderCoreStatEditors();
     renderAttributeValues();
     renderAttributeEditor();
+    renderCustomFeatures();
     clearStatus();
   } catch (error) {
     console.error('Failed to load creature draft', error);
@@ -479,6 +550,7 @@ function handleSave() {
     deltas: sanitized,
     attributePriority: workingAttributeOrder.slice(),
     rankValueDeltas: cleanedRankDeltas,
+    customFeatures: workingCustomFeatures.map((f) => ({ ...f })),
     updatedAt: new Date().toISOString(),
   };
 
@@ -508,9 +580,35 @@ function handleBack() {
   window.location.href = '../CreateCreature/createCreature.html';
 }
 
+function initCustomFeatureBuilder() {
+  setCustomFeatureSaveHandler((feature, oldId) => {
+    if (oldId) {
+      const index = workingCustomFeatures.findIndex((f) => f.id === oldId);
+      if (index !== -1) {
+        workingCustomFeatures[index] = { ...feature, id: oldId };
+      } else {
+        workingCustomFeatures.push(feature);
+      }
+    } else {
+      workingCustomFeatures.push(feature);
+    }
+    renderCustomFeatures();
+  });
+
+  setCustomFeatureCancelHandler(() => {});
+  setCustomFeatureLivePreviewHandler(() => {}); // No live preview in editor
+
+  if (addCustomFeatureBtn) {
+    addCustomFeatureBtn.addEventListener('click', () => {
+      openCustomFeatureBuilder({}, null);
+    });
+  }
+}
+
 function init() {
   backButton?.addEventListener('click', handleBack);
   saveButton?.addEventListener('click', handleSave);
+  initCustomFeatureBuilder();
   loadDraft();
 }
 
