@@ -55,6 +55,7 @@ import {
   updateCustomFeature,
   removeCustomFeature,
   setAddBankFeatureHandler,
+  setRemoveBankFeatureHandler,
   setBrowseCommunityHandler,
   setLikeCommunityFeatureHandler,
 } from './createCreatureFeatures.js';
@@ -1062,6 +1063,13 @@ function initializeEventHandlers() {
       sourceFeatureId: feature.sourceFeatureId ?? feature.id,
     };
     addCustomFeature(copy);
+    updateStatblock();
+    renderFeatureControls();
+  });
+
+  // Remove bank/community feature from creature handler (second-click toggle)
+  setRemoveBankFeatureHandler((id) => {
+    removeCustomFeature(id);
     updateStatblock();
     renderFeatureControls();
   });

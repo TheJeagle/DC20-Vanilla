@@ -5,11 +5,18 @@ import { FEATURE_TYPES, getFeatureSummary } from '../../features.js';
 /** Callback invoked when feature selection changes. */
 let onSelectionChange = () => {};
 
-/** Callback invoked when a bank feature is clicked to add to creature. */
+/** Callback invoked when a bank/community feature is clicked to add to creature. */
 let onAddBankFeature = () => {};
 
 export function setAddBankFeatureHandler(cb) {
   onAddBankFeature = typeof cb === 'function' ? cb : () => {};
+}
+
+/** Callback invoked when an already-added bank/community card is clicked to remove it. */
+let onRemoveBankFeature = () => {};
+
+export function setRemoveBankFeatureHandler(cb) {
+  onRemoveBankFeature = typeof cb === 'function' ? cb : () => {};
 }
 
 /** Callback invoked when the Browse Community button is clicked. */
@@ -356,6 +363,7 @@ function createBankFeatureCard(bankFeature) {
   const stableId = bankFeature.isOwned ? bankFeature.id : `community-${bankFeature.id}`;
   const isAdded = Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === stableId);
   if (isAdded) card.classList.add('selected');
+  card.title = isAdded ? 'Click to remove from creature' : 'Click to add to creature';
 
   const header = document.createElement('div');
   header.className = 'feature-card-header';
@@ -384,7 +392,12 @@ function createBankFeatureCard(bankFeature) {
   if (footer) card.appendChild(footer);
 
   card.addEventListener('click', () => {
-    onAddBankFeature(bankFeature);
+    const currentlyAdded = Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === stableId);
+    if (currentlyAdded) {
+      onRemoveBankFeature(stableId);
+    } else {
+      onAddBankFeature(bankFeature);
+    }
   });
 
   return card;
@@ -405,6 +418,7 @@ function createCommunityFeatureCard(feature) {
   const stableId = `community-${feature.id}`;
   const isAdded = Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === stableId);
   if (isAdded) card.classList.add('selected');
+  card.title = isAdded ? 'Click to remove from creature' : 'Click to add to creature';
 
   const header = document.createElement('div');
   header.className = 'feature-card-header';
@@ -433,7 +447,12 @@ function createCommunityFeatureCard(feature) {
   if (footer) card.appendChild(footer);
 
   card.addEventListener('click', () => {
-    onAddBankFeature(feature);
+    const currentlyAdded = Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === stableId);
+    if (currentlyAdded) {
+      onRemoveBankFeature(stableId);
+    } else {
+      onAddBankFeature(feature);
+    }
   });
 
   return card;
