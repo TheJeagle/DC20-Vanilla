@@ -151,6 +151,7 @@ function renderPanel(existingFeature) {
     const newSave = saveBtn.cloneNode(true);
     saveBtn.parentNode.replaceChild(newSave, saveBtn);
     newSave.addEventListener('click', () => handleSave(body));
+    newSave.textContent = existingFeature ? 'Update Feature' : 'Add to Creature';
   }
   if (cancelBtn) {
     const newCancel = cancelBtn.cloneNode(true);

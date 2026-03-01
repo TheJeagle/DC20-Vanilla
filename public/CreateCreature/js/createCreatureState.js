@@ -39,6 +39,9 @@ const featureState = {
   searchTerm: '',
   selectedIds: [],
   bankFeatures: [],
+  communityFeatures: [],
+  communityFeaturesLoaded: false,
+  activeTab: 'library',
 };
 
 const controllerState = {
@@ -88,6 +91,11 @@ function setBankFeatures(features) {
   featureState.bankFeatures = Array.isArray(features) ? features : [];
 }
 
+function setCommunityFeatures(features) {
+  featureState.communityFeatures = Array.isArray(features) ? features : [];
+  featureState.communityFeaturesLoaded = true;
+}
+
 export {
   TITLE_FALLBACK,
   CREATURE_COLLECTION,
@@ -104,4 +112,5 @@ export {
   persistCreatureDraft,
   clearStoredCreatureDraft,
   setBankFeatures,
+  setCommunityFeatures,
 };

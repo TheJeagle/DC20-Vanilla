@@ -1882,3 +1882,84 @@ body{
   .browse-community-btn { display: none !important; }
 }
 /* Feature Bank / Community End */
+
+/* ====================================================================
+   Feature picker tab bar (Library / Community)
+   ==================================================================== */
+.picker-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.picker-tab {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 0.5rem;
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.6);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: center;
+}
+
+.picker-tab.active {
+  background: rgba(92,83,168,0.45);
+  color: #fff;
+  border-color: rgba(255,255,255,0.25);
+}
+
+.picker-tab:hover:not(.active) {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+}
+
+/* ====================================================================
+   Community feature cards in the picker
+   ==================================================================== */
+.feature-card--community {
+  border-color: rgba(30,100,210,0.4);
+  background: rgba(220,232,255,0.9);
+}
+
+.feature-card--community:hover {
+  border-color: rgba(30,100,210,0.7);
+  background: rgba(210,228,255,1);
+}
+
+.feature-card--community:active {
+  transform: translateY(0);
+  box-shadow: none;
+  background: rgba(180,205,255,0.9);
+}
+
+.feature-card--community .feature-card-name {
+  color: #001840;
+}
+
+.feature-card--community .feature-card-description {
+  color: #0a1e50;
+}
+
+.feature-card--community .feature-card-meta {
+  color: #1545a0;
+}
+
+.feature-card-community-icon {
+  font-size: 0.8rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Search section labels in combined search view */
+.picker-search-section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.5);
+  margin: 0.75rem 0 0.35rem;
+}

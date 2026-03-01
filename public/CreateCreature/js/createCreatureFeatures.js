@@ -19,6 +19,13 @@ export function setBrowseCommunityHandler(cb) {
   onBrowseCommunity = typeof cb === 'function' ? cb : () => {};
 }
 
+/** Callback invoked when a community feature like button is clicked. */
+let onLikeCommunityFeature = () => {};
+
+export function setLikeCommunityFeatureHandler(cb) {
+  onLikeCommunityFeature = typeof cb === 'function' ? cb : () => {};
+}
+
 /**
  * Register a callback fired after any feature selection change.
  * @param {(nextIds: string[]) => void} callback - Invoked post-selection toggle; noop if invalid.
@@ -330,51 +337,53 @@ function createBankFeatureCard(bankFeature) {
 }
 
 /**
- * Render the grouped feature cards (actions, modifiers, passives, etc.).
- * Reads featureState.filteredIds/byId to build the UI grid.
+ * Create a community feature card button for the Community tab.
+ * Clicking it calls onAddBankFeature to add it as a custom feature on the creature.
+ * @param {object} feature - Feature object from the community features list.
+ * @returns {HTMLButtonElement}
  */
-function renderFeatureControls() {
-  const { featureControls } = dom;
-  if (!featureControls) return;
-  featureControls.innerHTML = '';
+function createCommunityFeatureCard(feature) {
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'feature-card feature-card--community';
 
-  // My Features bank section (always at the top, bypasses role/type filters)
-  if (Array.isArray(featureState.bankFeatures) && featureState.bankFeatures.length) {
-    const bankWrapper = document.createElement('section');
-    bankWrapper.className = 'feature-group feature-group--bank';
+  const header = document.createElement('div');
+  header.className = 'feature-card-header';
 
-    const bankHeading = document.createElement('h1');
-    bankHeading.className = 'feature-group-title';
-    bankHeading.textContent = '★ My Features';
-    bankWrapper.appendChild(bankHeading);
-    wireToggle(bankWrapper, bankHeading, '__bank__');
+  const nameEl = document.createElement('span');
+  nameEl.className = 'feature-card-name';
+  nameEl.textContent = feature.name || 'Unnamed';
 
-    const bankGrid = document.createElement('div');
-    bankGrid.className = 'feature-group-grid';
-    featureState.bankFeatures.forEach((bankFeature) => {
-      bankGrid.appendChild(createBankFeatureCard(bankFeature));
-    });
+  const communityIcon = document.createElement('span');
+  communityIcon.className = 'feature-card-community-icon';
+  communityIcon.textContent = '🌐';
+  communityIcon.title = 'Community feature';
+  header.append(nameEl, communityIcon);
 
-    bankWrapper.appendChild(bankGrid);
-    featureControls.appendChild(bankWrapper);
-  }
+  const desc = document.createElement('div');
+  desc.className = 'feature-card-description';
+  desc.textContent = getFeatureSummary(feature) || 'No description available.';
 
-  const baseIds = featureState.filteredIds && featureState.filteredIds.length
-    ? featureState.filteredIds
-    : Object.keys(featureState.byId);
+  const metaEl = document.createElement('div');
+  metaEl.className = 'feature-card-meta';
+  metaEl.textContent = `by ${feature.creatorName || 'Unknown'}`;
 
-  const visibleIds = baseIds.filter((id) => {
-    if (featureState.selectedIds.includes(id)) return true;
-    if (featureState.searchTerm) return true;
-    const feature = featureState.byId[id];
-    return featureMatchesCurrentCreature(feature);
+  card.append(header, desc, metaEl);
+
+  card.addEventListener('click', () => {
+    onAddBankFeature(feature);
   });
 
-  if (visibleIds.length === 0) {
-    featureControls.textContent = 'No features available for the current filters.';
-    return;
-  }
+  return card;
+}
 
+/**
+ * Render the library feature groups (actions, modifiers, passives, etc.).
+ * Reads featureState.filteredIds/byId to build the UI grid.
+ * @param {HTMLElement} container - Element to render into.
+ * @param {string[]} visibleIds - Feature ids to render.
+ */
+function renderLibraryFeatures(container, visibleIds) {
   /**
    * Build an interactive feature card button.
    * @param {Record<string, any>} feature - Feature definition from featureState.
@@ -595,7 +604,7 @@ function renderFeatureControls() {
       actionsWrapper.appendChild(sectionWrapper);
     });
 
-    featureControls.appendChild(actionsWrapper);
+    container.appendChild(actionsWrapper);
   }
 
   const typeOrder = ['modifier', 'passive'];
@@ -631,19 +640,195 @@ function renderFeatureControls() {
     });
 
     groupWrapper.appendChild(grid);
-    featureControls.appendChild(groupWrapper);
+    container.appendChild(groupWrapper);
+  });
+}
+
+/**
+ * Render the grouped feature cards (actions, modifiers, passives, etc.).
+ * Reads featureState.filteredIds/byId to build the UI grid.
+ */
+function renderFeatureControls() {
+  const { featureControls } = dom;
+  if (!featureControls) return;
+  featureControls.innerHTML = '';
+
+  const term = featureState.searchTerm;
+
+  // My Features bank section (always at the top, bypasses role/type filters)
+  if (Array.isArray(featureState.bankFeatures) && featureState.bankFeatures.length) {
+    const bankWrapper = document.createElement('section');
+    bankWrapper.className = 'feature-group feature-group--bank';
+
+    const bankHeading = document.createElement('h1');
+    bankHeading.className = 'feature-group-title';
+    bankHeading.textContent = '★ My Features';
+    bankWrapper.appendChild(bankHeading);
+    wireToggle(bankWrapper, bankHeading, '__bank__');
+
+    const bankGrid = document.createElement('div');
+    bankGrid.className = 'feature-group-grid';
+    featureState.bankFeatures.forEach((bankFeature) => {
+      bankGrid.appendChild(createBankFeatureCard(bankFeature));
+    });
+
+    bankWrapper.appendChild(bankGrid);
+    featureControls.appendChild(bankWrapper);
+  }
+
+  // Tab bar
+  const tabBar = document.createElement('div');
+  tabBar.className = 'picker-tabs';
+
+  const libraryTab = document.createElement('button');
+  libraryTab.type = 'button';
+  libraryTab.className = 'picker-tab' + (featureState.activeTab === 'library' ? ' active' : '');
+  libraryTab.textContent = 'Library';
+  libraryTab.addEventListener('click', () => {
+    featureState.activeTab = 'library';
+    renderFeatureControls();
   });
 
-  // Browse Community button at the bottom of the picker
-  const browseBtn = document.createElement('button');
-  browseBtn.type = 'button';
-  browseBtn.id = 'browseCommunityBtn';
-  browseBtn.className = 'browse-community-btn';
-  browseBtn.textContent = '🌐 Browse Community Features';
-  browseBtn.addEventListener('click', () => {
+  const communityTab = document.createElement('button');
+  communityTab.type = 'button';
+  communityTab.className = 'picker-tab' + (featureState.activeTab === 'community' ? ' active' : '');
+  communityTab.textContent = 'Community';
+  communityTab.addEventListener('click', () => {
+    featureState.activeTab = 'community';
     onBrowseCommunity();
+    renderFeatureControls();
   });
-  featureControls.appendChild(browseBtn);
+
+  tabBar.append(libraryTab, communityTab);
+  featureControls.appendChild(tabBar);
+
+  // Combined search view — ignores active tab
+  if (term) {
+    // Library section
+    const libraryLabel = document.createElement('div');
+    libraryLabel.className = 'picker-search-section-label';
+    libraryLabel.textContent = 'Library';
+    featureControls.appendChild(libraryLabel);
+
+    const baseIds = featureState.filteredIds && featureState.filteredIds.length
+      ? featureState.filteredIds
+      : Object.keys(featureState.byId);
+
+    const visibleIds = baseIds.filter((id) => {
+      if (featureState.selectedIds.includes(id)) return true;
+      const feature = featureState.byId[id];
+      return featureMatchesCurrentCreature(feature);
+    });
+
+    if (visibleIds.length > 0) {
+      const libraryContainer = document.createElement('div');
+      renderLibraryFeatures(libraryContainer, visibleIds);
+      featureControls.appendChild(libraryContainer);
+    } else {
+      const noResults = document.createElement('div');
+      noResults.textContent = 'No library features match.';
+      noResults.style.color = 'rgba(255,255,255,0.4)';
+      noResults.style.fontSize = '0.85rem';
+      noResults.style.margin = '0.25rem 0 0.5rem';
+      featureControls.appendChild(noResults);
+    }
+
+    // My Features section in search
+    const bankLabel = document.createElement('div');
+    bankLabel.className = 'picker-search-section-label';
+    bankLabel.textContent = 'My Features';
+    featureControls.appendChild(bankLabel);
+
+    const matchedBank = (featureState.bankFeatures || []).filter((f) => {
+      const name = (f.name || '').toLowerCase();
+      const summary = getFeatureSummary(f).toLowerCase();
+      return name.includes(term) || summary.includes(term);
+    });
+
+    if (matchedBank.length > 0) {
+      const bankGrid = document.createElement('div');
+      bankGrid.className = 'feature-group-grid';
+      matchedBank.forEach((f) => bankGrid.appendChild(createBankFeatureCard(f)));
+      featureControls.appendChild(bankGrid);
+    } else {
+      const noBank = document.createElement('div');
+      noBank.textContent = 'No bank features match.';
+      noBank.style.color = 'rgba(255,255,255,0.4)';
+      noBank.style.fontSize = '0.85rem';
+      noBank.style.margin = '0.25rem 0 0.5rem';
+      featureControls.appendChild(noBank);
+    }
+
+    // Community section in search
+    const communityLabel = document.createElement('div');
+    communityLabel.className = 'picker-search-section-label';
+    communityLabel.textContent = 'Community';
+    featureControls.appendChild(communityLabel);
+
+    const matchedCommunity = (featureState.communityFeatures || []).filter((f) => {
+      const name = (f.name || '').toLowerCase();
+      const summary = getFeatureSummary(f).toLowerCase();
+      return name.includes(term) || summary.includes(term);
+    });
+
+    if (matchedCommunity.length > 0) {
+      const communityGrid = document.createElement('div');
+      communityGrid.className = 'feature-group-grid';
+      matchedCommunity.forEach((f) => communityGrid.appendChild(createCommunityFeatureCard(f)));
+      featureControls.appendChild(communityGrid);
+    } else {
+      const noCommunity = document.createElement('div');
+      noCommunity.textContent = 'No community features match.';
+      noCommunity.style.color = 'rgba(255,255,255,0.4)';
+      noCommunity.style.fontSize = '0.85rem';
+      noCommunity.style.margin = '0.25rem 0 0.5rem';
+      featureControls.appendChild(noCommunity);
+    }
+
+    return;
+  }
+
+  // No search term — show active tab content
+  if (featureState.activeTab === 'library') {
+    const baseIds = featureState.filteredIds && featureState.filteredIds.length
+      ? featureState.filteredIds
+      : Object.keys(featureState.byId);
+
+    const visibleIds = baseIds.filter((id) => {
+      if (featureState.selectedIds.includes(id)) return true;
+      const feature = featureState.byId[id];
+      return featureMatchesCurrentCreature(feature);
+    });
+
+    if (visibleIds.length === 0) {
+      const noFeatures = document.createElement('div');
+      noFeatures.textContent = 'No features available for the current filters.';
+      featureControls.appendChild(noFeatures);
+      return;
+    }
+
+    renderLibraryFeatures(featureControls, visibleIds);
+  } else {
+    // Community tab
+    if (!featureState.communityFeaturesLoaded) {
+      const loadingEl = document.createElement('div');
+      loadingEl.className = 'community-loading';
+      loadingEl.textContent = 'Loading community features\u2026';
+      featureControls.appendChild(loadingEl);
+    } else if (!featureState.communityFeatures.length) {
+      const emptyEl = document.createElement('div');
+      emptyEl.className = 'community-empty';
+      emptyEl.textContent = 'No community features yet. Be the first!';
+      featureControls.appendChild(emptyEl);
+    } else {
+      const communityGrid = document.createElement('div');
+      communityGrid.className = 'feature-group-grid';
+      featureState.communityFeatures.forEach((feature) => {
+        communityGrid.appendChild(createCommunityFeatureCard(feature));
+      });
+      featureControls.appendChild(communityGrid);
+    }
+  }
 }
 
 /**
@@ -719,13 +904,19 @@ function applyFeatureSearch(rawTerm) {
 }
 
 /**
- * Append a new custom feature to the creature.
+ * Upsert a custom feature on the creature. If a feature with the same id already
+ * exists it is replaced in place; otherwise it is appended.
  * @param {object} feature - Full feature object with id, name, type, effects, isCustom.
  */
 function addCustomFeature(feature) {
   if (!feature || !feature.id) return;
   if (!Array.isArray(creature.customFeatures)) creature.customFeatures = [];
-  creature.customFeatures.push(feature);
+  const existingIndex = creature.customFeatures.findIndex((f) => f.id === feature.id);
+  if (existingIndex !== -1) {
+    creature.customFeatures[existingIndex] = feature;
+  } else {
+    creature.customFeatures.push(feature);
+  }
 }
 
 /**

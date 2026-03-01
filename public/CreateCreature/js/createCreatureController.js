@@ -26,6 +26,7 @@ import {
   getPendingLoadedCreature,
   setPendingLoadedCreature,
   setBankFeatures,
+  setCommunityFeatures,
 } from './createCreatureState.js';
 import {
   setupTraitPickers,
@@ -55,8 +56,9 @@ import {
   removeCustomFeature,
   setAddBankFeatureHandler,
   setBrowseCommunityHandler,
+  setLikeCommunityFeatureHandler,
 } from './createCreatureFeatures.js';
-import { saveToBank, loadUserBank, publishFeature, renderCommunityBrowser, toggleFeatureLike, addToBank } from './featureBank.js';
+import { saveToBank, loadUserBank, publishFeature, loadCommunityFeatures, toggleFeatureLike } from './featureBank.js';
 import {
   openCustomFeatureBuilder,
   setCustomFeatureSaveHandler,
@@ -1048,30 +1050,50 @@ function initializeEventHandlers() {
   });
 
   // Add bank feature to creature handler
-  setAddBankFeatureHandler((bankFeature) => {
-    // Create a new instance (new UUID) from the bank template.
-    // sourceFeatureId tracks provenance: for community-sourced features it's already set;
-    // for self-authored bank features fall back to the bank entry's own id.
+  setAddBankFeatureHandler((feature) => {
+    // Owned features reuse their ID so they don't proliferate duplicates;
+    // non-owned (community/liked) always get a fresh UUID.
+    const id = feature.isOwned ? feature.id : `custom-${crypto.randomUUID()}`;
     const copy = {
-      ...bankFeature,
-      id: `custom-${crypto.randomUUID()}`,
+      ...feature,
+      id,
       isCustom: true,
-      sourceFeatureId: bankFeature.sourceFeatureId ?? bankFeature.id,
+      sourceFeatureId: feature.sourceFeatureId ?? feature.id,
     };
     addCustomFeature(copy);
-    openCustomFeatureBuilder({}, copy);
+    updateStatblock();
   });
 
-  // Browse community handler
-  setBrowseCommunityHandler(() => {
-    openCommunityPanel();
+  // Browse community handler — lazily load community features
+  setBrowseCommunityHandler(async () => {
+    if (featureState.communityFeaturesLoaded) return;
+    try {
+      const features = await loadCommunityFeatures();
+      setCommunityFeatures(features);
+    } catch (err) {
+      console.error('Failed to load community features', err);
+    }
+    renderFeatureControls();
   });
 
-  // Community browse panel close button
-  const communityCloseBtn = document.getElementById('communityBrowseCloseBtn');
-  if (communityCloseBtn) {
-    communityCloseBtn.addEventListener('click', closeCommunityPanel);
-  }
+  // Like community feature handler
+  setLikeCommunityFeatureHandler(async (feature) => {
+    const user = getCurrentUser();
+    if (!user) {
+      setSaveStatus('Sign in to like community features.', 'info', { sticky: false });
+      return;
+    }
+    try {
+      const result = await toggleFeatureLike(feature, user);
+      if (result.liked) {
+        const bankFeatures = await loadUserBank(user.uid);
+        setBankFeatures(bankFeatures);
+      }
+      renderFeatureControls();
+    } catch (err) {
+      console.error('Failed to toggle like', err);
+    }
+  });
 
   // Publish handler wired on the custom feature builder's Publish button
   const publishBtn = document.getElementById('cfpPublishBtn');
@@ -1171,59 +1193,6 @@ function initializePendingLoad(requestedCreatureId) {
   if (requestedCreatureId) {
     loadCreatureById(requestedCreatureId).catch(() => {});
   }
-}
-
-// ---------------------------------------------------------------------------
-// Community browse panel
-// ---------------------------------------------------------------------------
-
-let communityPanelEl = null;
-
-function getCommunityPanel() {
-  if (!communityPanelEl) communityPanelEl = document.getElementById('communityBrowsePanel');
-  return communityPanelEl;
-}
-
-function closeCommunityPanel() {
-  const panel = getCommunityPanel();
-  if (!panel) return;
-  panel.classList.remove('is-open');
-  setTimeout(() => {
-    if (!panel.classList.contains('is-open')) panel.setAttribute('hidden', '');
-  }, 300);
-}
-
-async function openCommunityPanel() {
-  const panel = getCommunityPanel();
-  if (!panel) return;
-  panel.removeAttribute('hidden');
-  panel.classList.add('is-open');
-
-  const body = panel.querySelector('#communityBrowseBody');
-  if (!body) return;
-
-  await renderCommunityBrowser(body, getCurrentUser(), {
-    onLike: async (feature) => {
-      const user = getCurrentUser();
-      if (!user) return;
-      const result = await toggleFeatureLike(feature, user);
-      // Refresh bank in case it was added
-      if (result.liked) {
-        const bankFeatures = await loadUserBank(user.uid);
-        setBankFeatures(bankFeatures);
-        if (isFeaturesLoaded()) renderFeatureControls();
-      }
-      return result;
-    },
-    onAddToBank: async (feature) => {
-      const user = getCurrentUser();
-      if (!user) return;
-      await addToBank(feature, user);
-      const bankFeatures = await loadUserBank(user.uid);
-      setBankFeatures(bankFeatures);
-      if (isFeaturesLoaded()) renderFeatureControls();
-    },
-  });
 }
 
 // Entry point – wire everything up once per page load.
