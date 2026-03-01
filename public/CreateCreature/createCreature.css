@@ -1697,6 +1697,17 @@ body{
   background: rgba(255,248,210,1);
 }
 
+/* Dark text overrides — bank cards have a light background, not the dark theme default */
+.feature-card--bank .feature-card-name {
+  color: #2a1a00;
+}
+.feature-card--bank .feature-card-description {
+  color: #4a3010;
+}
+.feature-card--bank .feature-card-meta {
+  color: #7a5c00;
+}
+
 .feature-card-bank-icon {
   color: #c09010;
   font-size: 0.8rem;

@@ -12,18 +12,6 @@ const DAMAGE_TYPES = [
   'Poison', 'Psychic', 'Radiant', 'Umbral',
 ];
 
-const ACTION_TYPES = [
-  'Melee Martial Attack',
-  'Ranged Martial Attack',
-  'Area Martial Attack',
-  'Melee Spell Attack',
-  'Ranged Spell Attack',
-  'Area Spell Attack',
-  'Martial Utility',
-  'Spell Utility',
-  'Martial Check',
-  'Spell Check',
-];
 
 const SAVE_ATTRIBUTES = ['Mig', 'Agi', 'Cha', 'Int', 'Physical', 'Mental'];
 
@@ -285,8 +273,11 @@ function renderModifierForm(container, existing) {
 
 function renderActionForm(container, existing, isReactionHint) {
   const ef = existing?.effects ?? {};
-  const actionType = ef.actionType ?? existing?.actionType ?? ACTION_TYPES[0];
-  const isAttack = String(actionType).toLowerCase().includes('attack');
+  // Derive existing kind (Martial vs Spell) from stored actionType for backward compat
+  const existingActionType = ef.actionType ?? existing?.actionType ?? '';
+  const existingKind = existingActionType.toLowerCase().includes('spell') ? 'Spell' : 'Martial';
+  // isAttack: true when a defense was previously targeted (not "none" / empty)
+  const isAttack = Boolean(ef.targetDefense && ef.targetDefense !== 'none');
 
   addTextInput(container, 'cfpName', 'Name', existing?.name ?? '');
 
@@ -312,23 +303,26 @@ function renderActionForm(container, existing, isReactionHint) {
   addCheckbox(legendaryRow, 'cfpIsApex', 'Apex Action', Boolean(existing?.isApexAction || ef.isApexAction));
   container.appendChild(legendaryRow);
 
-  // Action type dropdown
-  const typeGroup = makeElement('div', 'cfp-field-group');
-  const typeLabel = makeElement('label', 'cfp-label', 'Action type');
-  typeLabel.setAttribute('for', 'cfpActionType');
-  const typeSelect = makeElement('select');
-  typeSelect.id = 'cfpActionType';
-  typeSelect.className = 'cfp-select';
-  ACTION_TYPES.forEach((at) => {
-    const opt = makeElement('option');
-    opt.value = at;
-    opt.textContent = at;
-    if (at === actionType) opt.selected = true;
-    typeSelect.appendChild(opt);
+  // Martial / Spell radio — action type is derived from this + target defense on save
+  const kindGroup = makeElement('div', 'cfp-field-group');
+  const kindLabel = makeElement('span', 'cfp-label', 'Action kind:');
+  kindGroup.appendChild(kindLabel);
+  const kindRow = makeElement('div', 'cfp-radio-row');
+  [['Martial', 'Martial'], ['Spell', 'Spell']].forEach(([v, label]) => {
+    const kindRadioId = `cfpKind-${v}`;
+    const r = makeElement('input');
+    r.type = 'radio';
+    r.name = 'cfpActionKind';
+    r.id = kindRadioId;
+    r.value = v;
+    r.checked = v === existingKind;
+    const lbl = makeElement('label', '', label);
+    lbl.setAttribute('for', kindRadioId);
+    kindRow.appendChild(r);
+    kindRow.appendChild(lbl);
   });
-  typeGroup.appendChild(typeLabel);
-  typeGroup.appendChild(typeSelect);
-  container.appendChild(typeGroup);
+  kindGroup.appendChild(kindRow);
+  container.appendChild(kindGroup);
 
   // AP cost
   addNumberInput(container, 'cfpCost', 'AP Cost', typeof ef.cost === 'number' ? ef.cost : 1, { min: 0, max: 10 });
@@ -636,12 +630,14 @@ function readFormData(body) {
 
   // action
   const isReaction = checked('cfpIsReaction');
-  const actionType = val('cfpActionType');
+  // Derive actionType from kind (Martial/Spell) + whether a defense is targeted
+  const actionKind = radio('cfpActionKind') || 'Martial';
+  const targetDefense = radio('cfpTargetDefense');
+  const actionType = targetDefense !== 'none' ? `${actionKind} Attack` : `${actionKind} Utility`;
   const cost = num('cfpCost');
   const target = val('cfpTarget');
   const range = val('cfpRange');
   const actionDescription = val('cfpActionDescription');
-  const targetDefense = radio('cfpTargetDefense');
 
   // Damage segments
   const damageSegments = [];

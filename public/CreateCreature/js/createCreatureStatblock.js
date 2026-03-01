@@ -453,10 +453,12 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
   appendText(attackLine, '.');
 
   const segments = Array.isArray(action.damage) ? action.damage : [];
-  if (segments.length) {
+  if (segments.length && action.targetDefense) {
+    // Only show damage for attacks that target a defense (PD or AD).
+    // Heavy hit bonus applies to targeted (PD) attacks, not area (AD) attacks.
     const showHeavyHitBonus =
       actionTypeLabel.includes('attack') &&
-      (actionTypeLabel.includes('melee') || actionTypeLabel.includes('ranged')) &&
+      action.targetDefense === 'PD' &&
       hasHalfDamage(segments, baseDamage);
     appendText(attackLine, ' ');
     segments.forEach((segment, index) => {
