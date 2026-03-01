@@ -273,12 +273,12 @@
     "effects": {
       "cost": 2,
       "targetDefense": "AD",
-      "target": "a 1 Space Sphere",
+      "target": "a 2 Space Sphere",
       "range": "10 Spaces",
       "damageSegments": [
         {
           "useBase": true,
-          "modifier": -2,
+          "modifier": -1,
           "type": "Umbral"
         },
         {
@@ -492,13 +492,13 @@
     "effects": {
       "cost": 2,
       "actionDescription": "You weave the arcane into a solid force that pushes the target 1 Space in any horizontal direction.",
-      "target": "One or more creatures",
-      "range": "10 Spaces",
+      "target": "a 5 Space Cone",
+      "range": "1 Space",
       "check": {
         "dc": 10,
-        "failure": "Target 1 creature.",
-        "success": "Target 2 creatures.",
-        "successEach5": "Target +1 creature."
+        "failure": "Push creatures 1 Space.",
+        "success": "Push creatures 3 Spaces.",
+        "successEach5": "+1 Space."
       }
     },
     "tags": [
@@ -2895,7 +2895,7 @@
     "effects": {
       "cost": 2,
       "targetDefense": "AD",
-      "target": "a 1 Space Sphere",
+      "target": "a 2 Space Sphere",
       "range": "1 Space",
       "actionDescription": "You bring your massive foot down with earth-shaking force.",
       "damageSegments": [
@@ -5015,7 +5015,7 @@
     "effects": {
       "cost": 2,
       "targetDefense": "AD",
-      "target": "a 2 Space Cone",
+      "target": "a 3 Space Cone",
       "range": "Self",
       "actionDescription": "You surge forward and project a mass of caustic material across a wide area.",
       "damageSegments": [
@@ -5539,7 +5539,7 @@
     "reactionTrigger": "When a creature deals damage to you",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
+      "targetDefense": "PD",
       "target": "the triggering creature",
       "range": "5 Spaces",
       "actionDescription": "You channel your frustration into a burst of arcane power directed at your attacker.",
@@ -6229,7 +6229,7 @@
     "effects": {
       "cost": 2,
       "targetDefense": "AD",
-      "target": "a 2 Space Cone",
+      "target": "a 3 Space Cone",
       "range": "Self",
       "actionDescription": "You expel a wave of concentrated magical toxin, bypassing magical shielding.",
       "damageSegments": [

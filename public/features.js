@@ -55,8 +55,9 @@ function getActionDescription(feature) {
   return typeof description === 'string' ? description.trim() : '';
 }
 
-export function applyFeatureEffects(creature, features) {
-  if (!features || features.length === 0) {
+export function applyFeatureEffects(creature, features, customFeatures = []) {
+  const allFeatures = [...(features || []), ...(customFeatures || [])];
+  if (!allFeatures.length) {
     creature.featureActions = [];
     creature.featureReactions = [];
     creature.featurePassives = [];
@@ -78,7 +79,7 @@ export function applyFeatureEffects(creature, features) {
   const actionFeatures = [];
   const passives = [];
 
-  features.forEach((feature) => {
+  allFeatures.forEach((feature) => {
     if (!feature) return;
     const { effects } = feature;
     const type = normalizeFeatureType(feature.type);
@@ -86,6 +87,8 @@ export function applyFeatureEffects(creature, features) {
 
     if (type === FEATURE_TYPES.MODIFIER) {
       applyModifier(modifiers, effects);
+      // Custom modifiers also appear in the Features section so they can be edited/removed.
+      if (feature.isCustom) passives.push(feature);
     } else if (type === FEATURE_TYPES.ACTION) {
       actionFeatures.push(feature);
     } else if (type === FEATURE_TYPES.PASSIVE) {
@@ -212,6 +215,7 @@ function buildAction(creature, feature) {
 
   return {
     id: feature.id,
+    isCustom: Boolean(feature.isCustom),
     name: feature.name || feature.id || 'Unnamed Action',
     description: getActionDescription(feature),
     cost: typeof effects.cost === 'number' ? effects.cost : Number(effects.cost) || 0,

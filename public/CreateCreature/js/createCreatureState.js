@@ -26,6 +26,7 @@ const creature = {
   featurePassives: [],
   skills: [],
   selectedFeatures: [],
+  customFeatures: [],
   deltas: {},
   shortDescription: '',
   longDescription: '',

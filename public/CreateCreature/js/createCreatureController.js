@@ -41,7 +41,7 @@ import {
   arraysEqual,
   ATTRIBUTE_KEYS,
 } from './createCreatureStats.js';
-import { renderCreatureStatblock, setFeatureReorderHandler, setFeatureRemoveHandler, initStatblockSectionToggles } from './createCreatureStatblock.js';
+import { renderCreatureStatblock, setFeatureReorderHandler, setFeatureRemoveHandler, initStatblockSectionToggles, setCustomFeatureEditHandler, setCustomFeatureAddHandler } from './createCreatureStatblock.js';
 import {
   renderFeatureControls,
   ensureSelectedFeatureDependencies,
@@ -49,7 +49,16 @@ import {
   setFeatureSelectionChangeHandler,
   refreshFeatureFiltersForCurrentCreature,
   toggleFeatureSelection,
+  addCustomFeature,
+  updateCustomFeature,
+  removeCustomFeature,
 } from './createCreatureFeatures.js';
+import {
+  openCustomFeatureBuilder,
+  setCustomFeatureSaveHandler,
+  setCustomFeatureCancelHandler,
+  setCustomFeatureLivePreviewHandler,
+} from './customFeatureBuilder.js';
 import { fetchCreatureDocument, saveCreatureDocument } from './createCreatureFirebase.js';
 import { generateObsidianYAML, generateFoundryJSON, generateNotionMarkdown } from './createCreatureExport.js';
 
@@ -222,6 +231,7 @@ function resetBuilderToDefaults() {
     featurePassives: [],
     skills: [],
     selectedFeatures: [],
+    customFeatures: [],
     deltas: {},
     shortDescription: '',
     longDescription: '',
@@ -404,6 +414,9 @@ function buildCreatureSavePayload() {
     featureReactions,
     featurePassives,
     selectedFeatures: [...creature.selectedFeatures],
+    customFeatures: Array.isArray(creature.customFeatures)
+      ? creature.customFeatures.map((f) => ({ ...f }))
+      : [],
     deltas: deltasSnapshot,
     base: baseProfile,
     baseline: baselineSnapshot,
@@ -500,6 +513,11 @@ function applyDraftToBuilder(draft) {
   }
 
   creature.deltas = mergedDeltas;
+
+  // Restore custom features if present in draft
+  if (Array.isArray(draft.customFeatures)) {
+    creature.customFeatures = draft.customFeatures.map((f) => ({ ...f }));
+  }
 }
 
 // Ensure trait arrays are well-formed even if the source data is missing.
@@ -530,6 +548,7 @@ function applySavedCreatureToBuilder(saved) {
   applyDraftToBuilder(saved);
   creature.totalLikes = typeof saved.totalLikes === 'number' ? saved.totalLikes : 0;
   creature.lastLikeAt = saved.lastLikeAt ?? null;
+  creature.customFeatures = Array.isArray(saved.customFeatures) ? saved.customFeatures.map((f) => ({ ...f })) : [];
 
   const traits = saved.traits && typeof saved.traits === 'object' ? saved.traits : {};
   creature.resistances = sanitizeTraitGroup(traits.resistances);
@@ -749,7 +768,8 @@ function recomputeCreatureFromInputs() {
     .filter(Boolean);
 
   creature.selectedFeatures = [...featureState.selectedIds];
-  applyFeatureEffects(creature, selectedFeatures);
+  const customFeatures = Array.isArray(creature.customFeatures) ? creature.customFeatures : [];
+  applyFeatureEffects(creature, selectedFeatures, customFeatures);
 
   // Capture which traits came purely from features (before merging user picks).
   const featureGrantedTraits = {
@@ -943,8 +963,49 @@ function initializeEventHandlers() {
   });
 
   setFeatureRemoveHandler((featureId) => {
-    toggleFeatureSelection(featureId, false);
-    renderFeatureControls();
+    // Check if this is a custom feature first
+    if (Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === featureId)) {
+      removeCustomFeature(featureId);
+      updateStatblock();
+    } else {
+      toggleFeatureSelection(featureId, false);
+      renderFeatureControls();
+    }
+  });
+
+  // Custom feature builder wiring
+  setCustomFeatureAddHandler((hint) => {
+    openCustomFeatureBuilder(hint, null);
+  });
+
+  setCustomFeatureEditHandler((feature) => {
+    openCustomFeatureBuilder({}, feature);
+  });
+
+  setCustomFeatureSaveHandler((feature, oldId) => {
+    if (oldId) {
+      updateCustomFeature(oldId, feature);
+    } else {
+      addCustomFeature(feature);
+    }
+    updateStatblock();
+  });
+
+  setCustomFeatureCancelHandler(() => {
+    // Live preview cleanup: re-render without any draft
+    updateStatblock();
+  });
+
+  setCustomFeatureLivePreviewHandler((draftFeature) => {
+    if (!draftFeature || !draftFeature.name) return;
+    // Temporarily inject the draft into customFeatures so updateStatblock() picks it up.
+    const draftId = draftFeature.id || '__draft__';
+    const draftWithId = { ...draftFeature, id: draftId, isCustom: true };
+    const savedCustomFeatures = Array.isArray(creature.customFeatures) ? [...creature.customFeatures] : [];
+    creature.customFeatures = [...savedCustomFeatures.filter((f) => f.id !== draftId), draftWithId];
+    updateStatblock();
+    // Restore original customFeatures (updateStatblock doesn't modify this array)
+    creature.customFeatures = savedCustomFeatures;
   });
 
   initStatblockSectionToggles();

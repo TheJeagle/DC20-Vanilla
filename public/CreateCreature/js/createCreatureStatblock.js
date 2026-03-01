@@ -15,6 +15,18 @@ export function setFeatureRemoveHandler(cb) {
   onFeatureRemove = typeof cb === 'function' ? cb : () => {};
 }
 
+/** Called when a custom feature's ✏ edit button is clicked. Receives the feature object. */
+let onCustomFeatureEdit = () => {};
+export function setCustomFeatureEditHandler(cb) {
+  onCustomFeatureEdit = typeof cb === 'function' ? cb : () => {};
+}
+
+/** Called when a "+" add button is clicked on a statblock section. Receives a type hint object. */
+let onCustomFeatureAdd = () => {};
+export function setCustomFeatureAddHandler(cb) {
+  onCustomFeatureAdd = typeof cb === 'function' ? cb : () => {};
+}
+
 export function initStatblockSectionToggles() {
   const featureSection = dom.statblockFeatures?.closest('.statblock-feature-section');
   const featureHeading = featureSection?.querySelector('.statblock-feature-heading');
@@ -185,12 +197,40 @@ function renderSkillList(container, values) {
   });
 }
 
+function makeAddButton(hintType, hintReaction = false) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'statblock-add-custom-btn';
+  btn.title = 'Add custom feature';
+  btn.textContent = '+';
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Don't collapse the section
+    onCustomFeatureAdd({ type: hintType, isReaction: hintReaction });
+  });
+  return btn;
+}
+
 function renderFeatureSummary() {
   const { statblockFeatures } = dom;
   if (!statblockFeatures) return;
 
   statblockFeatures.innerHTML = '';
   const section = statblockFeatures.closest('.statblock-feature-section');
+
+  // Wire "+" button into section heading
+  const heading = section?.querySelector('.statblock-feature-heading');
+  if (heading) {
+    // Wrap heading text + "+" into a flex row (only once)
+    if (!heading.classList.contains('statblock-section-header')) {
+      heading.classList.add('statblock-section-header');
+      const text = heading.textContent;
+      heading.textContent = '';
+      const textSpan = document.createElement('span');
+      textSpan.textContent = text;
+      heading.appendChild(textSpan);
+      heading.appendChild(makeAddButton('passive'));
+    }
+  }
 
   const uniqueFeatures = new Map();
 
@@ -211,39 +251,70 @@ function renderFeatureSummary() {
 
   const items = Array.from(uniqueFeatures.values());
 
-  if (!items.length) {
-    if (section) section.style.display = 'none';
-    return;
-  }
-
+  // Always show the features section so the "+" add button is discoverable.
   if (section) section.style.display = '';
   items.forEach((feature) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'statblock-feature-item';
     wrapper.dataset.featureId = feature.id;
-    attachDragHandlers(wrapper, feature.id);
 
-    const handle = document.createElement('div');
-    handle.className = 'drag-handle';
-    handle.textContent = '⠿';
+    const isCustom = Boolean(feature.isCustom);
 
-    const name = document.createElement('div');
-    name.className = 'feature-name';
-    name.textContent = feature.name;
+    if (isCustom) {
+      // Custom features: edit + remove buttons, no drag handle
+      const nameRow = document.createElement('div');
+      nameRow.className = 'feature-name';
+      nameRow.textContent = feature.name;
+      const badge = document.createElement('span');
+      badge.className = 'custom-feature-badge';
+      badge.textContent = 'custom';
+      nameRow.appendChild(badge);
 
-    const description = document.createElement('div');
-    description.className = 'feature-description';
-    const summary = getFeatureSummary(feature);
-    description.textContent = summary || 'No description provided.';
+      const description = document.createElement('div');
+      description.className = 'feature-description';
+      description.textContent = getFeatureSummary(feature) || 'No description provided.';
 
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'statblock-remove-btn';
-    removeBtn.title = 'Remove feature';
-    removeBtn.textContent = '×';
-    removeBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(feature.id); });
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'statblock-edit-btn';
+      editBtn.title = 'Edit custom feature';
+      editBtn.textContent = '✏';
+      editBtn.addEventListener('click', (e) => { e.stopPropagation(); onCustomFeatureEdit(feature); });
 
-    wrapper.append(handle, name, description, removeBtn);
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'statblock-remove-btn';
+      removeBtn.title = 'Remove feature';
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(feature.id); });
+
+      wrapper.append(nameRow, description, editBtn, removeBtn);
+    } else {
+      // Library features: drag handle + remove button
+      attachDragHandlers(wrapper, feature.id);
+
+      const handle = document.createElement('div');
+      handle.className = 'drag-handle';
+      handle.textContent = '⠿';
+
+      const name = document.createElement('div');
+      name.className = 'feature-name';
+      name.textContent = feature.name;
+
+      const description = document.createElement('div');
+      description.className = 'feature-description';
+      description.textContent = getFeatureSummary(feature) || 'No description provided.';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'statblock-remove-btn';
+      removeBtn.title = 'Remove feature';
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(feature.id); });
+
+      wrapper.append(handle, name, description, removeBtn);
+    }
+
     statblockFeatures.appendChild(wrapper);
   });
 }
@@ -264,21 +335,31 @@ function createActionBadges(action) {
   return row;
 }
 
-function createActionCardElement(action, { showTrigger = false, baseDamage = 0 } = {}) {
+function createActionCardElement(action, { showTrigger = false, baseDamage = 0, customFeaturesById = {} } = {}) {
   const wrapper = document.createElement('div');
   wrapper.className = 'statblock-action-item';
   wrapper.dataset.featureId = action.id;
-  attachDragHandlers(wrapper, action.id);
+
+  const isCustom = Boolean(action.isCustom);
+  if (!isCustom) {
+    attachDragHandlers(wrapper, action.id);
+  }
 
   const handle = document.createElement('div');
   handle.className = 'drag-handle';
   handle.textContent = '⠿';
-  wrapper.appendChild(handle);
+  if (!isCustom) wrapper.appendChild(handle);
 
   const header = document.createElement('div');
   header.className = 'action-header';
   const title = document.createElement('strong');
   appendField(title, action.name, 'name');
+  if (isCustom) {
+    const badge = document.createElement('span');
+    badge.className = 'custom-feature-badge';
+    badge.textContent = 'custom';
+    title.appendChild(badge);
+  }
   appendText(title, ' (');
   appendField(title, action.cost ?? 0, 'cost');
   appendText(title, ' AP):');
@@ -304,6 +385,19 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0 }
       description.className = 'action-description';
       description.textContent = action.description;
       wrapper.appendChild(description);
+    }
+    if (isCustom) {
+      const utilEditBtn = document.createElement('button');
+      utilEditBtn.type = 'button';
+      utilEditBtn.className = 'statblock-edit-btn';
+      utilEditBtn.title = 'Edit custom feature';
+      utilEditBtn.textContent = '✏';
+      utilEditBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const orig = (creature.customFeatures || []).find((f) => f.id === action.id);
+        onCustomFeatureEdit(orig || action);
+      });
+      wrapper.appendChild(utilEditBtn);
     }
     const utilRemoveBtn = document.createElement('button');
     utilRemoveBtn.type = 'button';
@@ -448,6 +542,20 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0 }
 
   wrapper.appendChild(summary);
 
+  if (isCustom) {
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'statblock-edit-btn';
+    editBtn.title = 'Edit custom feature';
+    editBtn.textContent = '✏';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const orig = (creature.customFeatures || []).find((f) => f.id === action.id);
+      onCustomFeatureEdit(orig || action);
+    });
+    wrapper.appendChild(editBtn);
+  }
+
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'statblock-remove-btn';
@@ -487,7 +595,16 @@ function renderActionSummary() {
   if (!statblockActionsHeading || !statblockActionsInfo || !statblockActionsList) return;
 
   const ap = Number.isFinite(creature.AP) ? toDisplayInteger(creature.AP) : 0;
-  statblockActionsHeading.textContent = `Actions (${ap})`;
+
+  // Build "Actions (N) +" header
+  if (!statblockActionsHeading.classList.contains('statblock-section-header')) {
+    statblockActionsHeading.classList.add('statblock-section-header');
+  }
+  statblockActionsHeading.innerHTML = '';
+  const actionsTextSpan = document.createElement('span');
+  actionsTextSpan.textContent = `Actions (${ap})`;
+  statblockActionsHeading.appendChild(actionsTextSpan);
+  statblockActionsHeading.appendChild(makeAddButton('action', false));
 
   const baseDamage = Number.isFinite(creature.damage)
     ? creature.damage
@@ -516,17 +633,26 @@ function renderActionSummary() {
 
   if (statblockReactionsSection && statblockReactionsList) {
     const reactions = Array.isArray(creature.featureReactions) ? creature.featureReactions : [];
-    if (!reactions.length) {
-      statblockReactionsSection.style.display = 'none';
-      statblockReactionsList.innerHTML = '';
-    } else {
-      statblockReactionsSection.style.display = '';
-      renderActionList(statblockReactionsList, reactions, {
-        emptyMessage: 'No reactions available.',
-        showTrigger: true,
-        baseDamage,
-      });
+
+    // Add "+" button to Reactions heading
+    const reactionsHeading = statblockReactionsSection.querySelector('.statblock-actions-heading');
+    if (reactionsHeading && !reactionsHeading.classList.contains('statblock-section-header')) {
+      reactionsHeading.classList.add('statblock-section-header');
+      const origText = reactionsHeading.textContent;
+      reactionsHeading.textContent = '';
+      const rTextSpan = document.createElement('span');
+      rTextSpan.textContent = origText;
+      reactionsHeading.appendChild(rTextSpan);
+      reactionsHeading.appendChild(makeAddButton('action', true));
     }
+
+    // Always show the reactions section so users can see the "+" button to add a custom reaction.
+    statblockReactionsSection.style.display = '';
+    renderActionList(statblockReactionsList, reactions, {
+      emptyMessage: 'No reactions — use + to add one.',
+      showTrigger: true,
+      baseDamage,
+    });
   }
 }
 
@@ -830,4 +956,4 @@ function renderCreatureStatblock() {
   renderRecommendations();
 }
 
-export { renderCreatureStatblock };
+export { renderCreatureStatblock, setCustomFeatureEditHandler, setCustomFeatureAddHandler };

@@ -631,6 +631,39 @@ function applyFeatureSearch(rawTerm) {
   renderFeatureControls();
 }
 
+/**
+ * Append a new custom feature to the creature.
+ * @param {object} feature - Full feature object with id, name, type, effects, isCustom.
+ */
+function addCustomFeature(feature) {
+  if (!feature || !feature.id) return;
+  if (!Array.isArray(creature.customFeatures)) creature.customFeatures = [];
+  creature.customFeatures.push(feature);
+}
+
+/**
+ * Replace an existing custom feature by id.
+ * @param {string} id - Feature id to replace.
+ * @param {object} feature - Updated feature object.
+ */
+function updateCustomFeature(id, feature) {
+  if (!id || !feature) return;
+  if (!Array.isArray(creature.customFeatures)) { creature.customFeatures = []; return; }
+  const index = creature.customFeatures.findIndex((f) => f.id === id);
+  if (index !== -1) {
+    creature.customFeatures[index] = { ...feature, id };
+  }
+}
+
+/**
+ * Remove a custom feature by id.
+ * @param {string} id - Feature id to remove.
+ */
+function removeCustomFeature(id) {
+  if (!id || !Array.isArray(creature.customFeatures)) return;
+  creature.customFeatures = creature.customFeatures.filter((f) => f.id !== id);
+}
+
 export {
   applyFeatureSearch,
   ensureSelectedFeatureDependencies,
@@ -638,4 +671,7 @@ export {
   setFeatureSelectionChangeHandler,
   refreshFeatureFiltersForCurrentCreature,
   toggleFeatureSelection,
+  addCustomFeature,
+  updateCustomFeature,
+  removeCustomFeature,
 };
