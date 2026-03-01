@@ -956,4 +956,4 @@ function renderCreatureStatblock() {
   renderRecommendations();
 }
 
-export { renderCreatureStatblock, setCustomFeatureEditHandler, setCustomFeatureAddHandler };
+export { renderCreatureStatblock };
