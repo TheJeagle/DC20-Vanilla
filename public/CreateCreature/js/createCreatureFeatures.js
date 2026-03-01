@@ -761,6 +761,4 @@ export {
   addCustomFeature,
   updateCustomFeature,
   removeCustomFeature,
-  setAddBankFeatureHandler,
-  setBrowseCommunityHandler,
 };
