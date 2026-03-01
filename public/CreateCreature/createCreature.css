@@ -1707,15 +1707,12 @@ body{
 }
 
 .feature-card--bank:hover {
-  border-color: rgba(180,140,20,0.6);
-  background: rgba(180,140,20,0.08);
+  border-color: rgba(180,140,20,0.7);
 }
 
 .feature-card--bank:active {
   transform: translateY(0);
   box-shadow: none;
-  background: rgba(180,140,20,0.12);
-  border-color: rgba(180,140,20,0.8);
 }
 
 .feature-card-bank-icon {
@@ -1899,8 +1896,8 @@ body{
   padding: 8px 10px;
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 0.5rem;
-  background: rgba(255,255,255,0.07);
-  color: rgba(255,255,255,0.7);
+  background: #141419;
+  color: #e9e9f1;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
@@ -1909,14 +1906,13 @@ body{
 }
 
 .picker-tab.active {
-  background: rgba(92,83,168,0.5);
-  color: #fff;
-  border-color: rgba(142,68,173,0.45);
+  background: var(--PurpleHighlight);
+  /* border-color: rgba(142,68,173,0.45); */
 }
 
 .picker-tab:hover:not(.active) {
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.9);
+  background: #141419;
+  color: #e9e9f1;
 }
 
 /* ====================================================================
@@ -1928,14 +1924,12 @@ body{
 }
 
 .feature-card--community:hover {
-  border-color: rgba(30,100,210,0.6);
-  background: rgba(30,100,210,0.07);
+  border-color: rgba(30,100,210,0.7);
 }
 
 .feature-card--community:active {
   transform: translateY(0);
   box-shadow: none;
-  background: rgba(30,100,210,0.11);
 }
 
 .feature-card-community-icon {

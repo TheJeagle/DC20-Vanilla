@@ -352,6 +352,11 @@ function createBankFeatureCard(bankFeature) {
   card.type = 'button';
   card.className = 'feature-card feature-card--bank';
 
+  // Show as selected when this feature is already on the creature
+  const stableId = bankFeature.isOwned ? bankFeature.id : `community-${bankFeature.id}`;
+  const isAdded = Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === stableId);
+  if (isAdded) card.classList.add('selected');
+
   const header = document.createElement('div');
   header.className = 'feature-card-header';
 
@@ -395,6 +400,11 @@ function createCommunityFeatureCard(feature) {
   const card = document.createElement('button');
   card.type = 'button';
   card.className = 'feature-card feature-card--community';
+
+  // Show as selected when this community feature is already on the creature
+  const stableId = `community-${feature.id}`;
+  const isAdded = Array.isArray(creature.customFeatures) && creature.customFeatures.some((f) => f.id === stableId);
+  if (isAdded) card.classList.add('selected');
 
   const header = document.createElement('div');
   header.className = 'feature-card-header';

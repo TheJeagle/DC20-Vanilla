@@ -1051,9 +1051,10 @@ function initializeEventHandlers() {
 
   // Add bank feature to creature handler
   setAddBankFeatureHandler((feature) => {
-    // Owned features reuse their ID so they don't proliferate duplicates;
-    // non-owned (community/liked) always get a fresh UUID.
-    const id = feature.isOwned ? feature.id : `custom-${crypto.randomUUID()}`;
+    // Owned features reuse their ID (they authored it, it's unique to them).
+    // Non-owned (community / liked) use a stable derived ID so clicking the same
+    // card twice upserts rather than duplicating on the statblock.
+    const id = feature.isOwned ? feature.id : `community-${feature.id}`;
     const copy = {
       ...feature,
       id,
@@ -1062,6 +1063,7 @@ function initializeEventHandlers() {
     };
     addCustomFeature(copy);
     updateStatblock();
+    renderFeatureControls();
   });
 
   // Browse community handler — lazily load community features
