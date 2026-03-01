@@ -1697,6 +1697,13 @@ body{
   background: rgba(255,248,210,1);
 }
 
+.feature-card--bank:active {
+  transform: translateY(0);
+  box-shadow: none;
+  background: rgba(200,160,10,0.25);
+  border-color: rgba(180,140,20,0.9);
+}
+
 /* Dark text overrides — bank cards have a light background, not the dark theme default */
 .feature-card--bank .feature-card-name {
   color: #2a1a00;

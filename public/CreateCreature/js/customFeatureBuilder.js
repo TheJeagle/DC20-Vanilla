@@ -346,7 +346,8 @@ function renderActionForm(container, existing, isReactionHint) {
     radio.name = 'cfpTargetDefense';
     radio.id = id;
     radio.value = val;
-    const currentDef = ef.targetDefense ?? (isAttack ? 'PD' : 'none');
+    // ef.targetDefense is stored as '' when "none" was selected, so use || not ??
+    const currentDef = ef.targetDefense || (isAttack ? 'PD' : 'none');
     radio.checked = val === currentDef;
     const lbl = makeElement('label', '', label);
     lbl.setAttribute('for', id);

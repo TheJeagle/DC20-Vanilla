@@ -390,107 +390,79 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
   }
 
   const actionTypeLabel = String(action.actionType || '').toLowerCase();
+  // Utility actions: no attack line — show description first, then save/check below.
+  // Attack actions: show attack line first, then target/range, then save/check, then description.
   const isUtilityAction = actionTypeLabel.includes('utility') && !actionTypeLabel.includes('check');
-
-  if (isUtilityAction) {
-    if (action.description) {
-      const description = document.createElement('div');
-      description.className = 'action-description';
-      description.textContent = action.description;
-      wrapper.appendChild(description);
-    }
-    if (isCustom) {
-      const utilEditBtn = document.createElement('button');
-      utilEditBtn.type = 'button';
-      utilEditBtn.className = 'statblock-edit-btn';
-      utilEditBtn.title = 'Edit custom feature';
-      utilEditBtn.textContent = '✏';
-      utilEditBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const orig = (creature.customFeatures || []).find((f) => f.id === action.id);
-        onCustomFeatureEdit(orig || action);
-      });
-      wrapper.appendChild(utilEditBtn);
-
-      const utilBankBtn = document.createElement('button');
-      utilBankBtn.type = 'button';
-      utilBankBtn.className = 'statblock-bank-btn';
-      utilBankBtn.title = 'Save to my feature bank';
-      utilBankBtn.textContent = '★';
-      utilBankBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const orig = (creature.customFeatures || []).find((f) => f.id === action.id);
-        onSaveToBank(orig || action);
-      });
-      wrapper.appendChild(utilBankBtn);
-    }
-    const utilRemoveBtn = document.createElement('button');
-    utilRemoveBtn.type = 'button';
-    utilRemoveBtn.className = 'statblock-remove-btn';
-    utilRemoveBtn.title = 'Remove feature';
-    utilRemoveBtn.textContent = '×';
-    utilRemoveBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(action.id); });
-    wrapper.appendChild(utilRemoveBtn);
-    return wrapper;
-  }
 
   const summary = document.createElement('div');
   summary.className = 'action-summary';
 
-  const attackLine = document.createElement('div');
-  appendField(attackLine, action.actionType || 'Action', 'actionType');
+  if (isUtilityAction) {
+    // Description at the top for utility/save/check features
+    if (action.description) {
+      const description = document.createElement('div');
+      description.className = 'action-description';
+      description.textContent = action.description;
+      summary.appendChild(description);
+    }
+  } else {
+    // Attack line: actionType • vs defense • DC • damage
+    const attackLine = document.createElement('div');
+    appendField(attackLine, action.actionType || 'Action', 'actionType');
 
-  if (action.targetDefense) {
-    appendText(attackLine, ' vs ');
-    appendField(attackLine, action.targetDefense, 'targetDefense');
-  }
+    if (action.targetDefense) {
+      appendText(attackLine, ' vs ');
+      appendField(attackLine, action.targetDefense, 'targetDefense');
+    }
 
-  if (action.check && action.check.dc != null) {
-    appendText(attackLine, action.targetDefense ? ' • DC ' : ' DC ');
-    appendBoldField(attackLine, action.check.dc, 'checkDc');
-  }
+    if (action.check && action.check.dc != null) {
+      appendText(attackLine, action.targetDefense ? ' • DC ' : ' DC ');
+      appendBoldField(attackLine, action.check.dc, 'checkDc');
+    }
 
-  appendText(attackLine, '.');
+    appendText(attackLine, '.');
 
-  const segments = Array.isArray(action.damage) ? action.damage : [];
-  if (segments.length && action.targetDefense) {
-    // Only show damage for attacks that target a defense (PD or AD).
-    // Heavy hit bonus applies to targeted (PD) attacks, not area (AD) attacks.
-    const showHeavyHitBonus =
-      actionTypeLabel.includes('attack') &&
-      action.targetDefense === 'PD' &&
-      hasHalfDamage(segments, baseDamage);
-    appendText(attackLine, ' ');
-    segments.forEach((segment, index) => {
-      if (index > 0) appendText(attackLine, ' + ');
-      const raw = segment.useBase !== undefined
-        ? (segment.useBase ? baseDamage : 0) + (Number(segment.modifier) || 0)
-        : Number(segment.amount) || 0;
-      appendBoldField(attackLine, Math.floor(raw), 'damageAmount');
-      if (segment.type) {
-        appendText(attackLine, ' ');
-        appendBoldField(attackLine, segment.type, 'damageType');
+    const segments = Array.isArray(action.damage) ? action.damage : [];
+    if (segments.length && action.targetDefense) {
+      // Only show damage for attacks that target a defense (PD or AD).
+      // Heavy hit bonus applies to targeted (PD) attacks, not area (AD) attacks.
+      const showHeavyHitBonus =
+        actionTypeLabel.includes('attack') &&
+        action.targetDefense === 'PD' &&
+        hasHalfDamage(segments, baseDamage);
+      appendText(attackLine, ' ');
+      segments.forEach((segment, index) => {
+        if (index > 0) appendText(attackLine, ' + ');
+        const raw = segment.useBase !== undefined
+          ? (segment.useBase ? baseDamage : 0) + (Number(segment.modifier) || 0)
+          : Number(segment.amount) || 0;
+        appendBoldField(attackLine, Math.floor(raw), 'damageAmount');
+        if (segment.type) {
+          appendText(attackLine, ' ');
+          appendBoldField(attackLine, segment.type, 'damageType');
+        }
+      });
+      appendText(attackLine, ' damage');
+      if (showHeavyHitBonus) {
+        appendText(attackLine, ', +1 on heavy hits.');
       }
-    });
-    appendText(attackLine, ' damage');
-    if (showHeavyHitBonus) {
-      appendText(attackLine, ', +1 on heavy hits.');
+    }
+    summary.appendChild(attackLine);
+
+    if (action.target || action.range) {
+      const targetLine = document.createElement('div');
+      appendText(targetLine, 'Target ');
+      appendField(targetLine, action.target || 'target', 'target');
+      if (action.range) {
+        appendText(targetLine, ' within ');
+        appendField(targetLine, action.range, 'range');
+      }
+      appendText(targetLine, '.');
+      summary.appendChild(targetLine);
     }
   }
-  summary.appendChild(attackLine);
 
-  if (action.target || action.range) {
-    const targetLine = document.createElement('div');
-    appendText(targetLine, 'Target ');
-    appendField(targetLine, action.target || 'target', 'target');
-    if (action.range) {
-      appendText(targetLine, ' within ');
-      appendField(targetLine, action.range, 'range');
-    }
-    appendText(targetLine, '.');
-    summary.appendChild(targetLine);
-  }
-
+  // Save and check blocks — rendered for both utility and attack paths
   if (action.save) {
     if (action.save.attribute) {
       const saveLine = document.createElement('div');
@@ -560,7 +532,8 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
     }
   }
 
-  if (action.description) {
+  // Description at the bottom for attack-type features (utility shows it at top)
+  if (!isUtilityAction && action.description) {
     const description = document.createElement('div');
     description.className = 'action-description';
     description.textContent = action.description;
@@ -569,6 +542,7 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
 
   wrapper.appendChild(summary);
 
+  // Edit / bank / remove buttons — shared by both paths
   if (isCustom) {
     const editBtn = document.createElement('button');
     editBtn.type = 'button';
