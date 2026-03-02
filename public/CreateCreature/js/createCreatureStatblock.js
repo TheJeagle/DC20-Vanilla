@@ -83,6 +83,11 @@ function toDisplayInteger(value) {
   return Math.round(value);
 }
 
+function toDisplayDamage(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
+  return value >= 0 ? Math.floor(value) : Math.ceil(value);
+}
+
 function toSignedDisplayInteger(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value;
   const rounded = Math.round(value);
