@@ -24,6 +24,7 @@ const entryPoints = [
   'public/MyEncounters/myEncounters.js',
   'public/AllEncounters/viewAllEncounters.js',
   'public/RunEncounter/runEncounter.js',
+  'public/Admin/admin.js',
 ];
 
 async function clean() {

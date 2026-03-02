@@ -16,10 +16,19 @@ service cloud.firestore {
       }
     }
 
+    // ── Admin whitelist ───────────────────────────────────────────────────────
+    // Each user can only read their own admin entry; no client writes.
+    // Add admins manually in the Firebase console: VanillaAdmins/{uid} (empty doc).
+    match /VanillaAdmins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
     // ── Features ──────────────────────────────────────────────────────────────
     match /VanillaFeatures/{docId} {
       allow read: if true;
-      allow write: if false; // admin-only via scripts
+      allow write: if request.auth != null
+                   && exists(/databases/$(database)/documents/VanillaAdmins/$(request.auth.uid));
     }
 
     // ── User-made features (community sharing) ────────────────────────────────
@@ -32,8 +41,10 @@ service cloud.firestore {
       allow update: if request.auth != null
                     && (resource.data.createdBy == request.auth.uid
                         || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalLikes']));
+      // Owner OR admin can delete
       allow delete: if request.auth != null
-                    && resource.data.createdBy == request.auth.uid;
+                    && (resource.data.createdBy == request.auth.uid
+                        || exists(/databases/$(database)/documents/VanillaAdmins/$(request.auth.uid)));
 
       match /likes/{userId} {
         allow read: if true;

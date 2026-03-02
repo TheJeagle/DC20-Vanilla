@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin – DC20 Feature Manager</title>
+    <link rel="stylesheet" href="../reset.css" />
+    <link rel="stylesheet" href="../site.css" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <nav class="site-nav">
+      <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
+      <div class="site-nav-links">
+        <a class="nav-link" href="../CreateCreature/createCreature.html">Create Creature</a>
+        <a class="nav-link" href="../MyCreatures/myCreatures.html">My Creatures</a>
+        <a class="nav-link is-active" href="./admin.html">Admin</a>
+      </div>
+    </nav>
+
+    <div id="adminLoading" class="admin-status-msg">Checking access…</div>
+
+    <div id="adminNotSignedIn" class="admin-status-msg" hidden>
+      <h2>Sign in required</h2>
+      <p>You must be signed in to access the admin panel.</p>
+      <a class="admin-status-link" href="../Auth/auth.html">Sign In →</a>
+    </div>
+
+    <div id="adminNotAuthorized" class="admin-status-msg" hidden>
+      <h2>Not authorized</h2>
+      <p>Your account does not have admin access. Add your UID to the <code>VanillaAdmins</code> collection in Firestore.</p>
+    </div>
+
+    <div id="adminLayout" class="admin-layout" hidden>
+      <!-- ── Sidebar ─────────────────────────────────────────────────── -->
+      <aside class="admin-sidebar">
+        <div class="admin-tabs">
+          <button id="tabLibrary" class="admin-tab is-active" type="button">Library</button>
+          <button id="tabCommunity" class="admin-tab" type="button">Community</button>
+        </div>
+        <div class="admin-search-wrap">
+          <input
+            id="featureSearch"
+            type="search"
+            placeholder="Search features…"
+            autocomplete="off"
+            class="admin-search-input"
+          />
+        </div>
+        <div id="featureList" class="admin-feature-list">
+          <div class="admin-list-loading">Loading…</div>
+        </div>
+      </aside>
+
+      <!-- ── Main panel ─────────────────────────────────────────────── -->
+      <main class="admin-main">
+        <section class="admin-preview-section">
+          <h3 class="admin-section-title">
+            Preview
+            <span class="admin-section-note">Level 5 creature context</span>
+          </h3>
+          <div id="adminPreviewArea" class="admin-preview-area">
+            <div class="admin-placeholder">Select a feature from the list to preview it here.</div>
+          </div>
+        </section>
+
+        <section class="admin-form-section">
+          <h3 class="admin-section-title">Edit Feature</h3>
+          <div id="adminFormArea" class="admin-form-area">
+            <div class="admin-placeholder">Select a feature from the list to edit it here.</div>
+          </div>
+        </section>
+
+        <div id="adminActions" class="admin-actions" hidden></div>
+      </main>
+    </div>
+
+    <script type="module" src="./admin.js"></script>
+  </body>
+</html>

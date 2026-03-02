@@ -247,4 +247,4 @@ function buildAction(creature, feature) {
   };
 }
 
-export { FEATURE_TYPES, getFeatureSummary };
+export { FEATURE_TYPES, getFeatureSummary, buildAction };
