@@ -12,9 +12,31 @@
     <nav class="site-nav">
       <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
       <div class="site-nav-links">
-        <a class="nav-link" href="../CreateCreature/createCreature.html">Create Creature</a>
-        <a class="nav-link" href="../MyCreatures/myCreatures.html">My Creatures</a>
-        <a class="nav-link is-active" href="./admin.html">Admin</a>
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn" type="button">Create <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../CreateCreature/createCreature.html">Create Creature</a>
+            <a class="nav-dropdown-item" href="../Encounters/encounters.html">Create Encounter</a>
+          </div>
+        </div>
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn" type="button">Community <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../AllCreatures/viewAllCreatures.html">All Creatures</a>
+            <a class="nav-dropdown-item" href="../AllEncounters/viewAllEncounters.html">All Encounters</a>
+          </div>
+        </div>
+        <div class="nav-dropdown" id="navAccountDropdown">
+          <button class="nav-dropdown-btn is-active" type="button">Account <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../MyCreatures/myCreatures.html">My Creatures</a>
+            <a class="nav-dropdown-item" href="../MyEncounters/myEncounters.html">My Encounters</a>
+            <a class="nav-dropdown-item" href="../Account/account.html">Account</a>
+            <a class="nav-dropdown-item is-active" href="./admin.html">Admin</a>
+            <button class="nav-dropdown-item nav-dropdown-item--danger" type="button" id="logoutButton">Logout</button>
+          </div>
+        </div>
+        <a class="nav-link" id="navSignInLink" href="../Auth/auth.html" hidden>Sign In</a>
       </div>
     </nav>
 

@@ -2,6 +2,10 @@
    Admin Page Layout
    ───────────────────────────────────────────────────────────────────────────── */
 
+/* Ensure [hidden] always wins — needed because display:flex on status messages
+   would otherwise override the browser's default [hidden]{display:none}. */
+[hidden] { display: none !important; }
+
 body {
   background-color: #f0f0f0;
   margin: 0;

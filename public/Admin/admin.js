@@ -8,8 +8,10 @@
 
 import { auth, db } from '../firebaseClient.js';
 import { buildAction } from '../features.js';
+import { updateNavAuth } from '../navAuth.js';
 import {
   onAuthStateChanged,
+  signOut,
 } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
 import {
   collection,
@@ -77,7 +79,14 @@ const hide = (el) => el && el.setAttribute('hidden', '');
 // Auth gate
 // ─────────────────────────────────────────────────────────────────────────────
 
+document.getElementById('logoutButton')?.addEventListener('click', () => {
+  signOut(auth).then(() => {
+    window.location.href = '../Auth/auth.html';
+  });
+});
+
 onAuthStateChanged(auth, async (user) => {
+  updateNavAuth(user);
   hide($('adminLoading'));
 
   if (!user) {
