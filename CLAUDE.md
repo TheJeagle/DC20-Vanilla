@@ -20,6 +20,7 @@ A static web app for building and sharing monster/creature stat blocks for the D
 | `public/Auth/` | Login/register page |
 | `public/EditCreature/` | Edit a saved creature |
 | `public/Admin/` | Admin-only feature manager (Library + Community review/promote/delete) |
+| `public/Account/` | User account page (display name, stats, delete account) |
 | `public/Rules/` | DC20 stat scaling tables and game rules (`gameRules.js`) |
 | `public/utils/` | Firestore encode/decode, localStorage wrapper |
 | `public/constants/` | Enums for feature types and action types |
@@ -39,6 +40,8 @@ A static web app for building and sharing monster/creature stat blocks for the D
 - `public/CreateCreature/js/createCreatureState.js` — Creature state + localStorage draft persistence
 - `public/CreateCreature/js/createCreatureStats.js` — Stat scaling calculations
 - `public/Admin/admin.js` — Admin feature manager (auth gate, form, preview, Firestore CRUD)
+- `public/Account/account.js` — Account page (display name change, delete account, stats, admin banner)
+- `public/navAuth.js` — Shared nav helper: show/hide Account dropdown + async admin link check
 
 ## Build / Dev Commands
 
@@ -81,7 +84,7 @@ No test suite.
 
 ## Admin Page
 
-URL: `/Admin/admin.html` — linked in the Account dropdown nav on all pages.
+URL: `/Admin/admin.html` — visible in the Account dropdown **only for admin users** (hidden via `navAuth.js` for everyone else).
 
 **Access:** Checks `VanillaAdmins/{uid}` in Firestore before showing any UI. To grant admin access: Firebase Console → Firestore → `VanillaAdmins` → add a document with the user's UID as the document ID (empty body).
 
@@ -90,6 +93,68 @@ URL: `/Admin/admin.html` — linked in the Account dropdown nav on all pages.
 - **Community tab** — browse public `VanillaUsermadeFeatures` sorted by likes; promote to library or delete
 - Form mirrors the custom feature builder but adds admin-only fields: ID slug, `featureCost`, `featureDescription`
 - Firestore rules enforce write access server-side — client check is UI-only gating
+
+## Account Page
+
+URL: `/Account/account.html` — the "Account" link in the nav on all pages.
+
+**Features:**
+- View email and current display name; change display name via `updateProfile`
+- Stats: creature count, encounter count, total likes received (summed from `totalLikes` on creature docs)
+- Admin banner (visible to admins only, same check as nav link)
+- Delete account with password re-authentication step; handles `auth/requires-recent-login`
+
+## Nav Admin Link Visibility
+
+The Admin nav link (`id="navAdminLink"`) is `hidden` by default in all page HTML. `navAuth.js` checks `VanillaAdmins/{uid}` after sign-in and removes `hidden` only for admins. Result is cached in `sessionStorage` (`dc20_admin`) so only one Firestore read per browser session; cache is cleared on logout.
+
+All pages call `updateNavAuth(user, db)` — `db` is required for the admin check. **CSS note:** `site.css` and `admin.css` both include `[hidden] { display: none !important }` to prevent `display: block/flex` rules on nav items from overriding the `hidden` attribute.
+
+## DC20 Game Mechanics
+
+### Four Action Mechanic Types
+
+| Type | Signals in feature data | Damage? | Condition? |
+|------|------------------------|---------|------------|
+| Check vs Defense | `targetDefense: "PD"\|"AD"` | Yes | No |
+| Check vs Save | `save` present, no `targetDefense` | No | Yes |
+| Check vs DC (utility/buff) | `check` present, no `targetDefense` | No | No |
+| Dynamic Attack Save | both `targetDefense` AND `save` present | Yes | Yes |
+
+- **Check vs Save**: The attacker's D20 roll **is** the DC — no fixed DC stored on the feature.
+- **Check vs DC**: ONLY for utility/self/ally actions (buffs, heals). **Never** offensive.
+- **Dynamic Attack Save**: Damage resolved vs defense; condition resolved vs `creature.saveDC`.
+- `save.dc` on a feature = deprecated/wrong. Ignore if present in old data.
+
+### Save Block Shape (`effects.save`)
+
+```js
+{
+  attribute: "Mig"|"Agi"|"Cha"|"Int"|"Physical"|"Mental",
+  failure: string,
+  failureEach5?: string,
+  success?: string,
+  successEach5?: string,
+  duration?: ""|"until the end of its next turn"|"for 1 minute"|"until removed",
+  repeatable?: boolean,  // target retries save at end of their turn
+}
+```
+
+- `"Physical"` = highest of Mig/Agi; `"Mental"` = highest of Int/Cha (easier saves)
+- `repeatable: true` → target can shake off the condition at end of each turn (common with `"for 1 minute"`)
+- `"until removed"` → condition broken by spending AP (grapple, bleed, burn); repeatable usually not used here
+
+### Enhancement Shape (`effects.enhancements[]`)
+
+```js
+{
+  name: string,
+  cost: number,           // extra AP
+  save?: { attribute, failure, failureEach5?, success?, duration?, repeatable? },
+  damageSegments?: [...], // same shape as main action damage segments
+  description?: string,   // free-text for non-mechanic enhancements
+}
+```
 
 ## Additional Documentation
 

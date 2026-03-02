@@ -410,10 +410,10 @@
       "cost": 1,
       "target": "all creatures",
       "range": "1 Space",
-      "check": {
-        "dc": 15,
-        "success": "Push each target 1 Space directly away from you.",
-        "successEach5": "+1 Space."
+      "save": {
+        "attribute": "Physical",
+        "failure": "Pushed 1 Space directly away from you.",
+        "failureEach5": "+1 Space."
       }
     },
     "tags": [
@@ -491,14 +491,14 @@
     "actionType": "Spell Check",
     "effects": {
       "cost": 2,
-      "actionDescription": "You weave the arcane into a solid force that pushes the target 1 Space in any horizontal direction.",
+      "actionDescription": "You weave the arcane into a solid force that pushes the target in any horizontal direction.",
       "target": "a 5 Space Cone",
       "range": "1 Space",
-      "check": {
-        "dc": 10,
-        "failure": "Push creatures 1 Space.",
-        "success": "Push creatures 3 Spaces.",
-        "successEach5": "+1 Space."
+      "save": {
+        "attribute": "Physical",
+        "failure": "Pushed 3 Spaces.",
+        "failureEach5": "+1 Space.",
+        "success": "Pushed 1 Space."
       }
     },
     "tags": [
@@ -820,11 +820,11 @@
       "target": "a creature",
       "range": "1 Space",
       "actionDescription": "You reach out and attempt to seize the target.",
-      "check": {
-        "dc": 10,
-        "failure": "The target resists.",
-        "success": "The target is Grappled.",
-        "successEach5": "Extend the Grapple's effective range by 1 Space."
+      "save": {
+        "attribute": "Physical",
+        "failure": "The target is Grappled.",
+        "failureEach5": "Extend the Grapple's effective range by 1 Space.",
+        "success": "The target resists."
       }
     },
     "tags": [
@@ -2773,11 +2773,11 @@
       "target": "one creature",
       "range": "5 Spaces",
       "actionDescription": "Your eyes shimmer with fey magic as you fix your gaze on a creature, bending its will.",
-      "check": {
-        "dc": 10,
-        "failure": "Target resists.",
-        "success": "Target is Charmed by you until the end of its next turn.",
-        "successEach5": "The Charmed duration increases by 1 round."
+      "save": {
+        "attribute": "Cha",
+        "failure": "Charmed by you until the end of its next turn.",
+        "failureEach5": "Duration increases by 1 round.",
+        "success": "Target resists."
       }
     },
     "tags": [
@@ -2801,11 +2801,11 @@
       "target": "one creature",
       "range": "8 Spaces",
       "actionDescription": "You weave a whispered curse of misfortune over the target.",
-      "check": {
-        "dc": 10,
-        "failure": "Target resists.",
-        "success": "Target has DisADV on its next attack roll or Save.",
-        "successEach5": "Target has DisADV on 1 additional roll."
+      "save": {
+        "attribute": "Mental",
+        "failure": "Target has DisADV on its next attack roll or Save.",
+        "failureEach5": "Target has DisADV on 1 additional roll.",
+        "success": "Target resists."
       }
     },
     "tags": [
@@ -3088,11 +3088,11 @@
       "target": "the triggering creature",
       "range": "8 Spaces",
       "actionDescription": "You project a burst of disruptive energy, hampering the triggering ability.",
-      "check": {
-        "dc": 10,
-        "failure": "The ability proceeds normally.",
-        "success": "The ability's check or save has DisADV.",
-        "successEach5": "The target is also Disoriented until the end of its turn."
+      "save": {
+        "attribute": "Mental",
+        "failure": "The ability's check or save has DisADV.",
+        "failureEach5": "The target is also Disoriented until the end of its turn.",
+        "success": "The ability proceeds normally."
       }
     },
     "tags": [
@@ -3225,11 +3225,11 @@
       "target": "the triggering creature",
       "range": "1 Space",
       "actionDescription": "You beat your wings hard, catching the attacker with the force and pushing them away.",
-      "check": {
-        "dc": 10,
-        "failure": "Push 1 Space.",
-        "success": "Push 2 Spaces.",
-        "successEach5": "+1 Space."
+      "save": {
+        "attribute": "Physical",
+        "failure": "Pushed 2 Spaces.",
+        "failureEach5": "+1 Space.",
+        "success": "Pushed 1 Space."
       }
     },
     "tags": [
@@ -3368,11 +3368,11 @@
       "target": "the triggering creature",
       "range": "1 Space",
       "actionDescription": "You swipe at the attacker with overwhelming force, sending them flying.",
-      "check": {
-        "dc": 10,
-        "failure": "Push 2 Spaces.",
-        "success": "Push 3 Spaces and knock Prone.",
-        "successEach5": "+1 Space."
+      "save": {
+        "attribute": "Physical",
+        "failure": "Pushed 3 Spaces and knocked Prone.",
+        "failureEach5": "+1 Space.",
+        "success": "Pushed 2 Spaces."
       }
     },
     "tags": [
@@ -3463,11 +3463,11 @@
       "cost": 1,
       "target": "all creatures in a 4 Space Line",
       "actionDescription": "You charge up to 4 Spaces in a straight line. Each creature in your path is pushed 1 Space to either side.",
-      "check": {
-        "dc": 11,
-        "failure": "Creatures are pushed but remain standing.",
-        "success": "Pushed creatures are also knocked Prone.",
-        "successEach5": "Push 1 additional Space."
+      "save": {
+        "attribute": "Physical",
+        "failure": "Pushed and knocked Prone.",
+        "failureEach5": "+1 Space pushed.",
+        "success": "Pushed but remain standing."
       }
     },
     "tags": [
@@ -3684,12 +3684,11 @@
     "effects": {
       "cost": 2,
       "target": "all enemies within 2 Spaces",
-      "actionDescription": "You slam the ground and release a surge of primal energy. All enemies within 2 Spaces are knocked Prone.",
-      "check": {
-        "dc": 13,
-        "failure": "The surge fizzles \u2014 nothing happens.",
-        "success": "All enemies within 2 Spaces are knocked Prone.",
-        "successEach5": "The radius extends by 1 Space."
+      "actionDescription": "You slam the ground and release a surge of primal energy that knocks nearby enemies prone.",
+      "save": {
+        "attribute": "Physical",
+        "failure": "Knocked Prone.",
+        "success": "The target resists."
       }
     },
     "tags": [
@@ -3743,11 +3742,11 @@
       "target": "a Grappled creature",
       "range": "1 Space",
       "actionDescription": "You press down onto a Grappled creature, smothering it in acidic bulk.",
-      "check": {
-        "dc": 11,
-        "failure": "The target takes 1 Poison damage.",
-        "success": "The target is Restrained and takes 1 Poison damage at the start of each of its turns until it escapes the Grapple.",
-        "successEach5": "+1 ongoing Poison damage."
+      "save": {
+        "attribute": "Physical",
+        "failure": "The target is Restrained and takes 1 Poison damage at the start of each of its turns until it escapes the Grapple.",
+        "failureEach5": "+1 ongoing Poison damage.",
+        "success": "The target takes 1 Poison damage."
       }
     },
     "tags": [
@@ -5907,9 +5906,9 @@
       "cost": 2,
       "range": "1 Space",
       "target": "a creature",
-      "check": {
-        "dc": 14,
-        "success": "You drain 1d6 HP from the target, healing yourself for the same amount."
+      "save": {
+        "attribute": "Physical",
+        "failure": "The caster drains 1d6 HP from you, healing themselves for the same amount."
       },
       "actionDescription": "You reach out and siphon the target's life force into yourself."
     },
@@ -5953,9 +5952,9 @@
       "cost": 2,
       "range": "4 Spaces",
       "target": "a 2 Space Burst",
-      "check": {
-        "dc": 13,
-        "success": "All creatures in the area are Restrained until the start of your next turn."
+      "save": {
+        "attribute": "Physical",
+        "failure": "Restrained until the start of your next turn."
       },
       "actionDescription": "You call upon the land itself to restrain your enemies. Thick roots and vines erupt around them."
     },
@@ -5977,9 +5976,9 @@
       "cost": 2,
       "range": "3 Spaces",
       "target": "a creature",
-      "check": {
-        "dc": 14,
-        "success": "You learn one fact the target knows, or implant a single false memory."
+      "save": {
+        "attribute": "Mental",
+        "failure": "The caster learns one fact you know, or implants a false memory in your mind."
       },
       "actionDescription": "You extend alien tendrils of thought into the target's mind and rummage through their memories."
     },
@@ -6000,9 +5999,9 @@
       "cost": 2,
       "range": "8 Spaces",
       "target": "a 3 Space Cube",
-      "check": {
-        "dc": 13,
-        "success": "All creatures in the area must use their Reaction to take cover or be Hindered until the end of their next turn."
+      "save": {
+        "attribute": "Agi",
+        "failure": "Must use your Reaction to take cover or become Hindered until the end of your next turn."
       },
       "actionDescription": "You unleash a relentless volley that forces everyone in the area to duck or suffer the consequences."
     },
@@ -6043,11 +6042,11 @@
       "cost": 1,
       "range": "6 Space Burst",
       "target": "all creatures",
-      "check": {
-        "dc": 12,
-        "success": "Enemies are Frightened of you until the start of your next turn. Allies gain Advantage on their next attack roll."
+      "save": {
+        "attribute": "Cha",
+        "failure": "Frightened of you until the start of your next turn."
       },
-      "actionDescription": "You loose a bone-chilling howl. Pack mates surge with confidence while prey animals flee."
+      "actionDescription": "You loose a bone-chilling howl. Pack mates surge with confidence while prey animals flee. Allies within range gain Advantage on their next attack roll."
     },
     "tags": [
       "creature/beast",
@@ -6067,9 +6066,9 @@
       "cost": 2,
       "range": "5 Space Burst",
       "target": "all creatures within range",
-      "check": {
-        "dc": 15,
-        "success": "Targets are Frightened of you until the end of their next turn."
+      "save": {
+        "attribute": "Cha",
+        "failure": "Frightened of you until the end of their next turn."
       },
       "actionDescription": "You straighten to your full height and let your draconic presence radiate. All lesser beings feel the crushing weight of your ancient power."
     },
@@ -6111,9 +6110,9 @@
       "cost": 2,
       "range": "3 Space Burst",
       "target": "all creatures within range",
-      "check": {
-        "dc": 13,
-        "success": "Targets are Disoriented until the end of their next turn."
+      "save": {
+        "attribute": "Agi",
+        "failure": "Disoriented until the end of your next turn."
       },
       "actionDescription": "You overload your internal power source, releasing a burst of disruptive energy around you."
     },
@@ -6154,9 +6153,9 @@
       "cost": 1,
       "range": "4 Space Burst",
       "target": "all enemies within range",
-      "check": {
-        "dc": 13,
-        "success": "Targets are Frightened of you until the end of their next turn."
+      "save": {
+        "attribute": "Cha",
+        "failure": "Frightened of you until the end of your next turn."
       },
       "actionDescription": "Raw power surges through your voice as you unleash a supernaturally amplified roar."
     },

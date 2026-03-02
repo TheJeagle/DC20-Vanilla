@@ -13,6 +13,12 @@ const DAMAGE_TYPES = [
 ];
 
 const SAVE_ATTRIBUTES = ['Mig', 'Agi', 'Cha', 'Int', 'Physical', 'Mental'];
+const SAVE_DURATIONS = [
+  { value: '', label: 'Instant (no duration)' },
+  { value: 'until the end of its next turn', label: 'Until end of next turn' },
+  { value: 'for 1 minute', label: 'For 1 minute' },
+  { value: 'until removed', label: 'Until removed' },
+];
 
 const ROLE_VALUES = [
   'artillerist', 'brute', 'controller', 'defender',
@@ -430,6 +436,36 @@ function renderActionForm(container, existing, isReactionHint) {
   addTextInput(saveBody, 'cfpSaveFailureEach5', 'Failure (each 5)', existingSave?.failureEach5 ?? '');
   addTextInput(saveBody, 'cfpSaveSuccess', 'Success effect', existingSave?.success ?? '');
   addTextInput(saveBody, 'cfpSaveSuccessEach5', 'Success (each 5)', existingSave?.successEach5 ?? '');
+
+  const saveDurationGroup = makeElement('div', 'cfp-field-group');
+  const saveDurationLabel = makeElement('label', 'cfp-label', 'Duration');
+  saveDurationLabel.setAttribute('for', 'cfpSaveDuration');
+  const saveDurationSelect = makeElement('select');
+  saveDurationSelect.id = 'cfpSaveDuration';
+  saveDurationSelect.className = 'cfp-select';
+  SAVE_DURATIONS.forEach(({ value, label }) => {
+    const opt = makeElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    if ((existingSave?.duration ?? '') === value) opt.selected = true;
+    saveDurationSelect.appendChild(opt);
+  });
+  saveDurationGroup.appendChild(saveDurationLabel);
+  saveDurationGroup.appendChild(saveDurationSelect);
+  saveBody.appendChild(saveDurationGroup);
+
+  const saveRepeatableGroup = makeElement('div', 'cfp-field-group cfp-checkbox-group');
+  const saveRepeatableCheck = makeElement('input');
+  saveRepeatableCheck.type = 'checkbox';
+  saveRepeatableCheck.id = 'cfpSaveRepeatable';
+  saveRepeatableCheck.className = 'cfp-checkbox';
+  saveRepeatableCheck.checked = Boolean(existingSave?.repeatable);
+  const saveRepeatableLabel = makeElement('label', 'cfp-label', 'Repeatable Save (at end of target\'s turn)');
+  saveRepeatableLabel.setAttribute('for', 'cfpSaveRepeatable');
+  saveRepeatableGroup.appendChild(saveRepeatableCheck);
+  saveRepeatableGroup.appendChild(saveRepeatableLabel);
+  saveBody.appendChild(saveRepeatableGroup);
+
   saveSection.appendChild(saveBody);
 
   container.appendChild(saveSection);
@@ -449,6 +485,29 @@ function renderActionForm(container, existing, isReactionHint) {
   checkSection.appendChild(checkBody);
 
   container.appendChild(checkSection);
+
+  // Enhancements section
+  const enhSection = makeElement('details', 'cfp-detail-section');
+  const enhSummary = makeElement('summary', '', 'Enhancements (optional)');
+  enhSection.appendChild(enhSummary);
+  const enhBody = makeElement('div', 'cfp-detail-section-body');
+  const enhList = makeElement('div', 'cfp-enhancement-list');
+  enhBody.appendChild(enhList);
+
+  const existingEnhancements = Array.isArray(ef.enhancements) ? ef.enhancements : [];
+  existingEnhancements.forEach((enh) => addEnhancementRow(enhList, enh));
+
+  const addEnhBtn = makeElement('button', 'cfp-add-segment-btn');
+  addEnhBtn.type = 'button';
+  addEnhBtn.textContent = '+ Add Enhancement';
+  addEnhBtn.addEventListener('click', () => {
+    addEnhancementRow(enhList, {});
+    triggerLivePreview(container.closest('.cfp-body'));
+  });
+  enhBody.appendChild(addEnhBtn);
+  enhSection.appendChild(enhBody);
+
+  container.appendChild(enhSection);
 }
 
 // ---------------------------------------------------------------------------
@@ -637,6 +696,117 @@ function addDamageSegmentRow(list, seg = {}) {
   list.appendChild(row);
 }
 
+function addEnhancementRow(list, enh = {}) {
+  const row = makeElement('div', 'cfp-enhancement-row');
+
+  // Name
+  const nameInp = makeElement('input');
+  nameInp.type = 'text';
+  nameInp.className = 'cfp-text-input cfp-enh-name';
+  nameInp.placeholder = 'Enhancement name';
+  nameInp.value = enh.name ?? '';
+  row.appendChild(nameInp);
+
+  // AP cost
+  const costInp = makeElement('input');
+  costInp.type = 'number';
+  costInp.className = 'cfp-number-input cfp-enh-cost';
+  costInp.placeholder = 'AP';
+  costInp.min = '1';
+  costInp.step = '1';
+  costInp.value = String(enh.cost ?? 1);
+  costInp.title = 'Additional AP cost';
+  row.appendChild(costInp);
+
+  // Type selector
+  const typeSelect = makeElement('select');
+  typeSelect.className = 'cfp-select cfp-enh-type';
+  [['save', 'Save'], ['damage', 'Bonus Damage'], ['description', 'Description']].forEach(([v, label]) => {
+    const opt = makeElement('option'); opt.value = v; opt.textContent = label;
+    typeSelect.appendChild(opt);
+  });
+  const inferredType = enh.save ? 'save' : (Array.isArray(enh.damageSegments) && enh.damageSegments.length ? 'damage' : 'description');
+  typeSelect.value = inferredType;
+  row.appendChild(typeSelect);
+
+  // Type-specific body
+  const typeBody = makeElement('div', 'cfp-enh-body');
+  row.appendChild(typeBody);
+
+  function renderEnhTypeBody(type) {
+    typeBody.innerHTML = '';
+    if (type === 'save') {
+      const attrSelect = makeElement('select');
+      attrSelect.className = 'cfp-select cfp-enh-save-attr';
+      const noneOpt = makeElement('option'); noneOpt.value = ''; noneOpt.textContent = 'Attribute';
+      attrSelect.appendChild(noneOpt);
+      SAVE_ATTRIBUTES.forEach((attr) => {
+        const opt = makeElement('option'); opt.value = attr; opt.textContent = attr;
+        if (enh.save?.attribute === attr) opt.selected = true;
+        attrSelect.appendChild(opt);
+      });
+      typeBody.appendChild(attrSelect);
+      const failureInp = makeElement('input');
+      failureInp.type = 'text'; failureInp.className = 'cfp-text-input cfp-enh-save-failure';
+      failureInp.placeholder = 'Failure effect'; failureInp.value = enh.save?.failure ?? '';
+      typeBody.appendChild(failureInp);
+      const failEach5Inp = makeElement('input');
+      failEach5Inp.type = 'text'; failEach5Inp.className = 'cfp-text-input cfp-enh-save-failureeach5';
+      failEach5Inp.placeholder = 'Failure (each 5) — optional'; failEach5Inp.value = enh.save?.failureEach5 ?? '';
+      typeBody.appendChild(failEach5Inp);
+      const successInp = makeElement('input');
+      successInp.type = 'text'; successInp.className = 'cfp-text-input cfp-enh-save-success';
+      successInp.placeholder = 'Success effect — optional'; successInp.value = enh.save?.success ?? '';
+      typeBody.appendChild(successInp);
+      const enhDurSelect = makeElement('select');
+      enhDurSelect.className = 'cfp-select cfp-enh-save-duration';
+      SAVE_DURATIONS.forEach(({ value, label }) => {
+        const opt = makeElement('option'); opt.value = value; opt.textContent = label;
+        if ((enh.save?.duration ?? '') === value) opt.selected = true;
+        enhDurSelect.appendChild(opt);
+      });
+      typeBody.appendChild(enhDurSelect);
+      const enhRepeatLabel = makeElement('label', 'cfp-label cfp-enh-repeatable-label');
+      const enhRepeatCheck = makeElement('input');
+      enhRepeatCheck.type = 'checkbox'; enhRepeatCheck.className = 'cfp-checkbox cfp-enh-save-repeatable';
+      enhRepeatCheck.checked = Boolean(enh.save?.repeatable);
+      enhRepeatLabel.appendChild(enhRepeatCheck);
+      enhRepeatLabel.appendChild(document.createTextNode(' Repeatable Save'));
+      typeBody.appendChild(enhRepeatLabel);
+    } else if (type === 'damage') {
+      const segList = makeElement('div', 'cfp-damage-list cfp-enh-damage-list');
+      const existingSegs = Array.isArray(enh.damageSegments) ? enh.damageSegments : [];
+      if (existingSegs.length) {
+        existingSegs.forEach((seg) => addDamageSegmentRow(segList, seg));
+      } else {
+        addDamageSegmentRow(segList, { useBase: true, modifier: 0, type: '' });
+      }
+      typeBody.appendChild(segList);
+      const addSegBtn = makeElement('button', 'cfp-add-segment-btn');
+      addSegBtn.type = 'button'; addSegBtn.textContent = '+ Add damage segment';
+      addSegBtn.addEventListener('click', () => addDamageSegmentRow(segList, {}));
+      typeBody.appendChild(addSegBtn);
+    } else {
+      const descInp = makeElement('textarea');
+      descInp.className = 'cfp-textarea cfp-enh-description';
+      descInp.placeholder = 'Free-text description (e.g. "+2 range")';
+      descInp.rows = 2;
+      descInp.value = enh.description ?? '';
+      typeBody.appendChild(descInp);
+    }
+  }
+
+  renderEnhTypeBody(typeSelect.value);
+  typeSelect.addEventListener('change', () => renderEnhTypeBody(typeSelect.value));
+
+  const removeBtn = makeElement('button', 'cfp-seg-remove');
+  removeBtn.type = 'button'; removeBtn.textContent = '×'; removeBtn.title = 'Remove enhancement';
+  removeBtn.addEventListener('click', () => row.remove());
+  row.appendChild(removeBtn);
+
+  list.appendChild(row);
+}
+
 // ---------------------------------------------------------------------------
 // Data extraction
 // ---------------------------------------------------------------------------
@@ -712,7 +882,7 @@ function readFormData(body) {
 
   // Damage segments
   const damageSegments = [];
-  body.querySelectorAll('.cfp-damage-row').forEach((row) => {
+  body.querySelectorAll('.cfp-damage-list:not(.cfp-enh-damage-list) .cfp-damage-row').forEach((row) => {
     const useBase = row.querySelector('.cfp-seg-usebase')?.checked ?? false;
     const modValue = parseFloat(row.querySelector('.cfp-seg-modifier')?.value) || 0;
     const segType = row.querySelector('.cfp-seg-type')?.value ?? '';
@@ -729,6 +899,8 @@ function readFormData(body) {
   const saveFailureEach5 = val('cfpSaveFailureEach5');
   const saveSuccess = val('cfpSaveSuccess');
   const saveSuccessEach5 = val('cfpSaveSuccessEach5');
+  const saveDuration = val('cfpSaveDuration');
+  const saveRepeatable = body.querySelector('#cfpSaveRepeatable')?.checked ?? false;
   const hasSave = saveAttr || saveFailure || saveSuccess;
   const save = hasSave
     ? {
@@ -737,6 +909,8 @@ function readFormData(body) {
         failureEach5: saveFailureEach5,
         success: saveSuccess,
         successEach5: saveSuccessEach5,
+        duration: saveDuration,
+        repeatable: saveRepeatable,
       }
     : null;
 
@@ -757,6 +931,43 @@ function readFormData(body) {
       }
     : null;
 
+  // Enhancements
+  const enhancements = [];
+  body.querySelectorAll('.cfp-enhancement-list .cfp-enhancement-row').forEach((row) => {
+    const name = row.querySelector('.cfp-enh-name')?.value?.trim() ?? '';
+    const cost = parseFloat(row.querySelector('.cfp-enh-cost')?.value) || 1;
+    const type = row.querySelector('.cfp-enh-type')?.value ?? 'description';
+    const enh = { name, cost };
+    if (type === 'save') {
+      const attribute = row.querySelector('.cfp-enh-save-attr')?.value ?? '';
+      const failure = row.querySelector('.cfp-enh-save-failure')?.value?.trim() ?? '';
+      const failureEach5 = row.querySelector('.cfp-enh-save-failureeach5')?.value?.trim() ?? '';
+      const success = row.querySelector('.cfp-enh-save-success')?.value?.trim() ?? '';
+      const duration = row.querySelector('.cfp-enh-save-duration')?.value ?? '';
+      const repeatable = row.querySelector('.cfp-enh-save-repeatable')?.checked ?? false;
+      if (attribute || failure) {
+        enh.save = { attribute, failure };
+        if (failureEach5) enh.save.failureEach5 = failureEach5;
+        if (success) enh.save.success = success;
+        if (duration) enh.save.duration = duration;
+        if (repeatable) enh.save.repeatable = true;
+      }
+    } else if (type === 'damage') {
+      const damageSegments = [];
+      row.querySelectorAll('.cfp-enh-damage-list .cfp-damage-row').forEach((segRow) => {
+        const useBase = segRow.querySelector('.cfp-seg-usebase')?.checked ?? false;
+        const modValue = parseFloat(segRow.querySelector('.cfp-seg-modifier')?.value) || 0;
+        const segType = segRow.querySelector('.cfp-seg-type')?.value ?? '';
+        if (useBase) damageSegments.push({ useBase: true, modifier: modValue, type: segType });
+        else damageSegments.push({ amount: modValue, type: segType });
+      });
+      enh.damageSegments = damageSegments;
+    } else {
+      enh.description = row.querySelector('.cfp-enh-description')?.value?.trim() ?? '';
+    }
+    enhancements.push(enh);
+  });
+
   const effects = {
     actionType,
     cost,
@@ -773,6 +984,7 @@ function readFormData(body) {
 
   if (save) effects.save = save;
   if (check) effects.check = check;
+  if (enhancements.length) effects.enhancements = enhancements;
 
   return {
     type: 'action',

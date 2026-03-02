@@ -229,21 +229,21 @@ function buildAction(creature, feature) {
     save: effects.save
       ? {
           attribute: effects.save.attribute ?? '',
-          dc:
-            typeof effects.save.dc === 'number'
-              ? effects.save.dc
-              : Number(effects.save.dc) || effects.dc || null,
           failure: effects.save.failure ?? effects.save.effect ?? '',
           failureEach5: effects.save.failureEach5 ?? '',
           success: effects.save.success ?? '',
           successEach5: effects.save.successEach5 ?? '',
+          repeatable: Boolean(effects.save.repeatable),
+          duration: effects.save.duration ?? '',
         }
       : null,
+    saveDC: typeof creature.saveDC === 'number' ? creature.saveDC : Number(creature.saveDC) || 0,
     featureCost: feature.featureCost ?? 0,
     isReaction,
     reactionTrigger: reactionTrigger ? String(reactionTrigger).trim() : '',
     isLegendaryAction,
     isApexAction,
+    enhancements: Array.isArray(effects.enhancements) ? effects.enhancements : [],
   };
 }
 

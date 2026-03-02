@@ -467,8 +467,12 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
     if (action.save.attribute) {
       const saveLine = document.createElement('div');
       appendField(saveLine, action.save.attribute, 'saveAttribute');
-      appendText(saveLine, ' Save, DC: ');
-      appendBoldField(saveLine, action.save.dc ?? action.dc ?? creature.saveDC, 'saveDc');
+      appendText(saveLine, ' Save');
+      if (action.targetDefense) {
+        // Dynamic Attack Save — attacker hit vs defense for damage, target saves vs creature's saveDC
+        appendText(saveLine, ' vs Save DC ');
+        appendBoldField(saveLine, action.saveDC ?? creature.saveDC, 'saveDc');
+      }
       appendText(saveLine, '.');
       summary.appendChild(saveLine);
     }
@@ -499,6 +503,20 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
       appendText(successEachLine, 'Success (Each 5): ');
       appendField(successEachLine, action.save.successEach5, 'saveSuccessEach5');
       summary.appendChild(successEachLine);
+    }
+
+    if (action.save.duration) {
+      const durationLine = document.createElement('div');
+      appendText(durationLine, 'Duration: ');
+      appendField(durationLine, action.save.duration, 'saveDuration');
+      appendText(durationLine, '.');
+      summary.appendChild(durationLine);
+    }
+
+    if (action.save.repeatable) {
+      const repeatLine = document.createElement('div');
+      appendText(repeatLine, 'Repeatable Save.');
+      summary.appendChild(repeatLine);
     }
   }
 
@@ -538,6 +556,40 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
     description.className = 'action-description';
     description.textContent = action.description;
     summary.appendChild(description);
+  }
+
+  // Enhancements
+  const enhancements = Array.isArray(action.enhancements) ? action.enhancements : [];
+  if (enhancements.length) {
+    const enhList = document.createElement('div');
+    enhList.className = 'action-enhancements';
+    enhancements.forEach((enh) => {
+      if (!enh) return;
+      const line = document.createElement('div');
+      line.className = 'action-enhancement';
+      appendText(line, `\u2022 (+${enh.cost ?? 1}) ${enh.name || 'Enhancement'}: `);
+      if (enh.save && enh.save.attribute) {
+        appendText(line, `${enh.save.attribute} Save. Failure: ${enh.save.failure ?? ''}`);
+        if (enh.save.failureEach5) appendText(line, ` Failure (Each 5): ${enh.save.failureEach5}.`);
+        if (enh.save.success) appendText(line, ` Success: ${enh.save.success}.`);
+        if (enh.save.duration) appendText(line, ` Duration: ${enh.save.duration}.`);
+        if (enh.save.repeatable) appendText(line, ' Repeatable Save.');
+      } else if (Array.isArray(enh.damageSegments) && enh.damageSegments.length) {
+        enh.damageSegments.forEach((seg, i) => {
+          if (i > 0) appendText(line, ' + ');
+          const raw = seg.useBase !== undefined
+            ? (seg.useBase ? baseDamage : 0) + (Number(seg.modifier) || 0)
+            : Number(seg.amount) || 0;
+          appendBoldField(line, Math.floor(raw), 'damageAmount');
+          if (seg.type) { appendText(line, ' '); appendBoldField(line, seg.type, 'damageType'); }
+        });
+        appendText(line, ' damage.');
+      } else if (enh.description) {
+        appendText(line, enh.description);
+      }
+      enhList.appendChild(line);
+    });
+    summary.appendChild(enhList);
   }
 
   wrapper.appendChild(summary);
