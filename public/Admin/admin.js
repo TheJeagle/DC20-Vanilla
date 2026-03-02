@@ -1151,7 +1151,8 @@ function renderAdminActionCard(action, baseDamage = 0) {
   // Save block
   if (action.save) {
     if (action.save.attribute) {
-      let saveLine = `${action.save.attribute} Save`;
+      const savePrefix = action.save.repeatable ? 'Repeatable ' : '';
+      let saveLine = `${savePrefix}${action.save.attribute} Save`;
       if (action.targetDefense) {
         saveLine += ` vs Save DC ${action.saveDC ?? PREVIEW_CREATURE.saveDC}`;
       }
@@ -1166,6 +1167,8 @@ function renderAdminActionCard(action, baseDamage = 0) {
       summary.appendChild(makeElement('div', '', `Success: ${action.save.success}`));
     if (action.save.successEach5)
       summary.appendChild(makeElement('div', '', `Success (Each 5): ${action.save.successEach5}`));
+    if (action.save.duration)
+      summary.appendChild(makeElement('div', '', `Duration: ${action.save.duration}.`));
   }
 
   // Check block
@@ -1193,9 +1196,11 @@ function renderAdminActionCard(action, baseDamage = 0) {
       const line = makeElement('div', 'action-enhancement');
       let text = `\u2022 (+${enh.cost ?? 1}) ${enh.name || 'Enhancement'}: `;
       if (enh.save && enh.save.attribute) {
-        text += `${enh.save.attribute} Save. Failure: ${enh.save.failure ?? ''}`;
+        const savePrefix = enh.save.repeatable ? 'Repeatable ' : '';
+        text += `${savePrefix}${enh.save.attribute} Save. Failure: ${enh.save.failure ?? ''}`;
         if (enh.save.failureEach5) text += ` Failure (Each 5): ${enh.save.failureEach5}.`;
         if (enh.save.success) text += ` Success: ${enh.save.success}.`;
+        if (enh.save.duration) text += ` Duration: ${enh.save.duration}.`;
       } else if (Array.isArray(enh.damageSegments) && enh.damageSegments.length) {
         enh.damageSegments.forEach((seg, i) => {
           if (i > 0) text += ' + ';

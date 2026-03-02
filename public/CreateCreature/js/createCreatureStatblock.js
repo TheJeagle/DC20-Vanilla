@@ -466,6 +466,7 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
   if (action.save) {
     if (action.save.attribute) {
       const saveLine = document.createElement('div');
+      if (action.save.repeatable) appendText(saveLine, 'Repeatable ');
       appendField(saveLine, action.save.attribute, 'saveAttribute');
       appendText(saveLine, ' Save');
       if (action.targetDefense) {
@@ -511,12 +512,6 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
       appendField(durationLine, action.save.duration, 'saveDuration');
       appendText(durationLine, '.');
       summary.appendChild(durationLine);
-    }
-
-    if (action.save.repeatable) {
-      const repeatLine = document.createElement('div');
-      appendText(repeatLine, 'Repeatable Save.');
-      summary.appendChild(repeatLine);
     }
   }
 
@@ -569,11 +564,11 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
       line.className = 'action-enhancement';
       appendText(line, `\u2022 (+${enh.cost ?? 1}) ${enh.name || 'Enhancement'}: `);
       if (enh.save && enh.save.attribute) {
-        appendText(line, `${enh.save.attribute} Save. Failure: ${enh.save.failure ?? ''}`);
+        const savePrefix = enh.save.repeatable ? 'Repeatable ' : '';
+        appendText(line, `${savePrefix}${enh.save.attribute} Save. Failure: ${enh.save.failure ?? ''}`);
         if (enh.save.failureEach5) appendText(line, ` Failure (Each 5): ${enh.save.failureEach5}.`);
         if (enh.save.success) appendText(line, ` Success: ${enh.save.success}.`);
         if (enh.save.duration) appendText(line, ` Duration: ${enh.save.duration}.`);
-        if (enh.save.repeatable) appendText(line, ' Repeatable Save.');
       } else if (Array.isArray(enh.damageSegments) && enh.damageSegments.length) {
         enh.damageSegments.forEach((seg, i) => {
           if (i > 0) appendText(line, ' + ');
