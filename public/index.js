@@ -2,6 +2,7 @@ import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
 import { baseLevelStatsData, powerScalingFactors, roleModifiersData, attributeScoresByLevel, sizeScalingFactors, SkillAttribute } from './Rules/gameRules.js'
 import { loadFeatures, applyFeatureEffects, FEATURE_TYPES, getFeatureSummary } from './features.js'
+import { createActionCardElement } from './actionCardRenderer.js';
 import { auth, db } from './firebaseClient.js';
 import { buildCreatureDocumentId } from './utils/firestore.js';
 import { loadJson as loadStoredJson, saveJson as saveStoredJson, removeItem as removeStoredItem } from './utils/storage.js';
@@ -983,171 +984,9 @@ function renderActionSummary(){
   }
 
   creature.featureActions.forEach((action) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'statblock-action-item';
-
-    // Header line
-    const header = document.createElement('div');
-    header.className = 'action-header';
-    const title = document.createElement('strong');
-    appendField(title, action.name, 'name');
-    appendText(title, ' (');
-    appendField(title, action.cost ?? 0, 'cost');
-    appendText(title, ' AP):');
-    header.appendChild(title);
-
-    const actionTypeLabel = String(action.actionType || '').toLowerCase();
-    const isUtilityAction = actionTypeLabel.includes('utility') && !actionTypeLabel.includes('check');
-
-    if (isUtilityAction) {
-      wrapper.appendChild(header);
-      if (action.description) {
-        const description = document.createElement('div');
-        description.className = 'action-description';
-        description.textContent = action.description;
-        wrapper.appendChild(description);
-      }
-      statblockActionsList.appendChild(wrapper);
-      return;
-    }
-
-    const summary = document.createElement('div');
-    summary.className = 'action-summary';
-
-    // Attack vs Defense line with damage
-    const attackLine = document.createElement('div');
-    appendField(attackLine, action.actionType || 'Action', 'actionType');
-
-    if (action.targetDefense) {
-      appendText(attackLine, ' vs ');
-      appendField(attackLine, action.targetDefense, 'targetDefense');
-    }
-
-    if (action.check && action.check.dc != null) {
-      appendText(attackLine, action.targetDefense ? ' • DC ' : ' DC ');
-      appendBoldField(attackLine, action.check.dc, 'checkDc');
-    }
-
-    appendText(attackLine, '.');
-
-    const segments = Array.isArray(action.damage) ? action.damage : [];
-    if (segments.length) {
-      const showHeavyHitBonus =
-        actionTypeLabel.includes('attack') &&
-        (actionTypeLabel.includes('melee') || actionTypeLabel.includes('ranged')) &&
-        hasHalfDamage(segments);
-      appendText(attackLine, ' ');
-      segments.forEach((segment, index) => {
-        if (index > 0) appendText(attackLine, ' + ');
-        appendBoldField(attackLine, segment.amount ?? 0, 'damageAmount');
-        if (segment.type) {
-          appendText(attackLine, ' ');
-          appendBoldField(attackLine, segment.type, 'damageType');
-        }
-      });
-      appendText(attackLine, ' damage');
-      if (showHeavyHitBonus) {
-        appendText(attackLine, ', +1 on heavy hits.');
-      }
-    }
-    summary.appendChild(attackLine);
-
-    // Target line
-    if (action.target || action.range) {
-      const targetLine = document.createElement('div');
-      appendText(targetLine, 'Target ');
-      appendField(targetLine, action.target || 'target', 'target');
-      if (action.range) {
-        appendText(targetLine, ' within ');
-        appendField(targetLine, action.range, 'range');
-      }
-      appendText(targetLine, '.');
-      summary.appendChild(targetLine);
-    }
-
-    // Save line
-    if (action.save) {
-      if (action.save.attribute) {
-        const saveLine = document.createElement('div');
-        appendField(saveLine, action.save.attribute, 'saveAttribute');
-        appendText(saveLine, ' Save, DC: ');
-        appendBoldField(saveLine, creature.saveDC ?? 0, 'saveDC');
-        appendText(saveLine, '.');
-        summary.appendChild(saveLine);
-      }
-
-      if (action.save.failure) {
-        const failureLine = document.createElement('div');
-        appendText(failureLine, 'Failure: ');
-        appendField(failureLine, action.save.failure, 'saveFailure');
-        summary.appendChild(failureLine);
-      }
-
-      if (action.save.failureEach5) {
-        const failureEachLine = document.createElement('div');
-        appendText(failureEachLine, 'Failure (Each 5): ');
-        appendField(failureEachLine, action.save.failureEach5, 'saveFailureEach5');
-        summary.appendChild(failureEachLine);
-      }
-
-      if (action.save.success) {
-        const successLine = document.createElement('div');
-        appendText(successLine, 'Success: ');
-        appendField(successLine, action.save.success, 'saveSuccess');
-        summary.appendChild(successLine);
-      }
-
-      if (action.save.successEach5) {
-        const successEachLine = document.createElement('div');
-        appendText(successEachLine, 'Success (Each 5): ');
-        appendField(successEachLine, action.save.successEach5, 'saveSuccessEach5');
-        summary.appendChild(successEachLine);
-      }
-    }
-
-    if (action.check) {
-      if (action.check.failure) {
-        const checkFailure = document.createElement('div');
-        appendText(checkFailure, 'Failure: ');
-        appendField(checkFailure, action.check.failure, 'checkFailure');
-        summary.appendChild(checkFailure);
-      }
-
-      if (action.check.failureEach5) {
-        const checkFailureEach = document.createElement('div');
-        appendText(checkFailureEach, 'Failure (Each 5): ');
-        appendField(checkFailureEach, action.check.failureEach5, 'checkFailureEach5');
-        summary.appendChild(checkFailureEach);
-      }
-
-      if (action.check.success) {
-        const checkSuccess = document.createElement('div');
-        appendText(checkSuccess, 'Success: ');
-        appendField(checkSuccess, action.check.success, 'checkSuccess');
-        summary.appendChild(checkSuccess);
-      }
-
-      if (action.check.successEach5) {
-        const checkSuccessEach = document.createElement('div');
-        appendText(checkSuccessEach, 'Success (Each 5): ');
-        appendField(checkSuccessEach, action.check.successEach5, 'checkSuccessEach5');
-        summary.appendChild(checkSuccessEach);
-      }
-    }
-
-    wrapper.appendChild(header);
-    if (summary.childNodes.length) {
-      wrapper.appendChild(summary);
-    }
-
-    if (action.description) {
-      const description = document.createElement('div');
-      description.className = 'action-description';
-      description.textContent = action.description;
-      wrapper.appendChild(description);
-    }
-
-    statblockActionsList.appendChild(wrapper);
+    statblockActionsList.appendChild(
+      createActionCardElement(action, creature.saveDC ?? 0, creature.damage ?? 0)
+    );
   });
 }
 //---- RECOMMENDATIONS PANEL ----
@@ -1263,32 +1102,6 @@ function renderRecommendations(){
   }
 }
 
-// Appends a span tagged with the source field for later editing hooks.
-function appendField(parent, value, field) {
-  if (value === undefined || value === null || value === '') return;
-  const span = document.createElement('span');
-  span.className = 'action-span';
-  span.dataset.field = field;
-  span.textContent = formatDisplayValue(value, field);
-  parent.appendChild(span);
-}
-
-// Appends a bold span for emphasis while keeping field metadata.
-function appendBoldField(parent, value, field) {
-  if (value === undefined || value === null || value === '') return;
-  const strong = document.createElement('strong');
-  appendField(strong, value, field);
-  parent.appendChild(strong);
-}
-
-// Appends plain text/HTML snippets into the statblock output.
-function appendText(parent, html) {
-  if (html === undefined || html === null || html === '') return;
-  const span = document.createElement('span');
-  span.innerHTML = html;
-  parent.appendChild(span);
-}
-
 function toDisplayInteger(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value;
   return Math.round(value);
@@ -1298,26 +1111,6 @@ function toSignedDisplayInteger(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value;
   const rounded = Math.round(value);
   return `${rounded >= 0 ? '+' : ''}${rounded}`;
-}
-
-function toDisplayDamage(value) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
-  return value >= 0 ? Math.floor(value) : Math.ceil(value);
-}
-
-function formatDisplayValue(value, field) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
-  if (field === 'damageAmount') return toDisplayDamage(value);
-  return toDisplayInteger(value);
-}
-
-function hasHalfDamage(segments) {
-  return segments.some((segment) => {
-    const amount = Number(segment?.amount);
-    if (!Number.isFinite(amount)) return false;
-    const remainder = Math.abs(amount % 1);
-    return Math.abs(remainder - 0.5) < 1e-9;
-  });
 }
 
 // Syncs checkbox UI state to match trait values coming from features.
