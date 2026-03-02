@@ -19,6 +19,7 @@ A static web app for building and sharing monster/creature stat blocks for the D
 | `public/AllCreatures/` | Community gallery with search/filter |
 | `public/Auth/` | Login/register page |
 | `public/EditCreature/` | Edit a saved creature |
+| `public/Admin/` | Admin-only feature manager (Library + Community review/promote/delete) |
 | `public/Rules/` | DC20 stat scaling tables and game rules (`gameRules.js`) |
 | `public/utils/` | Firestore encode/decode, localStorage wrapper |
 | `public/constants/` | Enums for feature types and action types |
@@ -31,12 +32,13 @@ A static web app for building and sharing monster/creature stat blocks for the D
 ## Key Files
 
 - `public/firebaseClient.js` — Firebase app init, exports `auth` and `db`
-- `public/features.js` — Feature loading and `applyFeatureEffects()` logic
+- `public/features.js` — Feature loading, `applyFeatureEffects()`, and `buildAction()` logic
 - `public/Rules/gameRules.js` — All DC20 scaling tables (HP, PD, AD, attributes by level/role/power/type/size)
 - `public/utils/firestore.js` — Firestore document encoding/decoding helpers
 - `public/CreateCreature/js/createCreatureController.js` — Builder orchestrator (DOM wiring, state sync)
 - `public/CreateCreature/js/createCreatureState.js` — Creature state + localStorage draft persistence
 - `public/CreateCreature/js/createCreatureStats.js` — Stat scaling calculations
+- `public/Admin/admin.js` — Admin feature manager (auth gate, form, preview, Firestore CRUD)
 
 ## Build / Dev Commands
 
@@ -50,18 +52,17 @@ firebase emulators:start --only hosting --public public
 # Production build — bundles + minifies JS into dist/
 npm run build
 
-# Deploy (always build first — firebase.json points to dist/)
+# Deploy (builds first, then deploys hosting + Firestore rules)
 npm run deploy
 # or manually:
-npm run build && firebase deploy --only hosting
+npm run build && firebase deploy --only hosting,firestore:rules
 
 # Upload features to Firestore (optional admin task)
 node scripts/uploadFeatures.mjs
 ```
 
 > **Important:** Firebase Hosting is configured to serve from `dist/`, not `public/`.
-> Running `firebase deploy --only hosting` without building first will deploy a stale or empty `dist/`.
-> Always use `npm run deploy` or run `npm run build` before deploying.
+> Always use `npm run deploy` — it builds first and deploys both hosting and Firestore rules together.
 
 No test suite.
 
@@ -70,8 +71,25 @@ No test suite.
 | Collection | Purpose |
 |------------|---------|
 | `VanillaCreatures` | Saved creatures; doc ID: `{ownerId}-{name-slug}` |
-| `VanillaFeatures` | Feature library (actions, modifiers, passives) |
 | `VanillaCreatures/{id}/likes/{userId}` | Per-user like tracking subcollection |
+| `VanillaFeatures` | Feature library (actions, modifiers, passives); admin-write only |
+| `VanillaUsermadeFeatures` | Community-submitted features (`isPublic`, `totalLikes`, `createdBy`) |
+| `VanillaUsermadeFeatures/{id}/likes/{userId}` | Per-user like tracking subcollection |
+| `VanillaUsers/{uid}/featureBank/{featureId}` | Per-user saved feature bank |
+| `VanillaAdmins/{uid}` | Admin whitelist — document just needs to exist; add manually in Firebase console |
+| `VanillaEncounters` | Saved encounters |
+
+## Admin Page
+
+URL: `/Admin/admin.html` — linked in the Account dropdown nav on all pages.
+
+**Access:** Checks `VanillaAdmins/{uid}` in Firestore before showing any UI. To grant admin access: Firebase Console → Firestore → `VanillaAdmins` → add a document with the user's UID as the document ID (empty body).
+
+**Features:**
+- **Library tab** — browse/edit/save/delete `VanillaFeatures` with a live statblock preview
+- **Community tab** — browse public `VanillaUsermadeFeatures` sorted by likes; promote to library or delete
+- Form mirrors the custom feature builder but adds admin-only fields: ID slug, `featureCost`, `featureDescription`
+- Firestore rules enforce write access server-side — client check is UI-only gating
 
 ## Additional Documentation
 
