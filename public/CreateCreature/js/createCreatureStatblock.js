@@ -2,6 +2,11 @@ import dom from './createCreatureDom.js';
 import { creature, featureState, TITLE_FALLBACK } from './createCreatureState.js';
 import { FEATURE_TYPES, getFeatureSummary } from '../../features.js';
 import { SkillAttribute } from '../../Rules/gameRules.js';
+import {
+  createActionCardElement as sharedCreateActionCardElement,
+  appendField, appendBoldField, appendText,
+  createActionBadges, hasHalfDamage,
+} from '../../actionCardRenderer.js';
 
 let dragSourceId = null;
 let onFeatureReorder = () => {};
@@ -73,29 +78,6 @@ function attachDragHandlers(el, featureId) {
   });
 }
 
-function appendField(parent, value, field) {
-  if (value === undefined || value === null || value === '') return;
-  const span = document.createElement('span');
-  span.className = 'action-span';
-  span.dataset.field = field;
-  span.textContent = formatDisplayValue(value, field);
-  parent.appendChild(span);
-}
-
-function appendBoldField(parent, value, field) {
-  if (value === undefined || value === null || value === '') return;
-  const strong = document.createElement('strong');
-  appendField(strong, value, field);
-  parent.appendChild(strong);
-}
-
-function appendText(parent, html) {
-  if (html === undefined || html === null || html === '') return;
-  const span = document.createElement('span');
-  span.innerHTML = html;
-  parent.appendChild(span);
-}
-
 function toDisplayInteger(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value;
   return Math.round(value);
@@ -105,28 +87,6 @@ function toSignedDisplayInteger(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value;
   const rounded = Math.round(value);
   return `${rounded >= 0 ? '+' : ''}${rounded}`;
-}
-
-function toDisplayDamage(value) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
-  return value >= 0 ? Math.floor(value) : Math.ceil(value);
-}
-
-function formatDisplayValue(value, field) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return value;
-  if (field === 'damageAmount') return toDisplayDamage(value);
-  return toDisplayInteger(value);
-}
-
-function hasHalfDamage(segments, baseDamage) {
-  return segments.some((segment) => {
-    const amount = segment.useBase !== undefined
-      ? (segment.useBase ? baseDamage : 0) + (Number(segment.modifier) || 0)
-      : Number(segment?.amount);
-    if (!Number.isFinite(amount)) return false;
-    const remainder = Math.abs(amount % 1);
-    return Math.abs(remainder - 0.5) < 1e-9;
-  });
 }
 
 function renderTraitGroup(container, group) {
@@ -332,299 +292,29 @@ function renderFeatureSummary() {
   });
 }
 
-function createActionBadges(action) {
-  const badges = [];
-  if (action.isLegendaryAction) badges.push('Legendary Action');
-  if (action.isApexAction) badges.push('Apex Action');
-  if (!badges.length) return null;
-  const row = document.createElement('div');
-  row.className = 'action-badges';
-  badges.forEach((label) => {
-    const badge = document.createElement('span');
-    badge.className = 'action-badge';
-    badge.textContent = label;
-    row.appendChild(badge);
-  });
-  return row;
-}
 
-function createActionCardElement(action, { showTrigger = false, baseDamage = 0, customFeaturesById = {} } = {}) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'statblock-action-item';
-  wrapper.dataset.featureId = action.id;
 
+function createActionCardElement(action, { showTrigger = false, baseDamage = 0 } = {}) {
   const isCustom = Boolean(action.isCustom);
-  if (!isCustom) {
-    attachDragHandlers(wrapper, action.id);
-  }
-
-  const handle = document.createElement('div');
-  handle.className = 'drag-handle';
-  handle.textContent = '⠿';
-  if (!isCustom) wrapper.appendChild(handle);
-
-  const header = document.createElement('div');
-  header.className = 'action-header';
-  const title = document.createElement('strong');
-  appendField(title, action.name, 'name');
-  if (isCustom) {
-    const badge = document.createElement('span');
-    badge.className = 'custom-feature-badge';
-    badge.textContent = 'custom';
-    title.appendChild(badge);
-  }
-  appendText(title, ' (');
-  appendField(title, action.cost ?? 0, 'cost');
-  appendText(title, ' AP):');
-  header.appendChild(title);
-  wrapper.appendChild(header);
-
-  const badgesRow = createActionBadges(action);
-  if (badgesRow) wrapper.appendChild(badgesRow);
-
-  if (showTrigger && action.reactionTrigger) {
-    const triggerLine = document.createElement('div');
-    triggerLine.className = 'action-trigger';
-    triggerLine.textContent = `Trigger: ${action.reactionTrigger}`;
-    wrapper.appendChild(triggerLine);
-  }
-
-  const actionTypeLabel = String(action.actionType || '').toLowerCase();
-  // Utility actions: no attack line — show description first, then save/check below.
-  // Attack actions: show attack line first, then target/range, then save/check, then description.
-  const isUtilityAction = actionTypeLabel.includes('utility') && !actionTypeLabel.includes('check');
-
-  const summary = document.createElement('div');
-  summary.className = 'action-summary';
-
-  if (isUtilityAction) {
-    // Description at the top for utility/save/check features
-    if (action.description) {
-      const description = document.createElement('div');
-      description.className = 'action-description';
-      description.textContent = action.description;
-      summary.appendChild(description);
-    }
-  } else {
-    // Attack line: actionType • vs defense • DC • damage
-    const attackLine = document.createElement('div');
-    appendField(attackLine, action.actionType || 'Action', 'actionType');
-
-    if (action.targetDefense) {
-      appendText(attackLine, ' vs ');
-      appendField(attackLine, action.targetDefense, 'targetDefense');
-    }
-
-    if (action.check && action.check.dc != null) {
-      appendText(attackLine, action.targetDefense ? ' • DC ' : ' DC ');
-      appendBoldField(attackLine, action.check.dc, 'checkDc');
-    }
-
-    appendText(attackLine, '.');
-
-    const segments = Array.isArray(action.damage) ? action.damage : [];
-    if (segments.length && action.targetDefense) {
-      // Only show damage for attacks that target a defense (PD or AD).
-      // Heavy hit bonus applies to targeted (PD) attacks, not area (AD) attacks.
-      const showHeavyHitBonus =
-        actionTypeLabel.includes('attack') &&
-        action.targetDefense === 'PD' &&
-        hasHalfDamage(segments, baseDamage);
-      appendText(attackLine, ' ');
-      segments.forEach((segment, index) => {
-        if (index > 0) appendText(attackLine, ' + ');
-        const raw = segment.useBase !== undefined
-          ? (segment.useBase ? baseDamage : 0) + (Number(segment.modifier) || 0)
-          : Number(segment.amount) || 0;
-        appendBoldField(attackLine, Math.floor(raw), 'damageAmount');
-        if (segment.type) {
-          appendText(attackLine, ' ');
-          appendBoldField(attackLine, segment.type, 'damageType');
-        }
-      });
-      appendText(attackLine, ' damage');
-      if (showHeavyHitBonus) {
-        appendText(attackLine, ', +1 on heavy hits.');
-      }
-    }
-    summary.appendChild(attackLine);
-
-    if (action.target || action.range) {
-      const targetLine = document.createElement('div');
-      appendText(targetLine, 'Target ');
-      appendField(targetLine, action.target || 'target', 'target');
-      if (action.range) {
-        appendText(targetLine, ' within ');
-        appendField(targetLine, action.range, 'range');
-      }
-      appendText(targetLine, '.');
-      summary.appendChild(targetLine);
-    }
-  }
-
-  // Save and check blocks — rendered for both utility and attack paths
-  if (action.save) {
-    if (action.save.attribute) {
-      const saveLine = document.createElement('div');
-      if (action.save.repeatable) appendText(saveLine, 'Repeatable ');
-      appendField(saveLine, action.save.attribute, 'saveAttribute');
-      appendText(saveLine, ' Save');
-      if (action.targetDefense) {
-        // Dynamic Attack Save — attacker hit vs defense for damage, target saves vs creature's saveDC
-        appendText(saveLine, ' vs Save DC ');
-        appendBoldField(saveLine, action.saveDC ?? creature.saveDC, 'saveDc');
-      }
-      appendText(saveLine, '.');
-      summary.appendChild(saveLine);
-    }
-
-    if (action.save.failure) {
-      const failureLine = document.createElement('div');
-      appendText(failureLine, 'Failure: ');
-      appendField(failureLine, action.save.failure, 'saveFailure');
-      summary.appendChild(failureLine);
-    }
-
-    if (action.save.failureEach5) {
-      const failureEachLine = document.createElement('div');
-      appendText(failureEachLine, 'Failure (Each 5): ');
-      appendField(failureEachLine, action.save.failureEach5, 'saveFailureEach5');
-      summary.appendChild(failureEachLine);
-    }
-
-    if (action.save.success) {
-      const successLine = document.createElement('div');
-      appendText(successLine, 'Success: ');
-      appendField(successLine, action.save.success, 'saveSuccess');
-      summary.appendChild(successLine);
-    }
-
-    if (action.save.successEach5) {
-      const successEachLine = document.createElement('div');
-      appendText(successEachLine, 'Success (Each 5): ');
-      appendField(successEachLine, action.save.successEach5, 'saveSuccessEach5');
-      summary.appendChild(successEachLine);
-    }
-
-    if (action.save.duration) {
-      const durationLine = document.createElement('div');
-      appendText(durationLine, 'Duration: ');
-      appendField(durationLine, action.save.duration, 'saveDuration');
-      appendText(durationLine, '.');
-      summary.appendChild(durationLine);
-    }
-  }
-
-  if (action.check) {
-    if (action.check.failure) {
-      const checkFailure = document.createElement('div');
-      appendText(checkFailure, 'Failure: ');
-      appendField(checkFailure, action.check.failure, 'checkFailure');
-      summary.appendChild(checkFailure);
-    }
-
-    if (action.check.failureEach5) {
-      const checkFailureEach = document.createElement('div');
-      appendText(checkFailureEach, 'Failure (Each 5): ');
-      appendField(checkFailureEach, action.check.failureEach5, 'checkFailureEach5');
-      summary.appendChild(checkFailureEach);
-    }
-
-    if (action.check.success) {
-      const checkSuccess = document.createElement('div');
-      appendText(checkSuccess, 'Success: ');
-      appendField(checkSuccess, action.check.success, 'checkSuccess');
-      summary.appendChild(checkSuccess);
-    }
-
-    if (action.check.successEach5) {
-      const checkSuccessEach = document.createElement('div');
-      appendText(checkSuccessEach, 'Success (Each 5): ');
-      appendField(checkSuccessEach, action.check.successEach5, 'checkSuccessEach5');
-      summary.appendChild(checkSuccessEach);
-    }
-  }
-
-  // Description at the bottom for attack-type features (utility shows it at top)
-  if (!isUtilityAction && action.description) {
-    const description = document.createElement('div');
-    description.className = 'action-description';
-    description.textContent = action.description;
-    summary.appendChild(description);
-  }
-
-  // Enhancements
-  const enhancements = Array.isArray(action.enhancements) ? action.enhancements : [];
-  if (enhancements.length) {
-    const enhList = document.createElement('div');
-    enhList.className = 'action-enhancements';
-    enhancements.forEach((enh) => {
-      if (!enh) return;
-      const line = document.createElement('div');
-      line.className = 'action-enhancement';
-      appendText(line, `\u2022 (+${enh.cost ?? 1}) ${enh.name || 'Enhancement'}: `);
-      if (enh.save && enh.save.attribute) {
-        const savePrefix = enh.save.repeatable ? 'Repeatable ' : '';
-        appendText(line, `${savePrefix}${enh.save.attribute} Save. Failure: ${enh.save.failure ?? ''}`);
-        if (enh.save.failureEach5) appendText(line, ` Failure (Each 5): ${enh.save.failureEach5}.`);
-        if (enh.save.success) appendText(line, ` Success: ${enh.save.success}.`);
-        if (enh.save.duration) appendText(line, ` Duration: ${enh.save.duration}.`);
-      } else if (Array.isArray(enh.damageSegments) && enh.damageSegments.length) {
-        enh.damageSegments.forEach((seg, i) => {
-          if (i > 0) appendText(line, ' + ');
-          const raw = seg.useBase !== undefined
-            ? (seg.useBase ? baseDamage : 0) + (Number(seg.modifier) || 0)
-            : Number(seg.amount) || 0;
-          appendBoldField(line, Math.floor(raw), 'damageAmount');
-          if (seg.type) { appendText(line, ' '); appendBoldField(line, seg.type, 'damageType'); }
-        });
-        appendText(line, ' damage.');
-      } else if (enh.description) {
-        appendText(line, enh.description);
-      }
-      enhList.appendChild(line);
-    });
-    summary.appendChild(enhList);
-  }
-
-  wrapper.appendChild(summary);
-
-  // Edit / bank / remove buttons — shared by both paths
-  if (isCustom) {
-    const editBtn = document.createElement('button');
-    editBtn.type = 'button';
-    editBtn.className = 'statblock-edit-btn';
-    editBtn.title = 'Edit custom feature';
-    editBtn.textContent = '✏';
-    editBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+  const card = sharedCreateActionCardElement(action, creature.saveDC ?? 0, baseDamage, {
+    showTrigger,
+    showDragHandle: !isCustom,
+    showRemoveButton: true,
+    showEditButton: isCustom,
+    showBankButton: isCustom,
+    showCustomBadge: isCustom,
+    onRemove: () => onFeatureRemove(action.id),
+    onEdit: () => {
       const orig = (creature.customFeatures || []).find((f) => f.id === action.id);
       onCustomFeatureEdit(orig || action);
-    });
-    wrapper.appendChild(editBtn);
-
-    const bankBtn = document.createElement('button');
-    bankBtn.type = 'button';
-    bankBtn.className = 'statblock-bank-btn';
-    bankBtn.title = 'Save to my feature bank';
-    bankBtn.textContent = '★';
-    bankBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+    },
+    onBank: () => {
       const orig = (creature.customFeatures || []).find((f) => f.id === action.id);
       onSaveToBank(orig || action);
-    });
-    wrapper.appendChild(bankBtn);
-  }
-
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'statblock-remove-btn';
-  removeBtn.title = 'Remove feature';
-  removeBtn.textContent = '×';
-  removeBtn.addEventListener('click', (e) => { e.stopPropagation(); onFeatureRemove(action.id); });
-  wrapper.appendChild(removeBtn);
-
-  return wrapper;
+    },
+  });
+  if (!isCustom) attachDragHandlers(card, action.id);
+  return card;
 }
 
 function renderActionList(target, actions, { emptyMessage = 'No actions available.', showTrigger = false, baseDamage = 0 } = {}) {

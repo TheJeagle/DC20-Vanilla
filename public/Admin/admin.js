@@ -8,6 +8,7 @@
 
 import { auth, db } from '../firebaseClient.js';
 import { buildAction } from '../features.js';
+import { createActionCardElement } from '../actionCardRenderer.js';
 import { updateNavAuth } from '../navAuth.js';
 import {
   onAuthStateChanged,
@@ -1072,157 +1073,15 @@ function updatePreview() {
   try {
     const action = buildAction(PREVIEW_CREATURE, feature);
     if (!action) { previewArea.textContent = 'Could not build action preview.'; return; }
-    previewArea.appendChild(renderAdminActionCard(action, PREVIEW_CREATURE.damage));
+    previewArea.appendChild(createActionCardElement(
+      action, action.saveDC ?? PREVIEW_CREATURE.saveDC, PREVIEW_CREATURE.damage,
+      { showTrigger: Boolean(action.isReaction) }
+    ));
   } catch (err) {
     previewArea.textContent = `Preview error: ${err.message}`;
   }
 }
 
-/**
- * Simplified action card renderer for preview — no edit/remove/bank buttons.
- * Mirrors createCreatureStatblock.js createActionCardElement() without creature dependencies.
- */
-function renderAdminActionCard(action, baseDamage = 0) {
-  const wrapper = makeElement('div', 'statblock-action-item');
-
-  const header = makeElement('div', 'action-header');
-  const title = makeElement('strong', '');
-  title.textContent = `${action.name || 'Unnamed'} (${action.cost ?? 0} AP):`;
-  header.appendChild(title);
-  wrapper.appendChild(header);
-
-  if (action.isLegendaryAction || action.isApexAction) {
-    const badges = makeElement('div', 'action-badges');
-    if (action.isLegendaryAction) badges.appendChild(makeElement('span', 'action-badge', 'Legendary Action'));
-    if (action.isApexAction) badges.appendChild(makeElement('span', 'action-badge', 'Apex Action'));
-    wrapper.appendChild(badges);
-  }
-
-  if (action.isReaction && action.reactionTrigger) {
-    wrapper.appendChild(makeElement('div', 'action-trigger', `Trigger: ${action.reactionTrigger}`));
-  }
-
-  const actionTypeLabel = String(action.actionType || '').toLowerCase();
-  const isUtility = actionTypeLabel.includes('utility') && !actionTypeLabel.includes('check');
-  const summary = makeElement('div', 'action-summary');
-
-  const appendText = (parent, text) => {
-    if (text === undefined || text === null || text === '') return;
-    const span = document.createElement('span');
-    span.textContent = text;
-    parent.appendChild(span);
-  };
-
-  if (isUtility) {
-    if (action.description) {
-      summary.appendChild(makeElement('div', 'action-description', action.description));
-    }
-  } else {
-    const attackLine = document.createElement('div');
-    appendText(attackLine, action.actionType || 'Action');
-    if (action.targetDefense) appendText(attackLine, ` vs ${action.targetDefense}`);
-    appendText(attackLine, '.');
-
-    const segments = Array.isArray(action.damage) ? action.damage : [];
-    if (segments.length && action.targetDefense) {
-      appendText(attackLine, ' ');
-      segments.forEach((seg, i) => {
-        if (i > 0) appendText(attackLine, ' + ');
-        const raw = seg.useBase !== undefined
-          ? (seg.useBase ? baseDamage : 0) + (Number(seg.modifier) || 0)
-          : Number(seg.amount) || 0;
-        const dmgSpan = makeElement('span', 'action-span', String(Math.floor(raw)));
-        attackLine.appendChild(dmgSpan);
-        if (seg.type) appendText(attackLine, ` ${seg.type}`);
-      });
-      appendText(attackLine, ' damage');
-    }
-    summary.appendChild(attackLine);
-
-    if (action.target || action.range) {
-      const targetLine = document.createElement('div');
-      appendText(targetLine, `Target ${action.target || 'target'}`);
-      if (action.range) appendText(targetLine, ` within ${action.range}`);
-      appendText(targetLine, '.');
-      summary.appendChild(targetLine);
-    }
-  }
-
-  // Save block
-  if (action.save) {
-    if (action.save.attribute) {
-      const savePrefix = action.save.repeatable ? 'Repeatable ' : '';
-      let saveLine = `${savePrefix}${action.save.attribute} Save`;
-      if (action.targetDefense) {
-        saveLine += ` vs Save DC ${action.saveDC ?? PREVIEW_CREATURE.saveDC}`;
-      }
-      saveLine += '.';
-      summary.appendChild(makeElement('div', '', saveLine));
-    }
-    if (action.save.failure)
-      summary.appendChild(makeElement('div', '', `Failure: ${action.save.failure}`));
-    if (action.save.failureEach5)
-      summary.appendChild(makeElement('div', '', `Failure (Each 5): ${action.save.failureEach5}`));
-    if (action.save.success)
-      summary.appendChild(makeElement('div', '', `Success: ${action.save.success}`));
-    if (action.save.successEach5)
-      summary.appendChild(makeElement('div', '', `Success (Each 5): ${action.save.successEach5}`));
-    if (action.save.duration)
-      summary.appendChild(makeElement('div', '', `Duration: ${action.save.duration}.`));
-  }
-
-  // Check block
-  if (action.check) {
-    if (action.check.failure)
-      summary.appendChild(makeElement('div', '', `Failure: ${action.check.failure}`));
-    if (action.check.failureEach5)
-      summary.appendChild(makeElement('div', '', `Failure (Each 5): ${action.check.failureEach5}`));
-    if (action.check.success)
-      summary.appendChild(makeElement('div', '', `Success: ${action.check.success}`));
-    if (action.check.successEach5)
-      summary.appendChild(makeElement('div', '', `Success (Each 5): ${action.check.successEach5}`));
-  }
-
-  if (!isUtility && action.description) {
-    summary.appendChild(makeElement('div', 'action-description', action.description));
-  }
-
-  // Enhancements
-  const enhancements = Array.isArray(action.enhancements) ? action.enhancements : [];
-  if (enhancements.length) {
-    const enhList = makeElement('div', 'action-enhancements');
-    enhancements.forEach((enh) => {
-      if (!enh) return;
-      const line = makeElement('div', 'action-enhancement');
-      let text = `\u2022 (+${enh.cost ?? 1}) ${enh.name || 'Enhancement'}: `;
-      if (enh.save && enh.save.attribute) {
-        const savePrefix = enh.save.repeatable ? 'Repeatable ' : '';
-        text += `${savePrefix}${enh.save.attribute} Save. Failure: ${enh.save.failure ?? ''}`;
-        if (enh.save.failureEach5) text += ` Failure (Each 5): ${enh.save.failureEach5}.`;
-        if (enh.save.success) text += ` Success: ${enh.save.success}.`;
-        if (enh.save.duration) text += ` Duration: ${enh.save.duration}.`;
-      } else if (Array.isArray(enh.damageSegments) && enh.damageSegments.length) {
-        enh.damageSegments.forEach((seg, i) => {
-          if (i > 0) text += ' + ';
-          const raw = seg.useBase !== undefined
-            ? (seg.useBase ? baseDamage : 0) + (Number(seg.modifier) || 0)
-            : Number(seg.amount) || 0;
-          text += `${Math.floor(raw)}`;
-          if (seg.type) text += ` ${seg.type}`;
-        });
-        text += ' damage.';
-      } else if (enh.description) {
-        text += enh.description;
-      }
-      line.textContent = text;
-      enhList.appendChild(line);
-    });
-    summary.appendChild(enhList);
-  }
-
-  wrapper.appendChild(summary);
-  return wrapper;
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Firestore operations

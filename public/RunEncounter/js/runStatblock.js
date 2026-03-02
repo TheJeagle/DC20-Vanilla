@@ -10,6 +10,8 @@
  * Attribute keys in the Firestore doc are capitalised: Mig, Agi, Cha, Int.
  */
 
+import { createActionCardElement } from '../../actionCardRenderer.js';
+
 const ATTR_DEFS = [
   { dataKey: 'Mig', label: 'Might',        combatKey: 'currentMig' },
   { dataKey: 'Agi', label: 'Agility',      combatKey: 'currentAgi' },
@@ -365,25 +367,6 @@ function appendEditableVital(container, label, combatant, key) {
   container.append(lbl, inp);
 }
 
-/**
- * Append a labeled outcome line (Failure / Success / Each 5 / Save DC header).
- * If `value` is omitted the label is rendered as a plain header line.
- */
-function appendOutcomeLine(parent, label, value) {
-  const row = document.createElement('div');
-  row.className = 'action-outcome-line';
-  const lbl = document.createElement('span');
-  lbl.className   = 'action-outcome-label';
-  lbl.textContent = value != null ? `${label}: ` : label;
-  row.appendChild(lbl);
-  if (value != null) {
-    const val = document.createElement('span');
-    val.textContent = value;
-    row.appendChild(val);
-  }
-  parent.appendChild(row);
-}
-
 const COMMON_ACTIONS = ['Move', 'Advantage', 'Dodge', 'Grapple', 'Hide', 'Help', 'Hold Action'];
 
 // ── Actions section ───────────────────────────────────────────────────────────
@@ -446,129 +429,8 @@ function buildActionsSection(title, items, onApSpend, checkBonus = null, onDodge
 }
 
 function buildActionItem(action, onApSpend, baseDamage = 0, saveDC = null) {
-  const item = document.createElement('div');
-  item.className = 'statblock-action-item';
-
-  if (onApSpend) {
-    item.classList.add('action-clickable');
-    const cost = Number(action.cost) || 0;
-    item.title = cost > 0 ? `Click to spend ${cost} AP` : 'Click to use';
-    item.addEventListener('click', () => {
-      if (cost > 0) onApSpend(cost);
-    });
-  }
-
-  // ── Name row: name + AP cost badge ──────────────────────
-  const topRow = document.createElement('div');
-  topRow.className = 'action-top-row';
-
-  const nameEl = document.createElement('div');
-  nameEl.className   = 'action-name';
-  nameEl.textContent = action.name || 'Action';
-  topRow.appendChild(nameEl);
-
-  if (action.cost != null && action.cost !== '') {
-    const badge = document.createElement('span');
-    badge.className   = 'action-badge';
-    badge.textContent = `${action.cost} AP`;
-    topRow.appendChild(badge);
-  }
-
-  item.appendChild(topRow);
-
-  // ── Trigger ──────────────────────────────────────────────
-  const triggerText = action.reactionTrigger || action.trigger || '';
-  if (triggerText) {
-    const trig = document.createElement('div');
-    trig.className   = 'action-trigger';
-    trig.textContent = `Trigger: ${triggerText}`;
-    item.appendChild(trig);
-  }
-
-  // ── Prose summary line ───────────────────────────────────
-  // e.g. "Ranged Martial Attack vs PD of a creature within 10 / 15 Spaces,
-  //        3 Piercing damage on hit."
-  const actionTypeLabel = String(action.actionType || '').toLowerCase();
-  const isUtility = actionTypeLabel.includes('utility') && !actionTypeLabel.includes('check');
-
-  if (!isUtility) {
-    const parts = [];
-
-    // "{actionType} vs {targetDefense}"
-    let attackPart = action.actionType || '';
-    if (action.targetDefense) attackPart += ` vs ${action.targetDefense}`;
-    if (attackPart) parts.push(attackPart);
-
-    // "of {target} within/in {range}"
-    if (action.target || action.range) {
-      let locationPart = '';
-      if (action.target) locationPart += `of ${action.target}`;
-      if (action.range) {
-        const preposition = actionTypeLabel.includes('area') ? 'within' : 'within';
-        locationPart += locationPart ? ` ${preposition} ${action.range}` : `${preposition} ${action.range}`;
-      }
-      if (locationPart) parts.push(locationPart);
-    }
-
-    // damage — new format: {useBase, modifier, type}; old format fallback: {amount, type}
-    const segments = Array.isArray(action.damage) ? action.damage : [];
-    if (segments.length) {
-      const baseDmg = Number(baseDamage) || 0;
-      let heavyBonus = 0;
-      const dmgStr = segments
-        .map(d => {
-          const raw = d.useBase !== undefined
-            ? (d.useBase ? baseDmg : 0) + (Number(d.modifier) || 0)
-            : Number(d.amount) || 0;
-          const base = Math.floor(raw);
-          heavyBonus += Math.ceil(raw) - base;
-          return d.type ? `${base} ${cap(d.type)}` : String(base);
-        })
-        .join(' + ');
-      let onHit = `${dmgStr} damage on hit`;
-      if (heavyBonus > 0) onHit += `, +${heavyBonus} on heavy hits`;
-      parts.push(onHit);
-    }
-
-    // check DC inline for pure check actions (no attack roll)
-    if (action.check?.dc != null && !action.targetDefense) {
-      parts.push(`DC ${action.check.dc}`);
-    }
-
-    if (parts.length) {
-      const summary = document.createElement('div');
-      summary.className   = 'action-stats';
-      summary.textContent = parts.join(', ') + '.';
-      item.appendChild(summary);
-    }
-
-    // ── Save block ─────────────────────────────────────────
-    if (action.save?.attribute) {
-      appendOutcomeLine(item, `${action.save.attribute} Save, DC ${action.save.dc ?? saveDC ?? '—'}`);
-      if (action.save.failure)      appendOutcomeLine(item, 'Failure',            action.save.failure);
-      if (action.save.failureEach5) appendOutcomeLine(item, 'Failure (Each 5)',   action.save.failureEach5);
-      if (action.save.success)      appendOutcomeLine(item, 'Success',            action.save.success);
-      if (action.save.successEach5) appendOutcomeLine(item, 'Success (Each 5)',   action.save.successEach5);
-    }
-
-    // ── Check outcomes — shown for all check-type actions ──
-    // (DC is already in the summary line above; just render the riders)
-    if (action.check?.dc != null) {
-      if (action.check.failure)      appendOutcomeLine(item, 'Failure',           action.check.failure);
-      if (action.check.failureEach5) appendOutcomeLine(item, 'Failure (Each 5)',  action.check.failureEach5);
-      if (action.check.success)      appendOutcomeLine(item, 'Success',           action.check.success);
-      if (action.check.successEach5) appendOutcomeLine(item, 'Success (Each 5)',  action.check.successEach5);
-    }
-  }
-
-  // ── Description (utility actions and any extra flavour text) ──
-  const descText = action.description || action.effect || action.text || '';
-  if (descText) {
-    const desc = document.createElement('p');
-    desc.className   = 'action-description';
-    desc.textContent = descText;
-    item.appendChild(desc);
-  }
-
-  return item;
+  return createActionCardElement(action, saveDC ?? 0, baseDamage, {
+    showTrigger: true,
+    onApSpend,
+  });
 }
