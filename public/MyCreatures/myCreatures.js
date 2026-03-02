@@ -651,7 +651,7 @@ if (logoutButton) {
 
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
-  updateNavAuth(user);
+  updateNavAuth(user, db);
   if (!user) {
     setStatus('info', 'Sign in to view your saved creatures.');
     if (creaturesList) {

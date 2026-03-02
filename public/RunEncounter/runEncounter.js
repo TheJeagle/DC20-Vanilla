@@ -4,7 +4,7 @@
  * Loads encounter + creatures, builds bench, wires combat panel.
  */
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
-import { auth } from '../firebaseClient.js';
+import { auth, db } from '../firebaseClient.js';
 import { updateNavAuth } from '../navAuth.js';
 import { state } from './js/runState.js';
 import { loadEncounterForRun, fetchCreatures } from './js/runFirebase.js';
@@ -197,7 +197,7 @@ if (logoutButton) {
 }
 
 onAuthStateChanged(auth, (user) => {
-  updateNavAuth(user);
+  updateNavAuth(user, db);
 });
 
 document.addEventListener('DOMContentLoaded', () => {

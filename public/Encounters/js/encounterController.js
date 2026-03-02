@@ -4,7 +4,7 @@
  * and coordinates all sub-modules.
  */
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
-import { auth } from '../../firebaseClient.js';
+import { auth, db } from '../../firebaseClient.js';
 import { updateNavAuth } from '../../navAuth.js';
 import { encounter, ui } from './encounterState.js';
 import dom from './encounterDom.js';
@@ -45,7 +45,7 @@ export function initController() {
   // Auth listener
   onAuthStateChanged(auth, user => {
     ui.currentUser = user;
-    updateNavAuth(user);
+    updateNavAuth(user, db);
     onAuthChange(user);
   });
 

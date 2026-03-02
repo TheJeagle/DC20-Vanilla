@@ -99,7 +99,7 @@ const nowTimestamp = () => Timestamp.fromMillis(Date.now());
 const authReadyPromise = new Promise((resolve) => {
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
-    updateNavAuth(user);
+    updateNavAuth(user, db);
     resolve();
 
     if (landingState.featured || landingState.newest || landingState.runners.length) {

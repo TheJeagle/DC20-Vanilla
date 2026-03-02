@@ -214,7 +214,7 @@ dom.logoutButton?.addEventListener('click', () => {
 // ── Auth gate ─────────────────────────────────────────────────────────────
 
 onAuthStateChanged(auth, (user) => {
-  updateNavAuth(user);
+  updateNavAuth(user, db);
   hide(dom.loading);
 
   if (!user) {

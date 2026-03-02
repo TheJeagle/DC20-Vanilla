@@ -8,7 +8,7 @@ import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/
 import { updateNavAuth } from '../../navAuth.js';
 import { roleModifiersData } from '../../Rules/gameRules.js';
 import { loadFeatures, applyFeatureEffects } from '../../features.js';
-import { auth } from '../../firebaseClient.js';
+import { auth, db } from '../../firebaseClient.js';
 import { buildCreatureDocumentId } from '../../utils/firestore.js';
 import dom from './createCreatureDom.js';
 import {
@@ -861,7 +861,7 @@ function initializeAuthHandling() {
 
   onAuthStateChanged(auth, async (user) => {
     setCurrentUser(user);
-    updateNavAuth(user);
+    updateNavAuth(user, db);
     updateSaveButtonState(user);
     updateSavePromptForAuth(user);
 

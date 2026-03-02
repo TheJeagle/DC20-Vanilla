@@ -609,7 +609,7 @@ function attachEventListeners() {
 function initializeAuthListener() {
   onAuthStateChanged(auth, (user) => {
     state.currentUser = user;
-    updateNavAuth(user);
+    updateNavAuth(user, db);
     annotateLikesForCreatures(user).catch((error) =>
       console.warn('Failed to refresh like annotations', error)
     );

@@ -1,3 +1,6 @@
+/* Ensure [hidden] always wins over any display rule in this stylesheet. */
+[hidden] { display: none !important; }
+
 :root {
   --accent: #8e44ad;
   --accent-strong: #9b59b6;

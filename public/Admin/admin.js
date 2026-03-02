@@ -86,7 +86,7 @@ document.getElementById('logoutButton')?.addEventListener('click', () => {
 });
 
 onAuthStateChanged(auth, async (user) => {
-  updateNavAuth(user);
+  updateNavAuth(user, db);
   hide($('adminLoading'));
 
   if (!user) {

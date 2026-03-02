@@ -3,7 +3,7 @@
  * Community encounter browse page — fetch, filter, and render.
  */
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
-import { auth } from '../firebaseClient.js';
+import { auth, db } from '../firebaseClient.js';
 import { updateNavAuth } from '../navAuth.js';
 import { loadPublicEncounters } from '../Encounters/js/encounterFirebase.js';
 import { ENVIRONMENT_TAGS } from '../constants/encounterTags.js';
@@ -326,7 +326,7 @@ async function bootstrap() {
 
   onAuthStateChanged(auth, user => {
     state.currentUser = user;
-    updateNavAuth(user);
+    updateNavAuth(user, db);
   });
 
   await fetchEncounters();
