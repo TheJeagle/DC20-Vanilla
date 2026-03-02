@@ -1,0 +1,330 @@
+.account-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: clamp(32px, 6vw, 72px) clamp(20px, 8vw, 96px);
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── State screens ───────────────────────────────────────────────────────── */
+
+.account-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #4a2a6d;
+}
+
+.account-state a {
+  color: #6d28d9;
+  font-weight: 600;
+}
+
+/* ── Admin banner ─────────────────────────────────────────────────────────── */
+
+.admin-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.12), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(109, 40, 217, 0.35);
+  text-decoration: none;
+  color: #3b1f6e;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.admin-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(109, 40, 217, 0.18);
+}
+
+.admin-banner-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.admin-banner > span:nth-child(2) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-banner strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.admin-banner-sub {
+  font-size: 0.88rem;
+  color: rgba(59, 31, 110, 0.72);
+}
+
+.admin-banner-arrow {
+  font-size: 1.2rem;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+
+.account-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.account-card {
+  padding: clamp(20px, 4vw, 28px);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(142, 68, 173, 0.16);
+  box-shadow: 0 8px 32px rgba(70, 51, 112, 0.1);
+  display: grid;
+  gap: 18px;
+}
+
+.account-card--danger {
+  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(255, 252, 252, 0.98);
+}
+
+.account-card-title {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #3a2750;
+}
+
+.account-card-title--danger {
+  color: #991b1b;
+}
+
+/* ── Profile info ─────────────────────────────────────────────────────────── */
+
+.profile-info {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.profile-row {
+  display: flex;
+  gap: 8px;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.profile-row dt {
+  font-weight: 600;
+  color: #4a2a6d;
+  min-width: 110px;
+  flex-shrink: 0;
+}
+
+.profile-row dd {
+  margin: 0;
+  color: #1f1f1f;
+  word-break: break-all;
+}
+
+/* ── Name change form ─────────────────────────────────────────────────────── */
+
+.name-form {
+  display: grid;
+  gap: 10px;
+}
+
+.name-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a2a6d;
+}
+
+.name-row {
+  display: flex;
+  gap: 10px;
+}
+
+.name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(142, 68, 173, 0.28);
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f1f1f;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.name-input:focus {
+  border-color: rgba(109, 40, 217, 0.6);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.btn-primary {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(142, 68, 173, 0.85);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: rgba(109, 40, 217, 0.9);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-danger {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  background: rgba(220, 38, 38, 0.1);
+  color: #991b1b;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-danger:hover {
+  background: rgba(220, 38, 38, 0.18);
+  transform: translateY(-1px);
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(142, 68, 173, 0.28);
+  background: transparent;
+  color: #4a2a6d;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background: rgba(142, 68, 173, 0.08);
+}
+
+/* ── Stats ────────────────────────────────────────────────────────────────── */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 10px;
+  border-radius: 14px;
+  background: rgba(142, 68, 173, 0.06);
+  border: 1px solid rgba(142, 68, 173, 0.12);
+  text-align: center;
+}
+
+.stat-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #3a2750;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: rgba(58, 39, 80, 0.65);
+  font-weight: 500;
+}
+
+/* ── Danger zone ──────────────────────────────────────────────────────────── */
+
+.danger-description {
+  margin: 0;
+  font-size: 0.93rem;
+  color: rgba(31, 31, 31, 0.72);
+  line-height: 1.55;
+}
+
+.delete-confirm {
+  display: grid;
+  gap: 12px;
+}
+
+.delete-confirm-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #991b1b;
+  line-height: 1.5;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Form messages ────────────────────────────────────────────────────────── */
+
+.form-message {
+  margin: 0;
+  font-size: 0.88rem;
+  min-height: 1.2em;
+}
+
+.form-message--success {
+  color: #15803d;
+}
+
+.form-message--error {
+  color: #991b1b;
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────────── */
+
+.is-hidden {
+  display: none !important;
+}

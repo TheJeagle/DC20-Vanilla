@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Account • DC20 Creature Creator</title>
+    <link rel="stylesheet" href="../reset.css" />
+    <link rel="stylesheet" href="../site.css" />
+    <link rel="stylesheet" href="./account.css" />
+  </head>
+  <body>
+    <nav class="site-nav">
+      <a class="site-brand" href="../index.html"><span>DC20</span> Creature Creator</a>
+      <div class="site-nav-links">
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn" type="button">Create <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../CreateCreature/createCreature.html">Create Creature</a>
+            <a class="nav-dropdown-item" href="../Encounters/encounters.html">Create Encounter</a>
+          </div>
+        </div>
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn" type="button">Community <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../AllCreatures/viewAllCreatures.html">All Creatures</a>
+            <a class="nav-dropdown-item" href="../AllEncounters/viewAllEncounters.html">All Encounters</a>
+          </div>
+        </div>
+        <div class="nav-dropdown is-active" id="navAccountDropdown">
+          <button class="nav-dropdown-btn is-active" type="button">Account <span class="nav-dropdown-chevron">▾</span></button>
+          <div class="nav-dropdown-menu">
+            <a class="nav-dropdown-item" href="../MyCreatures/myCreatures.html">My Creatures</a>
+            <a class="nav-dropdown-item" href="../MyEncounters/myEncounters.html">My Encounters</a>
+            <a class="nav-dropdown-item is-active" href="./account.html">Account</a>
+            <a class="nav-dropdown-item" href="../Admin/admin.html">Admin</a>
+            <button class="nav-dropdown-item nav-dropdown-item--danger" type="button" id="logoutButton">Logout</button>
+          </div>
+        </div>
+        <a class="nav-link" id="navSignInLink" href="../Auth/auth.html" hidden>Sign In</a>
+      </div>
+    </nav>
+
+    <main class="account-page">
+
+      <div id="accountLoading" class="account-state">
+        <p>Loading…</p>
+      </div>
+
+      <div id="accountNotSignedIn" class="account-state is-hidden">
+        <h2>Sign in required</h2>
+        <p>Please <a href="../Auth/auth.html">sign in</a> to view your account.</p>
+      </div>
+
+      <div id="accountContent" class="account-content is-hidden">
+
+        <!-- Admin shortcut (shown to admins only) -->
+        <a id="adminBanner" href="../Admin/admin.html" class="admin-banner is-hidden">
+          <span class="admin-banner-icon">🛡</span>
+          <span>
+            <strong>You have admin access.</strong>
+            <span class="admin-banner-sub">Manage the feature library and community submissions.</span>
+          </span>
+          <span class="admin-banner-arrow">→</span>
+        </a>
+
+        <!-- Profile -->
+        <section class="account-card" aria-labelledby="profileHeading">
+          <h2 id="profileHeading" class="account-card-title">Profile</h2>
+
+          <dl class="profile-info">
+            <div class="profile-row">
+              <dt>Email</dt>
+              <dd id="profileEmail">—</dd>
+            </div>
+            <div class="profile-row">
+              <dt>Display name</dt>
+              <dd id="profileDisplayName">—</dd>
+            </div>
+          </dl>
+
+          <form id="displayNameForm" class="name-form" novalidate>
+            <label class="name-label" for="displayNameInput">Change display name</label>
+            <div class="name-row">
+              <input
+                id="displayNameInput"
+                type="text"
+                class="name-input"
+                placeholder="Your display name"
+                maxlength="60"
+                autocomplete="nickname"
+              />
+              <button type="submit" class="btn-primary">Save</button>
+            </div>
+            <p id="nameMessage" class="form-message" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <!-- Stats -->
+        <section class="account-card" aria-labelledby="statsHeading">
+          <h2 id="statsHeading" class="account-card-title">Your Stats</h2>
+          <div id="statsGrid" class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-icon">🐉</span>
+              <span id="statCreatures" class="stat-value">—</span>
+              <span class="stat-label">Creatures</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">⚔️</span>
+              <span id="statEncounters" class="stat-value">—</span>
+              <span class="stat-label">Encounters</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">❤️</span>
+              <span id="statLikes" class="stat-value">—</span>
+              <span class="stat-label">Likes Received</span>
+            </div>
+          </div>
+          <p id="statsError" class="form-message form-message--error is-hidden" aria-live="polite"></p>
+        </section>
+
+        <!-- Danger zone -->
+        <section class="account-card account-card--danger" aria-labelledby="dangerHeading">
+          <h2 id="dangerHeading" class="account-card-title account-card-title--danger">Danger Zone</h2>
+          <p class="danger-description">
+            Deleting your account is permanent. Your creatures and encounters will remain in the
+            community but will no longer be editable by you.
+          </p>
+
+          <div id="deleteStep1">
+            <button type="button" id="deleteAccountBtn" class="btn-danger">Delete my account</button>
+          </div>
+
+          <div id="deleteStep2" class="delete-confirm is-hidden">
+            <p class="delete-confirm-text">
+              To confirm, enter your password (or leave blank if you signed in with Google and
+              click <strong>Confirm delete</strong>). You may be asked to sign in again.
+            </p>
+            <form id="deleteConfirmForm" novalidate>
+              <input
+                id="deletePasswordInput"
+                type="password"
+                class="name-input"
+                placeholder="Password (email accounts)"
+                autocomplete="current-password"
+              />
+              <div class="delete-confirm-actions">
+                <button type="submit" class="btn-danger">Confirm delete</button>
+                <button type="button" id="deleteCancelBtn" class="btn-secondary">Cancel</button>
+              </div>
+            </form>
+            <p id="deleteMessage" class="form-message form-message--error" aria-live="polite"></p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <footer>
+      <div>&copy; <span id="footerYear"></span> DC20 Creature Creator</div>
+      <nav>
+        <a href="https://www.dc20rpg.com" target="_blank" rel="noopener noreferrer">Official DC20</a>
+        <a href="https://discord.gg/dc20rpg" target="_blank" rel="noopener noreferrer">DC20 Discord</a>
+      </nav>
+    </footer>
+
+    <script type="module" src="./account.js"></script>
+  </body>
+</html>
