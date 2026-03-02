@@ -5,12 +5,62 @@
  * Exports helpers + the single canonical createActionCardElement() function.
  * All statblock pages (CreateCreature, Admin, Landing, RunEncounter) import
  * from here so rendering is identical everywhere.
+ *
+ * ── How it works ─────────────────────────────────────────────────────────────
+ *
+ * Each action object is produced by buildAction() in features.js and falls
+ * into one of four DC20 mechanic types. The mechanic type drives rendering
+ * order:
+ *
+ *   1. Check vs Defense (Attack)
+ *      targetDefense set, no save → attack line + damage, then target/range.
+ *
+ *   2. Check vs Save (Effect only)
+ *      save set, no targetDefense → attack line (no damage), then save block.
+ *
+ *   3. Check vs DC (Utility / Buff)
+ *      actionType contains "utility" (and not "check") → description FIRST,
+ *      then the "DC n" line, then check outcomes below.
+ *
+ *   4. Dynamic Attack Save (Damage + Condition)
+ *      both targetDefense AND save set → attack line + damage, target/range,
+ *      then save block showing the creature's saveDC.
+ *
+ * Rendering order for each path:
+ *   Utility:      description → DC line → check outcomes
+ *   Attack/Check: attack line → target/range → save block → check outcomes
+ *                 → description → enhancements
+ *
+ * ── Exported API ─────────────────────────────────────────────────────────────
+ *
+ *   appendField(parent, value, field)      — appends a <span data-field="…">
+ *   appendBoldField(parent, value, field)  — same but wrapped in <strong>
+ *   appendText(parent, text)               — appends a plain text <span>
+ *   createActionBadges(action)             — builds Legendary/Apex badge row
+ *   hasHalfDamage(segments, baseDamage)    — true if any segment has a .5 value
+ *                                            (signals a PD heavy-hit bonus)
+ *   createActionCardElement(action, saveDC, baseDamage, opts) — main builder
+ *
+ * ── opts flags for createActionCardElement ───────────────────────────────────
+ *
+ *   showTrigger      — render the reaction trigger line
+ *   showDragHandle   — prepend a drag-handle div (used in builder reorder UI)
+ *   showRemoveButton — show × remove button, calls onRemove()
+ *   showEditButton   — show ✏ edit button, calls onEdit()
+ *   showBankButton   — show ★ bank button, calls onBank()
+ *   showCustomBadge  — show 'custom' badge next to the action name
+ *   onApSpend        — if provided, the whole card becomes clickable and calls
+ *                      onApSpend(cost) when clicked (used in RunEncounter)
  */
 
-// ─── Display helpers ──────────────────────────────────────────────────────────
+// #region Display helpers
+// Low-level DOM helpers. appendField/appendBoldField add <span data-field="…">
+// elements so external code (e.g., live-edit overlays) can target specific
+// fields by name without parsing text content.
 
 function formatDisplayValue(value, field) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value;
+  // Damage rounds toward zero (floor positive, ceil negative) to match DC20 rules.
   if (field === 'damageAmount') return value >= 0 ? Math.floor(value) : Math.ceil(value);
   return Math.round(value);
 }
@@ -38,6 +88,7 @@ export function appendText(parent, text) {
   parent.appendChild(span);
 }
 
+/** Builds the Legendary Action / Apex Action badge row, or null if neither applies. */
 export function createActionBadges(action) {
   const badges = [];
   if (action?.isLegendaryAction) badges.push('Legendary Action');
@@ -54,6 +105,12 @@ export function createActionBadges(action) {
   return row;
 }
 
+/**
+ * Returns true if any damage segment resolves to a value ending in .5.
+ * Used to decide whether to append ", +1 on heavy hits." to PD attack lines —
+ * half-damage values signal that the designer intentionally included a heavy-
+ * hit bonus.
+ */
 export function hasHalfDamage(segments, baseDamage) {
   return segments.some((segment) => {
     const amount = segment.useBase !== undefined
@@ -65,7 +122,9 @@ export function hasHalfDamage(segments, baseDamage) {
   });
 }
 
-// ─── Action card ──────────────────────────────────────────────────────────────
+// #endregion
+
+// #region createActionCardElement
 
 /**
  * Creates a complete action card element.
@@ -98,6 +157,10 @@ export function createActionCardElement(action, saveDC, baseDamage, {
   onBank = null,
   onApSpend = null,
 } = {}) {
+
+  // #region Wrapper setup
+  // The outer .statblock-action-item div holds everything. If onApSpend is
+  // provided (RunEncounter mode), the whole card becomes a clickable AP button.
   const wrapper = document.createElement('div');
   wrapper.className = 'statblock-action-item';
   wrapper.dataset.featureId = action.id;
@@ -115,8 +178,11 @@ export function createActionCardElement(action, saveDC, baseDamage, {
     handle.textContent = '⠿';
     wrapper.appendChild(handle);
   }
+  // #endregion
 
-  // ── Header ────────────────────────────────────────────────────────────────
+  // #region Header
+  // Name (bold) + AP cost + optional 'custom' badge + Legendary/Apex badges +
+  // optional reaction trigger line.
   const header = document.createElement('div');
   header.className = 'action-header';
   const title = document.createElement('strong');
@@ -142,16 +208,20 @@ export function createActionCardElement(action, saveDC, baseDamage, {
     triggerLine.textContent = `Trigger: ${action.reactionTrigger}`;
     wrapper.appendChild(triggerLine);
   }
+  // #endregion
 
-  // ── Body ──────────────────────────────────────────────────────────────────
+  // #region Body
+  // Determine render path. Utility actions (actionType contains "utility" but
+  // not "check") put their description first; all other actions put the attack
+  // line first.
   const actionTypeLabel = String(action.actionType || '').toLowerCase();
-  // Utility actions: description first, then save/check outcomes below.
-  // Attack/Check actions: attack line first, then target/range, then save/check, then description.
   const isUtilityAction = actionTypeLabel.includes('utility') && !actionTypeLabel.includes('check');
 
   const summary = document.createElement('div');
   summary.className = 'action-summary';
 
+  // #region Body — Utility path
+  // Render order: description → "ActionType DC n." (if check) → check outcomes.
   if (isUtilityAction) {
     if (action.description) {
       const description = document.createElement('div');
@@ -168,8 +238,15 @@ export function createActionCardElement(action, saveDC, baseDamage, {
       appendText(dcLine, '.');
       summary.appendChild(dcLine);
     }
+  // #endregion
+
+  // #region Body — Attack / Check path
+  // Render order: attack line (type + defense + damage) → target/range.
+  // Save block and check outcomes follow below in their own regions.
   } else {
-    // Attack line: [actionType] [vs defense] [• DC n]. [damage]
+    // Attack line: "[actionType] vs [PD/AD]. [damage] damage"
+    // For Check vs Save the targetDefense is absent, so the line reads
+    // "[actionType]." with no damage.
     const attackLine = document.createElement('div');
     appendField(attackLine, action.actionType || 'Action', 'actionType');
 
@@ -179,14 +256,18 @@ export function createActionCardElement(action, saveDC, baseDamage, {
     }
 
     if (action.check && action.check.dc != null) {
+      // Inline DC after the defense (e.g. "Area Martial Attack vs PD • DC 14")
       appendText(attackLine, action.targetDefense ? ' • DC ' : ' DC ');
       appendBoldField(attackLine, action.check.dc, 'checkDc');
     }
 
     appendText(attackLine, '.');
 
+    // Damage — only render if the action targets a defense (attack actions).
+    // Segments with useBase:true resolve against the creature's baseDamage.
     const segments = Array.isArray(action.damage) ? action.damage : [];
     if (segments.length && action.targetDefense) {
+      // PD martial attacks with a .5 damage value include a heavy-hit bonus line.
       const showHeavyHitBonus =
         actionTypeLabel.includes('attack') &&
         action.targetDefense === 'PD' &&
@@ -208,6 +289,7 @@ export function createActionCardElement(action, saveDC, baseDamage, {
     }
     summary.appendChild(attackLine);
 
+    // Target / range line (omitted if both are absent)
     if (action.target || action.range) {
       const targetLine = document.createElement('div');
       appendText(targetLine, 'Target ');
@@ -220,8 +302,12 @@ export function createActionCardElement(action, saveDC, baseDamage, {
       summary.appendChild(targetLine);
     }
   }
+  // #endregion
 
-  // ── Save block ────────────────────────────────────────────────────────────
+  // #region Save block
+  // Rendered for mechanic types 2 (Check vs Save) and 4 (Dynamic Attack Save).
+  // For type 4 the save DC comes from creature.saveDC (passed in as saveDC);
+  // for type 2 the attacker's roll IS the DC so no fixed DC is displayed.
   if (action.save) {
     if (action.save.attribute) {
       const saveLine = document.createElement('div');
@@ -268,8 +354,11 @@ export function createActionCardElement(action, saveDC, baseDamage, {
       summary.appendChild(line);
     }
   }
+  // #endregion
 
-  // ── Check outcomes ────────────────────────────────────────────────────────
+  // #region Check outcomes
+  // Failure/success text for Check vs DC actions. The DC line itself was already
+  // rendered above (in the utility path or inline on the attack line).
   if (action.check) {
     if (action.check.failure) {
       const line = document.createElement('div');
@@ -296,16 +385,23 @@ export function createActionCardElement(action, saveDC, baseDamage, {
       summary.appendChild(line);
     }
   }
+  // #endregion
 
-  // ── Description (attack/check path only; utility already rendered it at top)
+  // #region Description
+  // For attack/check actions, description is flavour text shown after the
+  // mechanics. Utility actions already rendered their description at the top.
   if (!isUtilityAction && action.description) {
     const description = document.createElement('div');
     description.className = 'action-description';
     description.textContent = action.description;
     summary.appendChild(description);
   }
+  // #endregion
 
-  // ── Enhancements ──────────────────────────────────────────────────────────
+  // #region Enhancements
+  // Optional add-ons the GM can purchase at action time for extra AP.
+  // Each enhancement has a name, cost, and one of: save block, damage segments,
+  // or a free-text description. Rendered as "• (+N) Name: …" bullet lines.
   const enhancements = Array.isArray(action.enhancements) ? action.enhancements : [];
   if (enhancements.length) {
     const enhList = document.createElement('div');
@@ -338,10 +434,14 @@ export function createActionCardElement(action, saveDC, baseDamage, {
     });
     summary.appendChild(enhList);
   }
+  // #endregion
 
   wrapper.appendChild(summary);
 
-  // ── Buttons ───────────────────────────────────────────────────────────────
+  // #region Action buttons
+  // Buttons are appended after the summary so they float to the corner via CSS.
+  // Edit and Bank only appear on custom features (isCustom: true callers set the flags).
+  // Remove appears on any feature in the builder. Button order: Edit → Bank → Remove.
   if (showEditButton && onEdit) {
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'statblock-edit-btn'; btn.title = 'Edit custom feature'; btn.textContent = '✏';
@@ -362,6 +462,9 @@ export function createActionCardElement(action, saveDC, baseDamage, {
     btn.addEventListener('click', (e) => { e.stopPropagation(); onRemove(); });
     wrapper.appendChild(btn);
   }
+  // #endregion
 
   return wrapper;
 }
+
+// #endregion
