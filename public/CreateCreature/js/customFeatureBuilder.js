@@ -758,6 +758,10 @@ function addEnhancementRow(list, enh = {}) {
       successInp.type = 'text'; successInp.className = 'cfp-text-input cfp-enh-save-success';
       successInp.placeholder = 'Success effect — optional'; successInp.value = enh.save?.success ?? '';
       typeBody.appendChild(successInp);
+      const successEach5Inp = makeElement('input');
+      successEach5Inp.type = 'text'; successEach5Inp.className = 'cfp-text-input cfp-enh-save-successeach5';
+      successEach5Inp.placeholder = 'Success (each 5) — optional'; successEach5Inp.value = enh.save?.successEach5 ?? '';
+      typeBody.appendChild(successEach5Inp);
       const enhDurSelect = makeElement('select');
       enhDurSelect.className = 'cfp-select cfp-enh-save-duration';
       SAVE_DURATIONS.forEach(({ value, label }) => {
@@ -943,12 +947,14 @@ function readFormData(body) {
       const failure = row.querySelector('.cfp-enh-save-failure')?.value?.trim() ?? '';
       const failureEach5 = row.querySelector('.cfp-enh-save-failureeach5')?.value?.trim() ?? '';
       const success = row.querySelector('.cfp-enh-save-success')?.value?.trim() ?? '';
+      const successEach5 = row.querySelector('.cfp-enh-save-successeach5')?.value?.trim() ?? '';
       const duration = row.querySelector('.cfp-enh-save-duration')?.value ?? '';
       const repeatable = row.querySelector('.cfp-enh-save-repeatable')?.checked ?? false;
       if (attribute || failure) {
         enh.save = { attribute, failure };
         if (failureEach5) enh.save.failureEach5 = failureEach5;
         if (success) enh.save.success = success;
+        if (successEach5) enh.save.successEach5 = successEach5;
         if (duration) enh.save.duration = duration;
         if (repeatable) enh.save.repeatable = true;
       }
