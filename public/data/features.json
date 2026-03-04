@@ -249,7 +249,9 @@
       "range": "5 Spaces",
       "target": "a 2 Space Sphere",
       "check": {
-        "dc": 10
+        "dc": 10,
+        "failure": "The area becomes Difficult Terrain for 1 minute.",
+        "success": "The area becomes Difficult Terrain for 1 minute, and creatures starting their turn in the area make a Physical Save or become Restrained until the end of their turn."
       }
     },
     "tags": [
@@ -410,6 +412,7 @@
       "cost": 1,
       "target": "all creatures",
       "range": "1 Space",
+      "actionDescription": "You beat your massive wings in a powerful gust, blasting all nearby creatures away.",
       "save": {
         "attribute": "Physical",
         "failure": "Pushed 1 Space directly away from you.",
@@ -1024,7 +1027,7 @@
     "tags": [
       "role/artillerist",
       "attack/martial",
-      "attack/single-target",
+      "attack/aoe",
       "target/pd",
       "ap-cost/1",
       "feature-cost/1"
@@ -3417,7 +3420,7 @@
       "target/ad",
       "ap-cost/1",
       "feature-cost/2",
-      "status/grappled"
+      "status/restrained"
     ]
   },
   {
@@ -3461,6 +3464,7 @@
     "actionType": "Martial Check",
     "effects": {
       "cost": 1,
+      "range": "Self",
       "target": "all creatures in a 4 Space Line",
       "actionDescription": "You charge up to 4 Spaces in a straight line. Each creature in your path is pushed 1 Space to either side.",
       "save": {
@@ -3639,7 +3643,7 @@
     ]
   },
   {
-    "id": "thick-hide",
+    "id": "thick-hide-giant",
     "type": "modifier",
     "name": "Thick Hide",
     "featureDescription": "Layers of dense skin and muscle shrug off crushing blows that would fell lesser creatures.",
@@ -3683,6 +3687,7 @@
     "actionType": "Spell Check",
     "effects": {
       "cost": 2,
+      "range": "Self",
       "target": "all enemies within 2 Spaces",
       "actionDescription": "You slam the ground and release a surge of primal energy that knocks nearby enemies prone.",
       "save": {
@@ -4459,8 +4464,7 @@
       }
     },
     "tags": [
-      "role/brute",
-      "role/defender",
+      "role/controller",
       "attack/spellcaster",
       "attack/single-target",
       "target/pd",
@@ -4820,8 +4824,7 @@
       }
     },
     "tags": [
-      "role/brute",
-      "role/defender",
+      "role/controller",
       "attack/spellcaster",
       "attack/single-target",
       "target/ad",
@@ -5118,16 +5121,15 @@
   },
   {
     "id": "instinctive-guard",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Instinctive Guard",
     "featureDescription": "Raise a guard automatically when danger is sensed.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When a creature targets you with an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You instinctively raise your guard, adding +2 to your PD until the start of your next turn."
@@ -5141,16 +5143,15 @@
   },
   {
     "id": "evasive-maneuver",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Evasive Maneuver",
     "featureDescription": "Snap into a dodge the instant danger registers.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by a melee attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You move 1 Space away from the attacker and add +2 to your PD against the triggering attack."
@@ -5164,22 +5165,21 @@
   },
   {
     "id": "protective-stance",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Protective Stance",
     "featureDescription": "Snap into a defensive stance that guards both you and an ally.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you or an ally within 1 Space is targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself or an adjacent ally",
       "range": "1 Space",
       "actionDescription": "You step in front of an ally or raise your guard, granting +2 PD to the target against the triggering attack."
     },
     "tags": [
-      "role/artillerist",
+      "role/defender",
       "role/support",
       "ap-cost/1",
       "feature-cost/1"
@@ -5187,16 +5187,15 @@
   },
   {
     "id": "commanding-parry",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Commanding Parry",
     "featureDescription": "Parry an incoming attack and redirect the battle momentum.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by a melee attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You parry the blow and turn the attacker's force against them, reducing the damage by your Mig modifier (minimum 1)."
@@ -5210,16 +5209,15 @@
   },
   {
     "id": "predatory-instinct",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Predatory Instinct",
     "featureDescription": "Pure animal instinct causes the beast to flinch away from danger.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Animal instinct takes over \u2014 you twist away, adding +2 to your PD against the triggering attack."
@@ -5232,16 +5230,15 @@
   },
   {
     "id": "scale-guard",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Scale Guard",
     "featureDescription": "Draw in and tighten ancient scales to deflect blows.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You contract your hide-thick scales against the blow, reducing the damage taken by 3."
@@ -5254,16 +5251,15 @@
   },
   {
     "id": "necrotic-shroud",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Necrotic Shroud",
     "featureDescription": "Deathly energy surges to absorb an incoming strike.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Spell Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "A wreath of necromantic force absorbs part of the blow, reducing the damage taken by 4."
@@ -5276,16 +5272,15 @@
   },
   {
     "id": "infernal-ward-reaction",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Infernal Ward",
     "featureDescription": "Hellfire flares up as a barrier when the creature is struck.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Spell Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by a melee attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Hellfire erupts around you as a ward, reducing the damage taken by 3 and potentially burning the attacker."
@@ -5298,16 +5293,15 @@
   },
   {
     "id": "mechanical-guard",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Mechanical Guard",
     "featureDescription": "Armor plates or shields snap into place automatically.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Internal mechanisms deploy protective plating, adding +2 to both PD and AD until the start of your next turn."
@@ -5320,16 +5314,15 @@
   },
   {
     "id": "elemental-aegis",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Elemental Aegis",
     "featureDescription": "Raw elemental force forms a barrier against incoming damage.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Spell Utility",
     "isReaction": true,
     "reactionTrigger": "When you take damage",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Elemental energy surges through you, reducing the damage taken by 3. Change the energy type to match this elemental's element."
@@ -5342,16 +5335,15 @@
   },
   {
     "id": "vine-barrier",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Vine Barrier",
     "featureDescription": "Dense vegetation springs up to intercept incoming attacks.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Spell Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by a ranged attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "A wall of vines and branches erupts from the ground to intercept the attack, adding +3 to your PD against the triggering attack."
@@ -5364,16 +5356,15 @@
   },
   {
     "id": "alien-reflex",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Alien Reflex",
     "featureDescription": "Non-Euclidean senses perceive attacks before they arrive.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Your alien perception reads the attack before it lands, adding +3 to your PD against the triggering attack."
@@ -5386,16 +5377,15 @@
   },
   {
     "id": "celestial-ward",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Celestial Ward",
     "featureDescription": "Divine light forms a shield against incoming harm.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Spell Utility",
     "isReaction": true,
     "reactionTrigger": "When you or an ally within 3 Spaces is targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself or a nearby ally",
       "range": "3 Spaces",
       "actionDescription": "A shell of divine radiance envelops the target, adding +2 to their AD against the triggering attack."
@@ -5408,16 +5398,15 @@
   },
   {
     "id": "fey-sidestep",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Fey Sidestep",
     "featureDescription": "A flash of fey magic teleports the creature a short distance.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Spell Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You vanish in a shower of sparks and reappear up to 2 Spaces away, potentially causing the triggering attack to miss."
@@ -5430,16 +5419,15 @@
   },
   {
     "id": "stone-defense",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Stone Defense",
     "featureDescription": "The giant braces and tightens its stone-like hide.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You brace with the solidity of a mountain, reducing the damage taken by 5."
@@ -5452,16 +5440,15 @@
   },
   {
     "id": "adaptive-membrane",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Adaptive Membrane",
     "featureDescription": "The ooze's body reshapes to flow around incoming attacks.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by a melee attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Your amorphous body deforms around the attack, reducing the damage taken by 3."
@@ -5474,16 +5461,15 @@
   },
   {
     "id": "combat-instinct",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Combat Instinct",
     "featureDescription": "Trained reflexes bring up a guard without conscious thought.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Muscle memory snaps a guard into place, reducing the damage taken by 2."
@@ -5555,7 +5541,7 @@
       "role/leader",
       "attack/spellcaster",
       "attack/single-target",
-      "target/ad",
+      "target/pd",
       "ap-cost/1",
       "feature-cost/1"
     ]
@@ -5754,7 +5740,7 @@
       ],
       "save": {
         "attribute": "Int",
-        "failure": "The target has Disadvantage on its next attack roll."
+        "failure": "The target has DisADV on its next attack roll."
       }
     },
     "tags": [
@@ -5908,7 +5894,7 @@
       "target": "a creature",
       "save": {
         "attribute": "Physical",
-        "failure": "The caster drains 1d6 HP from you, healing themselves for the same amount."
+        "failure": "The caster drains HP from you equal to their base damage, healing themselves for the same amount."
       },
       "actionDescription": "You reach out and siphon the target's life force into yourself."
     },
@@ -6040,8 +6026,8 @@
     "actionType": "Spell Check",
     "effects": {
       "cost": 1,
-      "range": "6 Space Burst",
-      "target": "all creatures",
+      "range": "Self",
+      "target": "a 6 Space Burst (all creatures)",
       "save": {
         "attribute": "Cha",
         "failure": "Frightened of you until the start of your next turn."
@@ -6064,8 +6050,8 @@
     "actionType": "Spell Check",
     "effects": {
       "cost": 2,
-      "range": "5 Space Burst",
-      "target": "all creatures within range",
+      "range": "Self",
+      "target": "a 5 Space Burst (all creatures)",
       "save": {
         "attribute": "Cha",
         "failure": "Frightened of you until the end of their next turn."
@@ -6108,8 +6094,8 @@
     "actionType": "Spell Check",
     "effects": {
       "cost": 2,
-      "range": "3 Space Burst",
-      "target": "all creatures within range",
+      "range": "Self",
+      "target": "a 3 Space Burst (all creatures)",
       "save": {
         "attribute": "Agi",
         "failure": "Disoriented until the end of your next turn."
@@ -6151,8 +6137,8 @@
     "actionType": "Spell Check",
     "effects": {
       "cost": 1,
-      "range": "4 Space Burst",
-      "target": "all enemies within range",
+      "range": "Self",
+      "target": "a 4 Space Burst (all enemies)",
       "save": {
         "attribute": "Cha",
         "failure": "Frightened of you until the end of your next turn."
