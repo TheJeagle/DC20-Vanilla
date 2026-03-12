@@ -132,6 +132,7 @@ export const typeScalingFactors = {
     fey:       {HPFactor: 1.0, PDMod:  1, ADMod: 0, CheckMod:  1,   SaveDCMod: 2, DamageFactor: 1.0},
     ooze:      {HPFactor: 1.5, PDMod: -2, ADMod: 2, CheckMod: -1,   SaveDCMod: 0, DamageFactor: 1.1},
     celestial: {HPFactor: 1.0, PDMod:  1, ADMod: 1, CheckMod:  1,   SaveDCMod: 1, DamageFactor: 1.0},
+    none:      {HPFactor: 1.0, PDMod:  0, ADMod: 0, CheckMod:  0,   SaveDCMod: 0, DamageFactor: 1.0},
 }
 
 

@@ -591,6 +591,23 @@ body{
     gap: 1.5rem;
 }
 
+.feature-trait-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #5a3e7a;
+    background: #f5f1ff;
+    border: 1px solid #d0c6e4;
+    border-radius: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    text-align: center;
+}
+
+.feature-trait-value--over {
+    color: #c0392b;
+    background: #fff0ee;
+    border-color: #f5a9a9;
+}
+
 #featureSearchRow{
     display: flex;
     width: 100%;

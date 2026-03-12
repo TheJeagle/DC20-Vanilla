@@ -526,7 +526,11 @@ function renderRecommendations() {
     ],
   });
 
+  const traitBudgetRec = Number.isFinite(creature.traitValue) ? creature.traitValue : 0;
+  const traitSpentRec = computeSpentTraitValue();
+
   const lines = [
+    { label: 'Trait Value: ', value: `${traitSpentRec} / ${traitBudgetRec}` },
     { label: 'Attack targets: ', value: attackTargetsDisplay },
     makeBar('Player hit vs PD (equal level):', missPD, hitPD, heavyPD, brutalPD),
     makeBar('Player hit vs AD (equal level):', missAD, hitAD, heavyAD, brutalAD),
@@ -675,7 +679,6 @@ function renderCreatureStatblock() {
     statblockHP,
     statblockPD,
     statblockAD,
-    statblockTraitValue,
     statblockMIG,
     statblockMIGSave,
     statblockAGI,
@@ -693,7 +696,10 @@ function renderCreatureStatblock() {
 
   statblockName.textContent = creature.name || TITLE_FALLBACK;
 
-  const infoLeft = `${creature.size.charAt(0).toUpperCase() + creature.size.slice(1)} ${creature.type.charAt(0).toUpperCase() + creature.type.slice(1)}`.trim();
+  const typeDisplay = creature.type && creature.type !== 'none'
+    ? creature.type.charAt(0).toUpperCase() + creature.type.slice(1)
+    : '';
+  const infoLeft = `${creature.size.charAt(0).toUpperCase() + creature.size.slice(1)} ${typeDisplay}`.trim();
   const infoRightParts = [`Level ${creature.level}`];
   if (creature.power !== 'normal') {
     infoRightParts.push(powerDisplayLabel(creature.power));
@@ -727,10 +733,12 @@ function renderCreatureStatblock() {
   statblockHP.textContent = hp;
   statblockPD.textContent = `${pd} / ${pd + 5} / ${pd + 10}`;
   statblockAD.textContent = `${ad} / ${ad + 5} / ${ad + 10}`;
-  if (statblockTraitValue) {
-    const budget = Number.isFinite(creature.traitValue) ? creature.traitValue : 0;
-    const spent = computeSpentTraitValue();
-    statblockTraitValue.textContent = `${spent} / ${budget}`;
+  const traitBudget = Number.isFinite(creature.traitValue) ? creature.traitValue : 0;
+  const traitSpent = computeSpentTraitValue();
+  if (dom.featureTraitValue) {
+    const remaining = traitBudget - traitSpent;
+    dom.featureTraitValue.textContent = `Trait Value: ${traitSpent} / ${traitBudget} (${remaining} remaining)`;
+    dom.featureTraitValue.classList.toggle('feature-trait-value--over', traitSpent > traitBudget);
   }
 
   statblockMIG.textContent = toDisplayInteger(creature.attributes.Mig ?? 0);
