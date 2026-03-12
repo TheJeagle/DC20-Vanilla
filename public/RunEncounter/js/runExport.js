@@ -210,7 +210,8 @@ function buildCreatureYaml(creature, monsterSlot) {
   const agi     = Math.round(Number(attrVals.Agi) || 0);
   const cha     = Math.round(Number(attrVals.Cha) || 0);
   const int_    = Math.round(Number(attrVals.Int) || 0);
-  const baseDmg = rs.damage;
+  const rawBaseDmg = rs.damage;
+  const baseDmg = rawBaseDmg > 0 && rawBaseDmg < 1 ? rawBaseDmg * 2 : rawBaseDmg;
 
   const lines = [];
   lines.push('```statblock');
@@ -360,7 +361,8 @@ function buildCreatureNotionMd(creature, monsterSlot) {
   const speed   = rs.speed;
   const saveDC  = rs.saveDC;
   const attack  = toSigned(rs.check);
-  const baseDmg = rs.damage;
+  const rawBaseDmg = rs.damage;
+  const baseDmg = rawBaseDmg > 0 && rawBaseDmg < 1 ? rawBaseDmg * 2 : rawBaseDmg;
 
   const mig     = Math.round(Number(attrVals.Mig)  || 0);
   const agi     = Math.round(Number(attrVals.Agi)  || 0);
@@ -676,7 +678,8 @@ function buildStatblockHtml(creature, monsterSlot) {
   const speed   = rs.speed;
   const saveDC  = rs.saveDC;
   const attack  = toSigned(rs.check);
-  const baseDmg = rs.damage;
+  const rawBaseDmg = rs.damage;
+  const baseDmg = rawBaseDmg > 0 && rawBaseDmg < 1 ? rawBaseDmg * 2 : rawBaseDmg;
   const mig     = Math.round(Number(attrVals.Mig)   || 0);
   const agi     = Math.round(Number(attrVals.Agi)   || 0);
   const cha     = Math.round(Number(attrVals.Cha)   || 0);
@@ -942,7 +945,8 @@ function buildCreatureFoundryJSON(creature, monsterSlot) {
   const speed   = rs.speed;
   const saveDC  = Math.round(rs.saveDC);
   const check   = Math.round(rs.check);
-  const baseDmg = rs.damage;
+  const rawBaseDmg = rs.damage;
+  const baseDmg = rawBaseDmg > 0 && rawBaseDmg < 1 ? rawBaseDmg * 2 : rawBaseDmg;
 
   const mig   = Math.round(Number(attrs.Mig)   || 0);
   const agi   = Math.round(Number(attrs.Agi)   || 0);

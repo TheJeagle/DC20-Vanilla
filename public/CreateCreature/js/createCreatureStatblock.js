@@ -305,9 +305,10 @@ function renderFeatureSummary() {
 
 
 
-function createActionCardElement(action, { showTrigger = false, baseDamage = 0 } = {}) {
+function createActionCardElement(action, { showTrigger = false, baseDamage = 0, apCostBonus = 0 } = {}) {
   const isCustom = Boolean(action.isCustom);
-  const card = sharedCreateActionCardElement(action, creature.saveDC ?? 0, baseDamage, {
+  const displayAction = apCostBonus ? { ...action, cost: (Number(action.cost) || 0) + apCostBonus } : action;
+  const card = sharedCreateActionCardElement(displayAction, creature.saveDC ?? 0, baseDamage, {
     showTrigger,
     showDragHandle: !isCustom,
     showRemoveButton: true,
@@ -328,7 +329,7 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0 }
   return card;
 }
 
-function renderActionList(target, actions, { emptyMessage = 'No actions available.', showTrigger = false, baseDamage = 0 } = {}) {
+function renderActionList(target, actions, { emptyMessage = 'No actions available.', showTrigger = false, baseDamage = 0, apCostBonus = 0 } = {}) {
   if (!target) return;
   target.innerHTML = '';
 
@@ -341,7 +342,7 @@ function renderActionList(target, actions, { emptyMessage = 'No actions availabl
   }
 
   actions.forEach((action) => {
-    const card = createActionCardElement(action, { showTrigger, baseDamage });
+    const card = createActionCardElement(action, { showTrigger, baseDamage, apCostBonus });
     if (card) target.appendChild(card);
   });
 }
@@ -374,9 +375,13 @@ function renderActionSummary() {
       ? creature.stats.damage
       : 0;
 
+  // For low-damage creatures (baseDamage < 1), attacks cost 2 AP and deal doubled damage.
+  const lowDamage = baseDamage > 0 && baseDamage < 1;
+  const effectiveBaseDamage = lowDamage ? baseDamage * 2 : baseDamage;
+
   const infoItems = [
     { label: 'Attack', value: toSignedDisplayInteger(Number(creature.check) || 0) },
-    { label: 'Base Damage', value: toDisplayDamage(baseDamage) },
+    { label: 'Attack Damage', value: toDisplayDamage(effectiveBaseDamage) },
     { label: 'Save DC', value: toDisplayInteger(Number(creature.saveDC) || 0) },
     { label: 'Speed', value: toDisplayInteger(Number(creature.speed) || 0) },
     ...(rp > 0 ? [{ label: 'Reaction Points', value: rp }] : []),
@@ -389,27 +394,10 @@ function renderActionSummary() {
     statblockActionsInfo.appendChild(span);
   });
 
-  // Show a note explaining low damage values (< 1) per the DC20 design guidelines.
-  const existingNote = statblockActionsInfo.nextElementSibling;
-  if (existingNote && existingNote.classList.contains('statblock-damage-note')) {
-    existingNote.remove();
-  }
-  if (baseDamage > 0 && baseDamage < 1) {
-    const note = document.createElement('p');
-    note.className = 'statblock-damage-note';
-    if (Math.abs((baseDamage % 1) - 0.5) < 1e-9) {
-      // 0.5 damage: normal attacks cost 2 AP instead of 1 AP
-      note.textContent = 'Low damage: normal attacks cost 2 AP instead of 1 AP.';
-    } else {
-      // 0.25: 2 AP attacks and Impact (+1 on heavy hits)
-      note.textContent = 'Low damage: normal attacks cost 2 AP instead of 1 AP, +1 on heavy hits (Impact).';
-    }
-    statblockActionsInfo.after(note);
-  }
-
   renderActionList(statblockActionsList, creature.featureActions, {
     emptyMessage: 'No actions available.',
-    baseDamage,
+    baseDamage: effectiveBaseDamage,
+    apCostBonus: lowDamage ? 1 : 0,
   });
 
   if (statblockReactionsSection && statblockReactionsList) {
@@ -432,7 +420,8 @@ function renderActionSummary() {
     renderActionList(statblockReactionsList, reactions, {
       emptyMessage: 'No reactions — use + to add one.',
       showTrigger: true,
-      baseDamage,
+      baseDamage: effectiveBaseDamage,
+      apCostBonus: lowDamage ? 1 : 0,
     });
   }
 }

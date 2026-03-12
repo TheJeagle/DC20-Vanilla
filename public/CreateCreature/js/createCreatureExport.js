@@ -262,7 +262,8 @@ export function generateFoundryJSON() {
   const agi    = Math.round(Number(creature.attributes?.Agi) || 0);
   const cha    = Math.round(Number(creature.attributes?.Cha) || 0);
   const int_   = Math.round(Number(creature.attributes?.Int) || 0);
-  const baseDmg = Number(creature.damage) || 0;
+  const rawBaseDmg = Number(creature.damage) || 0;
+  const baseDmg = rawBaseDmg > 0 && rawBaseDmg < 1 ? rawBaseDmg * 2 : rawBaseDmg;
 
   // All attributes get combat mastery added to saves in DC20, so saveMastery is always true.
   const migSave = true;
@@ -460,7 +461,8 @@ export function generateNotionMarkdown() {
   const agiSave = Math.round(Number(creature.attributeSaves?.Agi) || 0);
   const chaSave = Math.round(Number(creature.attributeSaves?.Cha) || 0);
   const intSave = Math.round(Number(creature.attributeSaves?.Int) || 0);
-  const baseDmg = Number(creature.damage) || 0;
+  const rawBaseDmg = Number(creature.damage) || 0;
+  const baseDmg = rawBaseDmg > 0 && rawBaseDmg < 1 ? rawBaseDmg * 2 : rawBaseDmg;
 
   const name  = creature.name || 'Unnamed';
   const size  = toTitleCase(creature.size);
@@ -591,7 +593,8 @@ export function generateObsidianYAML() {
   const agi    = Math.round(Number(creature.attributes?.Agi) || 0);
   const cha    = Math.round(Number(creature.attributes?.Cha) || 0);
   const int_   = Math.round(Number(creature.attributes?.Int) || 0);
-  const baseDmg = Number(creature.damage) || 0;
+  const rawBaseDmg = Number(creature.damage) || 0;
+  const baseDmg = rawBaseDmg > 0 && rawBaseDmg < 1 ? rawBaseDmg * 2 : rawBaseDmg;
 
   const lines = [];
   lines.push('```statblock');
