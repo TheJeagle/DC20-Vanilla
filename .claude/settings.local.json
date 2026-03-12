@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(wc -l:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(node --check:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(python3:*)",
+      "Bash(node scripts/uploadFeatures.mjs:*)",
+      "Bash(node uploadFeatures.mjs:*)",
+      "Bash(node -e:*)",
+      "Bash(firebase firestore:rules:get:*)",
+      "Bash(firebase firestore --help:*)",
+      "Bash(firebase firestore:indexes:*)",
+      "Bash({damage} damage on hit.\" Area attacks use \"in\" instead of \"within\".:*)",
+      "Bash(cd:*)",
+      "Bash(npm run:*)",
+      "Bash(node:*)"
+    ]
+  }
+}
