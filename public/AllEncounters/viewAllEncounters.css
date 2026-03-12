@@ -267,13 +267,14 @@ main {
   letter-spacing: 0.03em;
 }
 
-.enc-badge--difficulty-easy   { background: #d5f5e3; color: #1e8449; }
-.enc-badge--difficulty-fair   { background: #d6eaf8; color: #1a5276; }
-.enc-badge--difficulty-hard   { background: #fef9e7; color: #7d6608; }
-.enc-badge--difficulty-deadly { background: #fadbd8; color: #922b21; }
+.enc-badge--difficulty-easy      { background: #d5f5e3; color: #1e8449; }
+.enc-badge--difficulty-medium    { background: #d6eaf8; color: #1a5276; }
+.enc-badge--difficulty-hard      { background: #fef9e7; color: #7d6608; }
+.enc-badge--difficulty-very-hard { background: #fdebd0; color: #a04000; }
+.enc-badge--difficulty-deadly    { background: #fadbd8; color: #922b21; }
 
-.enc-badge--boss  { background: #fdebd0; color: #935116; }
-.enc-badge--apex  { background: #e8daef; color: #6c3483; }
+.enc-badge--legendary { background: #fdebd0; color: #935116; }
+.enc-badge--epic      { background: #e8daef; color: #6c3483; }
 
 .enc-badge--env {
   background: rgba(142,68,173,0.1);

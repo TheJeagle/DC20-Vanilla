@@ -134,10 +134,11 @@ body {
   flex-shrink: 0;
 }
 
-.budget-difficulty--easy   { background: #d5f5e3; color: #1e8449; }
-.budget-difficulty--fair   { background: #d6eaf8; color: #1a5276; }
-.budget-difficulty--hard   { background: #fef9e7; color: #7d6608; }
-.budget-difficulty--deadly { background: #fadbd8; color: #922b21; }
+.budget-difficulty--easy      { background: #d5f5e3; color: #1e8449; }
+.budget-difficulty--medium    { background: #d6eaf8; color: #1a5276; }
+.budget-difficulty--hard      { background: #fef9e7; color: #7d6608; }
+.budget-difficulty--very-hard { background: #fdebd0; color: #a04000; }
+.budget-difficulty--deadly    { background: #fadbd8; color: #922b21; }
 
 /* Action buttons */
 .enc-action-btn {
@@ -226,8 +227,8 @@ body {
   text-transform: capitalize;
 }
 
-.enc-tag-chip--boss  { background: #fdebd0; color: #935116; }
-.enc-tag-chip--apex  { background: #e8daef; color: #6c3483; }
+.enc-tag-chip--legendary { background: #fdebd0; color: #935116; }
+.enc-tag-chip--epic      { background: #e8daef; color: #6c3483; }
 
 .enc-tag-chip--env {
   background: rgba(142,68,173,0.1);

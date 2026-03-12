@@ -544,7 +544,7 @@ export function generateNotionMarkdown() {
 
   if (regular.length || legendary.length) {
     let heading = `### Actions (${ap} AP)`;
-    if (legendary.length) heading += ` | Legendary (${legendary.length})`;
+    if (legendary.length) heading += ` | RP Actions (${legendary.length})`;
     lines.push(heading);
     lines.push('');
     lines.push(`**Attack:** ${attack}   **Save DC:** ${saveDC}   **Speed:** ${speed}`);
@@ -567,7 +567,7 @@ export function generateNotionMarkdown() {
   }
 
   if (apex.length) {
-    lines.push('### Apex Actions *(see glossary)*');
+    lines.push('### Round Actions *(see glossary)*');
     lines.push('');
     apex.forEach((a) => {
       const prefix = a.cost != null ? `(${a.cost}) ` : '';

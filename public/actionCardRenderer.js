@@ -88,11 +88,11 @@ export function appendText(parent, text) {
   parent.appendChild(span);
 }
 
-/** Builds the Legendary Action / Apex Action badge row, or null if neither applies. */
+/** Builds the Round Action / RP Action badge row, or null if neither applies. */
 export function createActionBadges(action) {
   const badges = [];
-  if (action?.isLegendaryAction) badges.push('Legendary Action');
-  if (action?.isApexAction) badges.push('Apex Action');
+  if (action?.isLegendaryAction) badges.push('RP Action');
+  if (action?.isApexAction) badges.push('Round Action');
   if (!badges.length) return null;
   const row = document.createElement('div');
   row.className = 'action-badges';

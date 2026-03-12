@@ -103,12 +103,13 @@ export const roleModifiersData = {
 };
 
 // Scaling factors based on monster power level
+// RP: baseline Reaction Points pool (Epic = 2, Legendary = 4; others = 0)
 export const powerScalingFactors = {
-    minion:     { HPFactor: 0.5, PDMod: -4, ADMod: -4, CheckMod: -1, SaveDCMod: -1, DamageFactor: 0.5,  APMod: -1},
-    weak:       { HPFactor: 0.7, PDMod: -2, ADMod: -2, CheckMod: -1, SaveDCMod: -1, DamageFactor: 0.75, APMod: -1},
-    normal:     { HPFactor: 1.0, PDMod: 0,  ADMod: 0,  CheckMod: 0,  SaveDCMod: 0,  DamageFactor: 1.0,  APMod: 0},
-    apex:       { HPFactor: 2.0, PDMod: 2,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 1,  DamageFactor: 1.5,  APMod: 0},
-    legendary:  { HPFactor: 4.0, PDMod: 2,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 1,  DamageFactor: 1.5,  APMod: 0},
+    minion:     { HPFactor: 0.5, PDMod: -4, ADMod: -4, CheckMod: -1, SaveDCMod: -1, DamageFactor: 0.5,  APMod: -1, RP: 0 },
+    weak:       { HPFactor: 0.7, PDMod: -2, ADMod: -2, CheckMod: -1, SaveDCMod: -1, DamageFactor: 0.75, APMod: -1, RP: 0 },
+    normal:     { HPFactor: 1.0, PDMod: 0,  ADMod: 0,  CheckMod: 0,  SaveDCMod: 0,  DamageFactor: 1.0,  APMod: 0,  RP: 0 },
+    apex:       { HPFactor: 2.0, PDMod: 2,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 1,  DamageFactor: 1.5,  APMod: 0,  RP: 2 },
+    legendary:  { HPFactor: 4.0, PDMod: 2,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 1,  DamageFactor: 1.5,  APMod: 0,  RP: 4 },
 };
 
 // Type flavor: humanoid (armored), beast (tough hide), dragon (deadly and durable),

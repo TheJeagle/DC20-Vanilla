@@ -219,6 +219,7 @@ function computeScaledStats({
   const saveDC = (stats.SaveDC ?? 0) + (powerScaling.SaveDCMod ?? 0) + (typeScaling.SaveDCMod ?? 0);
   const traitValue = (stats.TraitValue ?? 0) + (roleScaling.TraitValueBonus ?? 0);
   const AP = (stats.AP ?? 0) + (powerScaling.APMod ?? 0);
+  const RP = powerScaling.RP ?? 0;
   const speed = (stats.Speed ?? 0) + (roleScaling.SpeedMod ?? 0);
 
   return {
@@ -235,6 +236,7 @@ function computeScaledStats({
     saveDC,
     traitValue,
     AP,
+    RP,
     speed,
     deltas: workingDeltas,
   };

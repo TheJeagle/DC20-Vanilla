@@ -454,9 +454,9 @@ function renderActionForm(container, existing, isReactionHint) {
   });
 
   const legendaryRow = makeElement('div', 'cfp-toggle-row');
-  addCheckbox(legendaryRow, 'admIsLegendary', 'Legendary Action',
+  addCheckbox(legendaryRow, 'admIsLegendary', 'RP Action',
     Boolean(existing?.isLegendaryAction || ef.isLegendaryAction));
-  addCheckbox(legendaryRow, 'admIsApex', 'Apex Action',
+  addCheckbox(legendaryRow, 'admIsApex', 'Round Action',
     Boolean(existing?.isApexAction || ef.isApexAction));
   container.appendChild(legendaryRow);
 

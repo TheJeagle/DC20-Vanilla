@@ -52,10 +52,21 @@ const TIER_MULTIPLIERS = {
 
 /**
  * Compute current budget totals.
+ *
+ * Difficulty tiers per DC20 design doc (Budget = sum of PC levels, AvgLevel = Budget / partyCount):
+ *   Easy      ≈ Budget − AvgLevel
+ *   Medium    ≈ Budget
+ *   Hard      ≈ Budget + AvgLevel
+ *   Very Hard ≈ Budget + 2 × AvgLevel
+ *   Deadly    ≈ Budget + 4 × AvgLevel
+ *
+ * Boundaries sit at the midpoint between each tier's target value.
+ *
  * @returns {{ partyBudget: number, monsterTotal: number, pct: number, difficulty: string }}
  */
 export function computeBudget() {
   const partyBudget = encounter.party.reduce((s, p) => s + (Number(p.level) || 0), 0);
+  const partyCount  = encounter.party.length;
 
   const monsterTotal = encounter.monsters.reduce((s, m) => {
     const mult = TIER_MULTIPLIERS[m.power] ?? 1.0;
@@ -66,10 +77,17 @@ export function computeBudget() {
   const pct = partyBudget > 0 ? (monsterTotal / partyBudget) * 100 : 0;
 
   let difficulty;
-  if (pct < 75)       difficulty = 'easy';
-  else if (pct < 125) difficulty = 'fair';
-  else if (pct < 175) difficulty = 'hard';
-  else                difficulty = 'deadly';
+  const avgLevel = partyCount > 0 ? partyBudget / partyCount : 0;
+  if (avgLevel <= 0) {
+    difficulty = monsterTotal <= partyBudget ? 'medium' : 'deadly';
+  } else {
+    // Midpoints between tier targets
+    if      (monsterTotal < partyBudget - avgLevel * 0.5)  difficulty = 'easy';
+    else if (monsterTotal < partyBudget + avgLevel * 0.5)  difficulty = 'medium';
+    else if (monsterTotal < partyBudget + avgLevel * 1.5)  difficulty = 'hard';
+    else if (monsterTotal < partyBudget + avgLevel * 3.0)  difficulty = 'very-hard';
+    else                                                    difficulty = 'deadly';
+  }
 
   return { partyBudget, monsterTotal, pct, difficulty };
 }
@@ -93,7 +111,8 @@ export function renderBudget() {
   if (difficulty !== 'easy') fill.classList.add(`budget-fill--${difficulty}`);
 
   // Difficulty chip
-  label.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard', 'very-hard': 'Very Hard', deadly: 'Deadly' };
+  label.textContent = DIFFICULTY_LABELS[difficulty] ?? difficulty;
   label.className = `budget-difficulty budget-difficulty--${difficulty}`;
 
   // Numbers

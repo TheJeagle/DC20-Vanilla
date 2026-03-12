@@ -78,6 +78,12 @@ function attachDragHandlers(el, featureId) {
   });
 }
 
+const POWER_DISPLAY_LABELS = { apex: 'Epic' };
+function powerDisplayLabel(power) {
+  const key = String(power || '').toLowerCase();
+  return POWER_DISPLAY_LABELS[key] ?? (key.charAt(0).toUpperCase() + key.slice(1));
+}
+
 function toDisplayInteger(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value;
   return Math.round(value);
@@ -350,6 +356,7 @@ function renderActionSummary() {
   if (!statblockActionsHeading || !statblockActionsInfo || !statblockActionsList) return;
 
   const ap = Number.isFinite(creature.AP) ? toDisplayInteger(creature.AP) : 0;
+  const rp = Number.isFinite(creature.RP) ? toDisplayInteger(creature.RP) : 0;
 
   // Build "Actions (N) +" header
   if (!statblockActionsHeading.classList.contains('statblock-section-header')) {
@@ -372,6 +379,7 @@ function renderActionSummary() {
     { label: 'Base Damage', value: toDisplayDamage(baseDamage) },
     { label: 'Save DC', value: toDisplayInteger(Number(creature.saveDC) || 0) },
     { label: 'Speed', value: toDisplayInteger(Number(creature.speed) || 0) },
+    ...(rp > 0 ? [{ label: 'Reaction Points', value: rp }] : []),
   ];
 
   statblockActionsInfo.innerHTML = '';
@@ -435,8 +443,10 @@ function clampPercent(value) {
 }
 
 function computePlayerHitChanceVs(defense) {
-  const level = creature.level === 'novice' ? 0 : (Number(creature.level) || 0);
-  const baseline = 3 + Math.floor(level / 5) + Math.ceil(level / 2);
+  const isNovice = creature.level === 'novice';
+  const level = isNovice ? 0 : (Number(creature.level) || 0);
+  // Novice-level PCs have Attack Bonus +2; level 0+ use the standard formula
+  const baseline = isNovice ? 2 : 3 + Math.floor(level / 5) + Math.ceil(level / 2);
   const raw = (20 - Number(defense) + baseline) * 5;
   return clampPercent(raw);
 }
@@ -579,7 +589,7 @@ function renderRecommendations() {
   else if (power === 'legendary') multiplier = 4;
 
   if (expectedDamageDealt > multiplier * baseKillThreshold) {
-    const note = multiplier === 1 ? '' : ` (adjusted for ${power})`;
+    const note = multiplier === 1 ? '' : ` (adjusted for ${powerDisplayLabel(power)})`;
     warnings.push(`High lethality: ${expectedDamageDealt} > ${multiplier * baseKillThreshold}${note}.`);
   }
 
@@ -686,7 +696,7 @@ function renderCreatureStatblock() {
   const infoLeft = `${creature.size.charAt(0).toUpperCase() + creature.size.slice(1)} ${creature.type.charAt(0).toUpperCase() + creature.type.slice(1)}`.trim();
   const infoRightParts = [`Level ${creature.level}`];
   if (creature.power !== 'normal') {
-    infoRightParts.push(creature.power.charAt(0).toUpperCase() + creature.power.slice(1));
+    infoRightParts.push(powerDisplayLabel(creature.power));
   }
   infoRightParts.push(creature.role.charAt(0).toUpperCase() + creature.role.slice(1));
   statblockInfo.textContent = `${infoLeft} | ${infoRightParts.join(' ')}`;

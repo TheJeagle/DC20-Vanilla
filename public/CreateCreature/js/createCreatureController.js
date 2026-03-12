@@ -348,6 +348,7 @@ function buildStatSnapshot() {
     check: Number(creature.check) || 0,
     saveDC: Number(creature.saveDC) || 0,
     AP: Number(creature.AP) || 0,
+    RP: Number(creature.RP) || 0,
     speed: Number(creature.speed) || 0,
     CM: Number(creature.CM) || 0,
   };
@@ -730,7 +731,7 @@ function applyInputsToCreature(inputs) {
  * Recalculate the creature's stats based on current inputs and feature selections.
  */
 function recomputeCreatureFromInputs() {
-  creature.CM = creature.level === 'novice' ? 0 : Math.ceil(creature.level / 2);
+  creature.CM = creature.level === 'novice' ? 0 : Math.max(1, Math.ceil(creature.level / 2));
 
   const computed = computeScaledStats({
     level: creature.level,
@@ -755,6 +756,7 @@ function recomputeCreatureFromInputs() {
   creature.saveDC = computed.saveDC;
   creature.traitValue = computed.traitValue;
   creature.AP = computed.AP;
+  creature.RP = computed.RP;
   creature.speed = computed.speed;
   creature.deltas = computed.deltas;
 

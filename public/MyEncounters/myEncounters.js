@@ -20,8 +20,8 @@ const ENV_TAG_LABELS = Object.fromEntries(ENVIRONMENT_TAGS.map(t => [t.value, t.
 function getAutoTags(enc) {
   const powers = (enc.monsters || []).map(m => m.power);
   const tags = [];
-  if (powers.includes('legendary')) tags.push('Boss');
-  if (powers.includes('apex'))      tags.push('Apex');
+  if (powers.includes('legendary')) tags.push('Legendary');
+  if (powers.includes('apex'))      tags.push('Epic');
   return tags;
 }
 
@@ -47,7 +47,9 @@ function setStatus(variant, message) {
 // ── Budget calculation ─────────────────────────────────────────────────────────
 
 function computeBudget(enc) {
-  const partyBudget = (enc.party || []).reduce((s, p) => s + (Number(p.level) || 0), 0);
+  const party = enc.party || [];
+  const partyBudget = party.reduce((s, p) => s + (Number(p.level) || 0), 0);
+  const partyCount  = party.length;
   const monsterTotal = (enc.monsters || []).reduce((s, m) => {
     const mult = POWER_MULT[m.power] ?? 1.0;
     const lvl  = Math.max(0, (m.baseLevel || 0) + (m.levelDelta || 0));
@@ -55,10 +57,16 @@ function computeBudget(enc) {
   }, 0);
   const pct = partyBudget > 0 ? (monsterTotal / partyBudget) * 100 : 0;
   let difficulty;
-  if (pct < 75)       difficulty = 'easy';
-  else if (pct < 125) difficulty = 'fair';
-  else if (pct < 175) difficulty = 'hard';
-  else                difficulty = 'deadly';
+  const avgLevel = partyCount > 0 ? partyBudget / partyCount : 0;
+  if (avgLevel <= 0) {
+    difficulty = monsterTotal <= partyBudget ? 'medium' : 'deadly';
+  } else {
+    if      (monsterTotal < partyBudget - avgLevel * 0.5) difficulty = 'easy';
+    else if (monsterTotal < partyBudget + avgLevel * 0.5) difficulty = 'medium';
+    else if (monsterTotal < partyBudget + avgLevel * 1.5) difficulty = 'hard';
+    else if (monsterTotal < partyBudget + avgLevel * 3.0) difficulty = 'very-hard';
+    else                                                   difficulty = 'deadly';
+  }
   return { partyBudget, monsterTotal, pct, difficulty };
 }
 
@@ -138,7 +146,7 @@ function buildEncRow(enc, allEncounters) {
 
   const badge = document.createElement('span');
   badge.className = `budget-difficulty budget-difficulty--${difficulty}`;
-  badge.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  badge.textContent = ({ easy: 'Easy', medium: 'Medium', hard: 'Hard', 'very-hard': 'Very Hard', deadly: 'Deadly' })[difficulty] ?? difficulty;
 
   const meta = document.createElement('div');
   meta.className = 'enc-row-meta';
@@ -206,7 +214,7 @@ function buildEncRow(enc, allEncounters) {
   budgetLine.className = 'enc-detail-line enc-detail-budget';
   const budgetBadge = document.createElement('span');
   budgetBadge.className = `budget-difficulty budget-difficulty--${difficulty}`;
-  budgetBadge.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  budgetBadge.textContent = ({ easy: 'Easy', medium: 'Medium', hard: 'Hard', 'very-hard': 'Very Hard', deadly: 'Deadly' })[difficulty] ?? difficulty;
   const budgetLabel = document.createElement('span');
   budgetLabel.className = 'enc-detail-label';
   budgetLabel.textContent = 'Budget:';

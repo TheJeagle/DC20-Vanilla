@@ -86,7 +86,7 @@ function recalcStats(creature, monsterSlot) {
   const deltas = creature.deltas || {};
 
   function baseAt(level) {
-    const CM = Math.ceil(level / 2);
+    const CM = level === 'novice' ? 0 : Math.max(1, Math.ceil(Number(level) / 2));
     const computed = computeScaledStats({ level, role, power, size, type, deltas, combatMastery: CM });
     const s = {
       HP: computed.HP, PD: computed.PD, AD: computed.AD,
@@ -439,7 +439,7 @@ function buildCreatureNotionMd(creature, monsterSlot) {
 
   if (regular.length || legendary.length) {
     let heading = `### Actions (${ap} AP)`;
-    if (legendary.length) heading += ` | Legendary (${legendary.length})`;
+    if (legendary.length) heading += ` | RP Actions (${legendary.length})`;
     lines.push(heading);
     lines.push('');
     lines.push(`**Attack:** ${attack}   **Save DC:** ${saveDC}   **Speed:** ${speed}`);
@@ -462,7 +462,7 @@ function buildCreatureNotionMd(creature, monsterSlot) {
   }
 
   if (apex.length) {
-    lines.push('### Apex Actions *(see glossary)*');
+    lines.push('### Round Actions *(see glossary)*');
     lines.push('');
     apex.forEach(a => {
       const prefix = a.cost != null ? `(${a.cost}) ` : '';
@@ -789,8 +789,8 @@ function buildStatblockHtml(creature, monsterSlot) {
   ${passivesHtml}
   ${regularHtml}
   ${renderActionSection(allReactions, 'Reactions')}
-  ${renderActionSection(legendary,    'Legendary Actions')}
-  ${renderActionSection(apex,         'Apex Actions')}
+  ${renderActionSection(legendary,    'RP Actions')}
+  ${renderActionSection(apex,         'Round Actions')}
 </div>`;
 }
 

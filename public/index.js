@@ -1570,7 +1570,7 @@ function updateStatblock() {
     levelInput.value = creature.level;
   }
   //---- Combat Mastery ----
-  creature.CM = Math.ceil(creature.level / 2);
+  creature.CM = creature.level === 'novice' ? 0 : Math.max(1, Math.ceil(creature.level / 2));
 
 
   //---- Inputs: SIZE, TYPE, POWER, ROLE ----

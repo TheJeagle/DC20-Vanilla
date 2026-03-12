@@ -65,7 +65,7 @@ function section(name) {
 // ─── Helper: build a minimal creature for computeScaledStats ────────────────
 
 function makeCreature({ level = 1, role = 'none', power = 'normal', size = 'medium', type = 'humanoid', deltas = {}, combatMastery } = {}) {
-  const cm = combatMastery ?? (level === 'novice' ? 0 : Math.ceil(Number(level) / 2));
+  const cm = combatMastery ?? (level === 'novice' ? 0 : Math.max(1, Math.ceil(Number(level) / 2)));
   return computeScaledStats({ level, role, power, size, type, deltas, combatMastery: cm });
 }
 
