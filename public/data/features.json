@@ -77,7 +77,7 @@
     "tags": [
       "role/defender",
       "creature/construct",
-      "feature-cost/1"
+      "feature-cost/2"
     ]
   },
   {
@@ -846,12 +846,11 @@
       "cost": 2,
       "target": "all creatures",
       "range": "5 Spaces",
-      "actionDescription": "You unleash a thunderous roar. Each creature you target must make a Cha Save or become Frightened of you until the end of your next turn.",
-      "check": {
-        "dc": 10,
-        "failure": "Target 1 creature in range.",
-        "success": "Target all creatures in range.",
-        "successEach5": "Frightened creatures also become Taunted."
+      "actionDescription": "You unleash a thunderous roar.",
+      "save": {
+        "attribute": "Cha",
+        "failure": "The target becomes Frightened of you until the end of your next turn.",
+        "failureEach5": "The target also becomes Taunted."
       }
     },
     "tags": [
@@ -1041,12 +1040,10 @@
       "cost": 2,
       "target": "a 3 Space Cube",
       "range": "10 Spaces",
-      "actionDescription": "You flood an area with projectiles. The area becomes Difficult Terrain until the start of your next turn. Creatures moving through it make an Agi Save or become Hindered.",
-      "check": {
-        "dc": 10,
-        "failure": "The area is Difficult Terrain.",
-        "success": "The area is Difficult Terrain and creatures moving through it make an Agi Save or become Hindered.",
-        "successEach5": "Increase the area by 1 Space."
+      "actionDescription": "You flood an area with projectiles. The area becomes Difficult Terrain until the start of your next turn.",
+      "save": {
+        "attribute": "Agi",
+        "failure": "The target becomes Hindered until the start of your next turn."
       }
     },
     "tags": [
@@ -1177,12 +1174,11 @@
       "cost": 3,
       "target": "a 3 Space Sphere",
       "range": "8 Spaces",
-      "actionDescription": "You create a crushing gravitational field. Each creature in the area makes a Mig Save or is pulled 2 Spaces toward the center and becomes Hindered until the end of its next turn.",
-      "check": {
-        "dc": 10,
-        "failure": "Affect 1 creature in the area.",
-        "success": "Affect all creatures in the area.",
-        "successEach5": "Increase pull distance by 1 Space."
+      "actionDescription": "You create a crushing gravitational field.",
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is pulled 2 Spaces toward the center and becomes Hindered until the end of its next turn.",
+        "failureEach5": "Pulled 1 additional Space."
       }
     },
     "tags": [
@@ -1242,12 +1238,10 @@
       "cost": 2,
       "target": "up to 3 creatures",
       "range": "10 Spaces",
-      "actionDescription": "You flood the minds of your targets with disorienting illusions. Each target makes an Int Save or becomes Disoriented until the end of its next turn.",
-      "check": {
-        "dc": 10,
-        "failure": "Target 1 creature.",
-        "success": "Target 2 creatures.",
-        "successEach5": "Target 1 additional creature."
+      "actionDescription": "You flood the minds of your targets with disorienting illusions.",
+      "save": {
+        "attribute": "Int",
+        "failure": "The target becomes Disoriented until the end of its next turn."
       }
     },
     "tags": [
@@ -1690,7 +1684,7 @@
     "type": "action-attack",
     "name": "Holy Smite",
     "featureDescription": "Channel divine radiance into a searing bolt of light.",
-    "featureCost": 2,
+    "featureCost": 1,
     "actionType": "Ranged Spell Attack",
     "effects": {
       "cost": 1,
@@ -1872,7 +1866,7 @@
     },
     "tags": [
       "creature/undead",
-      "feature-cost/1"
+      "feature-cost/2"
     ]
   },
   {
@@ -1916,12 +1910,11 @@
       "cost": 2,
       "target": "all creatures",
       "range": "3 Spaces",
-      "actionDescription": "You unveil the horror of your undead form. Each living creature in range must make a Cha Save or become Frightened of you until the end of its next turn.",
-      "check": {
-        "dc": 10,
-        "failure": "Affect creatures within 1 Space.",
-        "success": "Affect all creatures within 3 Spaces.",
-        "successEach5": "Affected creatures are Frightened for 1 minute instead."
+      "actionDescription": "You unveil the horror of your undead form.",
+      "save": {
+        "attribute": "Cha",
+        "failure": "The target becomes Frightened of you until the end of its next turn.",
+        "failureEach5": "Frightened for 1 minute instead."
       }
     },
     "tags": [
@@ -2067,12 +2060,11 @@
       "cost": 2,
       "target": "all creatures",
       "range": "2 Spaces",
-      "actionDescription": "You beat your wings in a powerful sweep. Each creature in range makes a Mig Save or is pushed 3 Spaces directly away from you and knocked Prone.",
-      "check": {
-        "dc": 10,
-        "failure": "Affect creatures within 1 Space.",
-        "success": "Affect all creatures within 2 Spaces.",
-        "successEach5": "Push an additional 1 Space."
+      "actionDescription": "You beat your wings in a powerful sweep.",
+      "save": {
+        "attribute": "Mig",
+        "failure": "The target is pushed 3 Spaces directly away from you and knocked Prone.",
+        "failureEach5": "Pushed an additional 1 Space."
       }
     },
     "tags": [
@@ -2105,7 +2097,7 @@
     },
     "tags": [
       "creature/fiend",
-      "feature-cost/1"
+      "feature-cost/2"
     ]
   },
   {
@@ -2206,12 +2198,12 @@
       "cost": 2,
       "target": "one creature",
       "range": "5 Spaces",
-      "actionDescription": "You fix your infernal gaze upon a creature. It makes a Cha Save or becomes Charmed by you until the end of its next turn. While Charmed this way, it regards you as a trusted ally.",
-      "check": {
-        "dc": 10,
-        "failure": "The target resists.",
-        "success": "The target is Charmed until the end of its next turn.",
-        "successEach5": "The Charmed duration increases by 1 round."
+      "actionDescription": "You fix your infernal gaze upon a creature. While Charmed this way, it regards you as a trusted ally.",
+      "save": {
+        "attribute": "Cha",
+        "failure": "The target is Charmed by you until the end of its next turn.",
+        "failureEach5": "The Charmed duration increases by 1 round.",
+        "success": "The target resists."
       }
     },
     "tags": [
@@ -2343,12 +2335,11 @@
       "cost": 1,
       "target": "all creatures",
       "range": "3 Spaces",
-      "actionDescription": "You unleash a bone-shaking roar. Creatures in range make a Cha Save or become Frightened until the end of their next turn.",
-      "check": {
-        "dc": 10,
-        "failure": "Affect creatures within 1 Space.",
-        "success": "Affect all creatures within 3 Spaces.",
-        "successEach5": "Affected creatures are Frightened for 1 additional round."
+      "actionDescription": "You unleash a bone-shaking roar.",
+      "save": {
+        "attribute": "Cha",
+        "failure": "The target becomes Frightened until the end of their next turn.",
+        "failureEach5": "Frightened for 1 additional round."
       }
     },
     "tags": [
@@ -2382,7 +2373,7 @@
     },
     "tags": [
       "creature/aberration",
-      "feature-cost/1"
+      "feature-cost/2"
     ]
   },
   {
@@ -2482,12 +2473,11 @@
       "cost": 2,
       "target": "one creature",
       "range": "5 Spaces",
-      "actionDescription": "You fix your alien gaze upon a creature. It makes an Int Save or becomes Frightened and Disoriented until the end of its next turn.",
-      "check": {
-        "dc": 10,
-        "failure": "Target resists.",
-        "success": "Target is Frightened and Disoriented until end of its next turn.",
-        "successEach5": "The target is also Stunned for 1 round."
+      "actionDescription": "You fix your alien gaze upon a creature.",
+      "save": {
+        "attribute": "Int",
+        "failure": "The target becomes Frightened and Disoriented until the end of its next turn.",
+        "failureEach5": "The target is also Stunned for 1 round."
       }
     },
     "tags": [
@@ -2521,7 +2511,7 @@
     },
     "tags": [
       "creature/plant",
-      "feature-cost/1"
+      "feature-cost/2"
     ]
   },
   {
@@ -2654,7 +2644,7 @@
     },
     "tags": [
       "creature/celestial",
-      "feature-cost/1"
+      "feature-cost/2"
     ]
   },
   {
@@ -2677,14 +2667,14 @@
     "type": "passive",
     "name": "Celestial Wings",
     "featureDescription": "Magnificent wings grant this creature the gift of flight.",
-    "featureCost": 2,
+    "featureCost": 6,
     "effects": {
       "text": "This creature has a Fly Speed equal to its Speed. While airborne, creatures cannot gain flanking bonuses against it."
     },
     "tags": [
       "creature/celestial",
       "role/skirmisher",
-      "feature-cost/1"
+      "feature-cost/6"
     ]
   },
   {
@@ -2743,7 +2733,7 @@
     },
     "tags": [
       "creature/fey",
-      "feature-cost/1"
+      "feature-cost/2"
     ]
   },
   {
@@ -2928,7 +2918,6 @@
     "featureDescription": "The creature's amorphous body redistributes impacts and resists many afflictions.",
     "featureCost": 2,
     "effects": {
-      "text": "You have resistance to physical damage, and gain immunity to the Prone, Blinded and Poisoned conditions.",
       "resistances": {
         "damage": [
           "Slashing",
@@ -2956,7 +2945,6 @@
     "featureDescription": "This creature has no fixed form and can squeeze through incredibly small spaces.",
     "featureCost": 1,
     "effects": {
-      "text": "You can move through any space at least 1 inch wide without squeezing. You are immune to the Grappled and Prone conditions.",
       "immunities": {
         "condition": [
           "Prone",
@@ -2985,7 +2973,7 @@
       "damageSegments": [
         {
           "useBase": true,
-          "modifier": 0.5,
+          "modifier": 0,
           "type": "Poison"
         }
       ],
@@ -3161,7 +3149,7 @@
       "targetDefense": "PD",
       "target": "the triggering creature",
       "range": "1 Space",
-      "actionDescription": "Pain triggers pure instinct \u2014 you slash or bite at whatever hurt you.",
+      "actionDescription": "Pain triggers pure instinct — you slash or bite at whatever hurt you.",
       "damageSegments": [
         {
           "useBase": true,
@@ -3483,7 +3471,7 @@
     "id": "faerie-dart",
     "type": "action-attack",
     "name": "Faerie Dart",
-    "featureDescription": "A swift dart of raw fey magic \u2014 cheap and accurate, the signature attack of lesser fey.",
+    "featureDescription": "A swift dart of raw fey magic — cheap and accurate, the signature attack of lesser fey.",
     "featureCost": 0,
     "actionType": "Ranged Spell Attack",
     "effects": {
@@ -3639,9 +3627,9 @@
     ]
   },
   {
-    "id": "thick-hide",
+    "id": "thick-hide-giant",
     "type": "modifier",
-    "name": "Thick Hide",
+    "name": "Thick Hide (Giant)",
     "featureDescription": "Layers of dense skin and muscle shrug off crushing blows that would fell lesser creatures.",
     "featureCost": 1,
     "effects": {
@@ -3720,7 +3708,7 @@
     "id": "split",
     "type": "passive",
     "name": "Split",
-    "featureDescription": "When cut in half, this ooze does not die \u2014 it becomes two oozes.",
+    "featureDescription": "When cut in half, this ooze does not die — it becomes two oozes.",
     "featureCost": 3,
     "effects": {
       "text": "The first time this creature is reduced to half its maximum HP, it splits. A second ooze with HP equal to the triggering creature's current HP appears in an adjacent unoccupied space, sharing this creature's remaining statistics."
@@ -3874,7 +3862,7 @@
     "type": "action-attack",
     "name": "Bone Claw",
     "featureDescription": "A raking strike with sharpened bone or spectral claws.",
-    "featureCost": 0,
+    "featureCost": 1,
     "actionType": "Melee Martial Attack",
     "effects": {
       "cost": 1,
@@ -3900,7 +3888,7 @@
       "attack/single-target",
       "target/pd",
       "ap-cost/1",
-      "feature-cost/0",
+      "feature-cost/1",
       "status/bleeding"
     ]
   },
@@ -4635,7 +4623,7 @@
     "type": "action-attack",
     "name": "Spectral Bolt",
     "featureDescription": "A bolt of necromantic energy drawn from the creature's deathless state.",
-    "featureCost": 0,
+    "featureCost": 1,
     "actionType": "Ranged Spell Attack",
     "effects": {
       "cost": 1,
@@ -4661,7 +4649,7 @@
       "attack/single-target",
       "target/pd",
       "ap-cost/1",
-      "feature-cost/0",
+      "feature-cost/1",
       "status/frightened"
     ]
   },
@@ -4765,7 +4753,7 @@
     "type": "action-attack",
     "name": "Acid Shot",
     "featureDescription": "Spit a pressurized glob of dissolving acid.",
-    "featureCost": 0,
+    "featureCost": 1,
     "actionType": "Ranged Spell Attack",
     "effects": {
       "cost": 1,
@@ -4791,7 +4779,7 @@
       "attack/single-target",
       "target/pd",
       "ap-cost/1",
-      "feature-cost/0"
+      "feature-cost/1"
     ]
   },
   {
@@ -5099,7 +5087,7 @@
     },
     "tags": [
       "creature/elemental",
-      "feature-cost/2"
+      "feature-cost/1"
     ]
   },
   {
@@ -5118,16 +5106,15 @@
   },
   {
     "id": "instinctive-guard",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Instinctive Guard",
     "featureDescription": "Raise a guard automatically when danger is sensed.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When a creature targets you with an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You instinctively raise your guard, adding +2 to your PD until the start of your next turn."
@@ -5141,16 +5128,15 @@
   },
   {
     "id": "evasive-maneuver",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Evasive Maneuver",
     "featureDescription": "Snap into a dodge the instant danger registers.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by a melee attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You move 1 Space away from the attacker and add +2 to your PD against the triggering attack."
@@ -5164,16 +5150,15 @@
   },
   {
     "id": "protective-stance",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Protective Stance",
     "featureDescription": "Snap into a defensive stance that guards both you and an ally.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you or an ally within 1 Space is targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself or an adjacent ally",
       "range": "1 Space",
       "actionDescription": "You step in front of an ally or raise your guard, granting +2 PD to the target against the triggering attack."
@@ -5187,16 +5172,15 @@
   },
   {
     "id": "commanding-parry",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Commanding Parry",
     "featureDescription": "Parry an incoming attack and redirect the battle momentum.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by a melee attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You parry the blow and turn the attacker's force against them, reducing the damage by your Mig modifier (minimum 1)."
@@ -5210,19 +5194,18 @@
   },
   {
     "id": "predatory-instinct",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Predatory Instinct",
     "featureDescription": "Pure animal instinct causes the beast to flinch away from danger.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
-      "actionDescription": "Animal instinct takes over \u2014 you twist away, adding +2 to your PD against the triggering attack."
+      "actionDescription": "Animal instinct takes over — you twist away, adding +2 to your PD against the triggering attack."
     },
     "tags": [
       "creature/beast",
@@ -5232,16 +5215,15 @@
   },
   {
     "id": "scale-guard",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Scale Guard",
     "featureDescription": "Draw in and tighten ancient scales to deflect blows.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You contract your hide-thick scales against the blow, reducing the damage taken by 3."
@@ -5254,16 +5236,15 @@
   },
   {
     "id": "necrotic-shroud",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Necrotic Shroud",
     "featureDescription": "Deathly energy surges to absorb an incoming strike.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "A wreath of necromantic force absorbs part of the blow, reducing the damage taken by 4."
@@ -5276,16 +5257,15 @@
   },
   {
     "id": "infernal-ward-reaction",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Infernal Ward",
     "featureDescription": "Hellfire flares up as a barrier when the creature is struck.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by a melee attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Hellfire erupts around you as a ward, reducing the damage taken by 3 and potentially burning the attacker."
@@ -5298,16 +5278,15 @@
   },
   {
     "id": "mechanical-guard",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Mechanical Guard",
     "featureDescription": "Armor plates or shields snap into place automatically.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Internal mechanisms deploy protective plating, adding +2 to both PD and AD until the start of your next turn."
@@ -5320,16 +5299,15 @@
   },
   {
     "id": "elemental-aegis",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Elemental Aegis",
     "featureDescription": "Raw elemental force forms a barrier against incoming damage.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you take damage",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Elemental energy surges through you, reducing the damage taken by 3. Change the energy type to match this elemental's element."
@@ -5342,16 +5320,15 @@
   },
   {
     "id": "vine-barrier",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Vine Barrier",
     "featureDescription": "Dense vegetation springs up to intercept incoming attacks.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by a ranged attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "A wall of vines and branches erupts from the ground to intercept the attack, adding +3 to your PD against the triggering attack."
@@ -5364,16 +5341,15 @@
   },
   {
     "id": "alien-reflex",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Alien Reflex",
     "featureDescription": "Non-Euclidean senses perceive attacks before they arrive.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Your alien perception reads the attack before it lands, adding +3 to your PD against the triggering attack."
@@ -5386,16 +5362,15 @@
   },
   {
     "id": "celestial-ward",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Celestial Ward",
     "featureDescription": "Divine light forms a shield against incoming harm.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you or an ally within 3 Spaces is targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "AD",
       "target": "yourself or a nearby ally",
       "range": "3 Spaces",
       "actionDescription": "A shell of divine radiance envelops the target, adding +2 to their AD against the triggering attack."
@@ -5408,16 +5383,15 @@
   },
   {
     "id": "fey-sidestep",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Fey Sidestep",
     "featureDescription": "A flash of fey magic teleports the creature a short distance.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are targeted by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You vanish in a shower of sparks and reappear up to 2 Spaces away, potentially causing the triggering attack to miss."
@@ -5430,16 +5404,15 @@
   },
   {
     "id": "stone-defense",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Stone Defense",
     "featureDescription": "The giant braces and tightens its stone-like hide.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "You brace with the solidity of a mountain, reducing the damage taken by 5."
@@ -5452,16 +5425,15 @@
   },
   {
     "id": "adaptive-membrane",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Adaptive Membrane",
     "featureDescription": "The ooze's body reshapes to flow around incoming attacks.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by a melee attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Your amorphous body deforms around the attack, reducing the damage taken by 3."
@@ -5474,16 +5446,15 @@
   },
   {
     "id": "combat-instinct",
-    "type": "action-attack",
+    "type": "action-check-utility",
     "name": "Combat Instinct",
     "featureDescription": "Trained reflexes bring up a guard without conscious thought.",
     "featureCost": 1,
-    "actionType": "Melee Martial Attack",
+    "actionType": "Martial Utility",
     "isReaction": true,
     "reactionTrigger": "When you are hit by an attack",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
       "target": "yourself",
       "range": "Self",
       "actionDescription": "Muscle memory snaps a guard into place, reducing the damage taken by 2."
@@ -5508,7 +5479,7 @@
       "targetDefense": "PD",
       "target": "the triggering creature",
       "range": "1 Space",
-      "actionDescription": "Pain fuels a savage riposte \u2014 you immediately lash back at the attacker.",
+      "actionDescription": "Pain fuels a savage riposte — you immediately lash back at the attacker.",
       "damageSegments": [
         {
           "useBase": true,
@@ -5538,7 +5509,7 @@
     "reactionTrigger": "When a creature deals damage to you",
     "effects": {
       "cost": 1,
-      "targetDefense": "PD",
+      "targetDefense": "AD",
       "target": "the triggering creature",
       "range": "5 Spaces",
       "actionDescription": "You channel your frustration into a burst of arcane power directed at your attacker.",
@@ -5638,7 +5609,7 @@
       "targetDefense": "AD",
       "target": "the triggering creature",
       "range": "3 Spaces",
-      "actionDescription": "Damage triggers an overload state \u2014 your systems surge and discharge electrical energy.",
+      "actionDescription": "Damage triggers an overload state — your systems surge and discharge electrical energy.",
       "damageSegments": [
         {
           "useBase": true,
@@ -5816,7 +5787,7 @@
       "targetDefense": "PD",
       "target": "the triggering creature",
       "range": "1 Space",
-      "actionDescription": "Your training kicks in \u2014 before the pain registers, your weapon is already swinging back.",
+      "actionDescription": "Your training kicks in — before the pain registers, your weapon is already swinging back.",
       "damageSegments": [
         {
           "useBase": true,
@@ -6091,7 +6062,7 @@
       "cost": 1,
       "range": "4 Spaces",
       "target": "an object or environmental feature",
-      "actionDescription": "You weave your arcane knowledge to manipulate nearby magic, objects, or spells \u2014 opening doors, closing traps, or temporarily suppressing a magical effect."
+      "actionDescription": "You weave your arcane knowledge to manipulate nearby magic, objects, or spells — opening doors, closing traps, or temporarily suppressing a magical effect."
     },
     "tags": [
       "creature/humanoid",
