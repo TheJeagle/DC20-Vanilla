@@ -64,7 +64,7 @@
     "type": "modifier",
     "name": "Physical Resistance",
     "featureDescription": "Take Half damage from Physical attacks.",
-    "featureCost": 1,
+    "featureCost": 2,
     "effects": {
       "resistances": {
         "damage": [
@@ -384,7 +384,7 @@
     "type": "action-check-utility",
     "name": "Fey Step",
     "featureDescription": "Short range teleport.",
-    "featureCost": 0,
+    "featureCost": 1,
     "actionType": "Spell Check",
     "effects": {
       "cost": 1,
@@ -430,7 +430,7 @@
     "type": "action-attack",
     "name": "Whirlwind",
     "featureDescription": "A martial AoE attack hitting all adjacent creatures.",
-    "featureCost": 0,
+    "featureCost": 1,
     "actionType": "Area Martial Attack",
     "effects": {
       "cost": 2,
@@ -1690,7 +1690,7 @@
     "type": "action-attack",
     "name": "Holy Smite",
     "featureDescription": "Channel divine radiance into a searing bolt of light.",
-    "featureCost": 1,
+    "featureCost": 2,
     "actionType": "Ranged Spell Attack",
     "effects": {
       "cost": 1,
@@ -1855,7 +1855,7 @@
     "type": "modifier",
     "name": "Undead Resilience",
     "featureDescription": "The creature's undead nature grants immunity to certain afflictions.",
-    "featureCost": 1,
+    "featureCost": 2,
     "effects": {
       "immunities": {
         "condition": [
@@ -2089,7 +2089,7 @@
     "type": "modifier",
     "name": "Infernal Resilience",
     "featureDescription": "Born of hellfire, this creature shrugs off flame and poison.",
-    "featureCost": 1,
+    "featureCost": 2,
     "effects": {
       "immunities": {
         "damage": [
@@ -2366,7 +2366,7 @@
     "type": "modifier",
     "name": "Aberrant Resilience",
     "featureDescription": "The creature's alien biology resists mental manipulation.",
-    "featureCost": 1,
+    "featureCost": 2,
     "effects": {
       "immunities": {
         "condition": [
@@ -2505,7 +2505,7 @@
     "type": "modifier",
     "name": "Plant Resilience",
     "featureDescription": "The creature's plant nature grants unusual resistances.",
-    "featureCost": 1,
+    "featureCost": 2,
     "effects": {
       "resistances": {
         "damage": [
@@ -2638,7 +2638,7 @@
     "type": "modifier",
     "name": "Celestial Resilience",
     "featureDescription": "Blessed by divine power, this creature resists dark energies and cannot be charmed or frightened.",
-    "featureCost": 1,
+    "featureCost": 2,
     "effects": {
       "immunities": {
         "condition": [
@@ -2677,7 +2677,7 @@
     "type": "passive",
     "name": "Celestial Wings",
     "featureDescription": "Magnificent wings grant this creature the gift of flight.",
-    "featureCost": 1,
+    "featureCost": 2,
     "effects": {
       "text": "This creature has a Fly Speed equal to its Speed. While airborne, creatures cannot gain flanking bonuses against it."
     },
@@ -2728,7 +2728,7 @@
     "type": "modifier",
     "name": "Fey Resilience",
     "featureDescription": "The creature's fey nature makes it resistant to poison and immune to enchantment.",
-    "featureCost": 1,
+    "featureCost": 2,
     "effects": {
       "immunities": {
         "condition": [
@@ -5088,7 +5088,7 @@
     "type": "modifier",
     "name": "Elemental Body",
     "featureDescription": "This creature's elemental nature grants inherent resistance to its own element.",
-    "featureCost": 2,
+    "featureCost": 1,
     "effects": {
       "pd": 1,
       "resistances": {

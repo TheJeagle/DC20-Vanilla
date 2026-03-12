@@ -10,6 +10,7 @@ const dom = {
   statblockHP: document.querySelector('#statblockHP'),
   statblockPD: document.querySelector('#statblockPD'),
   statblockAD: document.querySelector('#statblockAD'),
+  statblockTraitValue: document.querySelector('#statblockTraitValue'),
   statblockMIG: document.querySelector('#statblockMIG'),
   statblockAGI: document.querySelector('#statblockAGI'),
   statblockCHA: document.querySelector('#statblockCHA'),

@@ -48,8 +48,7 @@ const SAVE_DURATIONS = [
 ];
 
 const ROLE_VALUES = [
-  'artillerist', 'brute', 'controller', 'defender',
-  'leader', 'lurker', 'skirmisher', 'support',
+  'brute', 'defender', 'leader', 'soldier', 'striker', 'tactician',
 ];
 
 const CREATURE_TYPE_VALUES = [

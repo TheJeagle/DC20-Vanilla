@@ -49,8 +49,31 @@
         <label for="creatureName">Name</label>
         <input type="text" id="creatureName" name="name" placeholder="Creature Name"/>
 
-        <label for="creatureLevel">Level (0 - 10)</label>
-        <input type="number" id="creatureLevel" name="level" min="0" max="10" value="1"/>
+        <label for="creatureLevel">Level</label>
+        <select id="creatureLevel" name="level">
+          <option value="novice">Novice</option>
+          <option value="0">0</option>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
+          <option value="20">20</option>
+        </select>
 
         <label for="creatureShortDescription">Short Description</label>
         <textarea id="creatureShortDescription" name="shortDescription" rows="2" placeholder="One or two sentences that capture the creature’s core concept."></textarea>
@@ -79,15 +102,9 @@
         </div>
 
         <span class="input-label">Role</span>
-        <div class="option-group option-group--rows-5">
-          <input type="radio" id="roleArtillerist" name="role" value="artillerist">
-          <label class="option-tile" for="roleArtillerist">Artillerist</label>
-
+        <div class="option-group">
           <input type="radio" id="roleBrute" name="role" value="brute">
           <label class="option-tile" for="roleBrute">Brute</label>
-
-          <input type="radio" id="roleController" name="role" value="controller">
-          <label class="option-tile" for="roleController">Controller</label>
 
           <input type="radio" id="roleDefender" name="role" value="defender">
           <label class="option-tile" for="roleDefender">Defender</label>
@@ -95,17 +112,14 @@
           <input type="radio" id="roleLeader" name="role" value="leader">
           <label class="option-tile" for="roleLeader">Leader</label>
 
-          <input type="radio" id="roleLurker" name="role" value="lurker">
-          <label class="option-tile" for="roleLurker">Lurker</label>
+          <input type="radio" id="roleSoldier" name="role" value="soldier">
+          <label class="option-tile" for="roleSoldier">Soldier</label>
 
-          <input type="radio" id="roleSkirmisher" name="role" value="skirmisher">
-          <label class="option-tile" for="roleSkirmisher">Skirmisher</label>
+          <input type="radio" id="roleStriker" name="role" value="striker">
+          <label class="option-tile" for="roleStriker">Striker</label>
 
-          <input type="radio" id="roleSupport" name="role" value="support">
-          <label class="option-tile" for="roleSupport">Support</label>
-
-          <input type="radio" id="roleCaster" name="role" value="caster">
-          <label class="option-tile" for="roleCaster">Caster</label>
+          <input type="radio" id="roleTactician" name="role" value="tactician">
+          <label class="option-tile" for="roleTactician">Tactician</label>
 
           <input type="radio" id="roleNone" name="role" value="none" checked>
           <label class="option-tile" for="roleNone">None</label>
@@ -245,6 +259,8 @@
           <span class="statblock-value" id="statblockPD">-- / -- / --</span>
           <span class="statblock-label">AD</span>
           <span class="statblock-value" id="statblockAD">-- / -- / --</span>
+          <span class="statblock-label">Trait Value</span>
+          <span class="statblock-value" id="statblockTraitValue">-- / --</span>
         </div>
 
         <div class="statblock-attributes">

@@ -381,6 +381,24 @@ function renderActionSummary() {
     statblockActionsInfo.appendChild(span);
   });
 
+  // Show a note explaining low damage values (< 1) per the DC20 design guidelines.
+  const existingNote = statblockActionsInfo.nextElementSibling;
+  if (existingNote && existingNote.classList.contains('statblock-damage-note')) {
+    existingNote.remove();
+  }
+  if (baseDamage > 0 && baseDamage < 1) {
+    const note = document.createElement('p');
+    note.className = 'statblock-damage-note';
+    if (Math.abs((baseDamage % 1) - 0.5) < 1e-9) {
+      // 0.5 damage: normal attacks cost 2 AP instead of 1 AP
+      note.textContent = 'Low damage: normal attacks cost 2 AP instead of 1 AP.';
+    } else {
+      // 0.25: 2 AP attacks and Impact (+1 on heavy hits)
+      note.textContent = 'Low damage: normal attacks cost 2 AP instead of 1 AP, +1 on heavy hits (Impact).';
+    }
+    statblockActionsInfo.after(note);
+  }
+
   renderActionList(statblockActionsList, creature.featureActions, {
     emptyMessage: 'No actions available.',
     baseDamage,
@@ -417,7 +435,7 @@ function clampPercent(value) {
 }
 
 function computePlayerHitChanceVs(defense) {
-  const level = Number(creature.level) || 0;
+  const level = creature.level === 'novice' ? 0 : (Number(creature.level) || 0);
   const baseline = 3 + Math.floor(level / 5) + Math.ceil(level / 2);
   const raw = (20 - Number(defense) + baseline) * 5;
   return clampPercent(raw);
@@ -446,7 +464,7 @@ function renderRecommendations() {
   const chanceVsADHeavy = computePlayerHitChanceVs(creature.AD + 5);
   const chanceVsADBrutal = computePlayerHitChanceVs(creature.AD + 10);
 
-  const level = Number(creature.level) || 0;
+  const level = creature.level === 'novice' ? 0 : (Number(creature.level) || 0);
   const expectedPlayerDPT = Math.ceil(level + 4);
   const expectedPlayerDamagePerAttack = expectedPlayerDPT / 2;
   const expectedDamageVsPDPerAttack = computeExpectedDamagePerAttack(
@@ -630,6 +648,14 @@ function renderRecommendations() {
   recommendationsPanel.appendChild(wrapper);
 }
 
+function computeSpentTraitValue() {
+  const selectedIds = featureState.selectedIds ?? [];
+  return selectedIds.reduce((sum, id) => {
+    const f = featureState.byId[id];
+    return sum + (f?.featureCost ?? 0);
+  }, 0);
+}
+
 function renderCreatureStatblock() {
   const {
     statblockName,
@@ -639,6 +665,7 @@ function renderCreatureStatblock() {
     statblockHP,
     statblockPD,
     statblockAD,
+    statblockTraitValue,
     statblockMIG,
     statblockMIGSave,
     statblockAGI,
@@ -690,6 +717,11 @@ function renderCreatureStatblock() {
   statblockHP.textContent = hp;
   statblockPD.textContent = `${pd} / ${pd + 5} / ${pd + 10}`;
   statblockAD.textContent = `${ad} / ${ad + 5} / ${ad + 10}`;
+  if (statblockTraitValue) {
+    const budget = Number.isFinite(creature.traitValue) ? creature.traitValue : 0;
+    const spent = computeSpentTraitValue();
+    statblockTraitValue.textContent = `${spent} / ${budget}`;
+  }
 
   statblockMIG.textContent = toDisplayInteger(creature.attributes.Mig ?? 0);
   statblockMIGSave.textContent = toDisplayInteger(creature.attributeSaves.Mig ?? 0);
