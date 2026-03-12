@@ -16,7 +16,7 @@ const creature = {
   damage: 1,
   AP: 4,
   speed: 5,
-  MP: 0,
+  traitValue: 0,
   resistances: { damage: [], condition: [] },
   vulnerabilities: { damage: [], condition: [] },
   immunities: { damage: [], condition: [] },

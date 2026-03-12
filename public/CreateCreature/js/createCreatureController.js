@@ -229,7 +229,6 @@ function resetBuilderToDefaults() {
     damage: 1,
     AP: 4,
     speed: 5,
-    MP: 0,
     resistances: { damage: [], condition: [] },
     vulnerabilities: { damage: [], condition: [] },
     immunities: { damage: [], condition: [] },
@@ -447,9 +446,13 @@ function applyDraftToBuilder(draft) {
   }
 
   if (dom.levelInput) {
-    const numericLevel = Number(base.level);
-    if (!Number.isNaN(numericLevel) && numericLevel >= 0) {
-      dom.levelInput.value = String(numericLevel);
+    if (base.level === 'novice') {
+      dom.levelInput.value = 'novice';
+    } else {
+      const numericLevel = Number(base.level);
+      if (!Number.isNaN(numericLevel) && numericLevel >= 0) {
+        dom.levelInput.value = String(numericLevel);
+      }
     }
   }
 
@@ -665,7 +668,8 @@ function exportCreatureDraft() {
  */
 function readCreatureInputs() {
   const name = dom.nameInput ? dom.nameInput.value.trim() : '';
-  const rawLevel = dom.levelInput ? parseInt(dom.levelInput.value, 10) : Number.NaN;
+  const rawLevelStr = dom.levelInput ? dom.levelInput.value : '1';
+  const rawLevel = rawLevelStr === 'novice' ? 'novice' : parseInt(rawLevelStr, 10);
   const shortDescription = dom.shortDescriptionInput ? dom.shortDescriptionInput.value.trim() : '';
   const longDescription = dom.longDescriptionInput ? dom.longDescriptionInput.value.trim() : '';
 
@@ -694,10 +698,11 @@ function applyInputsToCreature(inputs) {
   creature.shortDescription = inputs.shortDescription;
   creature.longDescription = inputs.longDescription;
 
-  const fallbackLevel = Number.isNaN(inputs.rawLevel) ? 1 : inputs.rawLevel;
+  const fallbackLevel = inputs.rawLevel === 'novice' ? 'novice'
+    : (Number.isNaN(inputs.rawLevel) ? 1 : inputs.rawLevel);
   const clampedLevel = clampLevel(fallbackLevel);
   creature.level = clampedLevel;
-  if (dom.levelInput && clampedLevel !== fallbackLevel && !Number.isNaN(fallbackLevel)) {
+  if (dom.levelInput && clampedLevel !== fallbackLevel) {
     dom.levelInput.value = String(clampedLevel);
   }
 
@@ -725,7 +730,7 @@ function applyInputsToCreature(inputs) {
  * Recalculate the creature's stats based on current inputs and feature selections.
  */
 function recomputeCreatureFromInputs() {
-  creature.CM = Math.ceil(creature.level / 2);
+  creature.CM = creature.level === 'novice' ? 0 : Math.ceil(creature.level / 2);
 
   const computed = computeScaledStats({
     level: creature.level,
@@ -748,7 +753,7 @@ function recomputeCreatureFromInputs() {
   creature.damage = computed.damage;
   creature.check = computed.check;
   creature.saveDC = computed.saveDC;
-  creature.featurePower = computed.featurePower;
+  creature.traitValue = computed.traitValue;
   creature.AP = computed.AP;
   creature.speed = computed.speed;
   creature.deltas = computed.deltas;

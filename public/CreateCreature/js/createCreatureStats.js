@@ -75,9 +75,10 @@ function normalizeAttributeValueDeltas(raw) {
 }
 
 function clampLevel(level) {
-  const min = 0;
-  const max = baseLevelStatsData[baseLevelStatsData.length - 1].level;
-  return Math.min(Math.max(level, min), max);
+  if (level === 'novice') return 'novice';
+  const numeric = Number(level);
+  if (Number.isNaN(numeric)) return 0;
+  return Math.min(Math.max(Math.round(numeric), 0), 20);
 }
 
 function computeScaledStats({
@@ -91,7 +92,6 @@ function computeScaledStats({
 }) {
   const fallbackStats = baseLevelStatsData[baseLevelStatsData.length - 1] ?? {};
   const stats =
-    baseLevelStatsData[level] ??
     baseLevelStatsData.find((entry) => entry.level === level) ??
     fallbackStats;
 
@@ -162,7 +162,6 @@ function computeScaledStats({
   });
 
   const levelScoreEntry =
-    attributeScoresByLevel[level] ??
     attributeScoresByLevel.find((entry) => entry.level === level);
   const rawLevelScores = Array.isArray(levelScoreEntry?.scores) ? [...levelScoreEntry.scores] : [];
   while (rawLevelScores.length < attributePriority.length) {
@@ -206,12 +205,11 @@ function computeScaledStats({
     (typeScaling.ADMod ?? 0) +
     (sizeScaling.ADMod ?? 0);
 
-  const baseDamage =
-    (stats.Damage ?? 0) +
-    (roleScaling.DamageMod ?? 0) +
-    (powerScaling.DamageMod ?? 0) +
-    (typeScaling.DamageMod ?? 0);
-  const damage = baseDamage;
+  const damageFactor =
+    (roleScaling.DamageFactor ?? 1) *
+    (powerScaling.DamageFactor ?? 1) *
+    (typeScaling.DamageFactor ?? 1);
+  const damage = (stats.Damage ?? 0) * damageFactor;
 
   const check =
     (stats.Check ?? 0) +
@@ -219,7 +217,7 @@ function computeScaledStats({
     (powerScaling.CheckMod ?? 0) +
     (typeScaling.CheckMod ?? 0);
   const saveDC = (stats.SaveDC ?? 0) + (powerScaling.SaveDCMod ?? 0) + (typeScaling.SaveDCMod ?? 0);
-  const featurePower = stats.FeaturePower ?? 0;
+  const traitValue = (stats.TraitValue ?? 0) + (roleScaling.TraitValueBonus ?? 0);
   const AP = (stats.AP ?? 0) + (powerScaling.APMod ?? 0);
   const speed = (stats.Speed ?? 0) + (roleScaling.SpeedMod ?? 0);
 
@@ -235,7 +233,7 @@ function computeScaledStats({
     damage,
     check,
     saveDC,
-    featurePower,
+    traitValue,
     AP,
     speed,
     deltas: workingDeltas,
