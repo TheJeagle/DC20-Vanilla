@@ -34,7 +34,7 @@ A static web app for building and sharing monster/creature stat blocks for the D
 
 - `public/firebaseClient.js` — Firebase app init, exports `auth` and `db`
 - `public/features.js` — Feature loading, `applyFeatureEffects()`, and `buildAction()` logic
-- `public/Rules/gameRules.js` — All DC20 scaling tables (HP, PD, AD, attributes by level/role/power/type/size)
+- `public/Rules/gameRules.js` — All DC20 scaling tables (HP, PD, AD, TraitValue, attributes by level/role/power/type/size)
 - `public/utils/firestore.js` — Firestore document encoding/decoding helpers
 - `public/CreateCreature/js/createCreatureController.js` — Builder orchestrator (DOM wiring, state sync)
 - `public/CreateCreature/js/createCreatureState.js` — Creature state + localStorage draft persistence
@@ -109,6 +109,60 @@ URL: `/Account/account.html` — the "Account" link in the nav on all pages.
 The Admin nav link (`id="navAdminLink"`) is `hidden` by default in all page HTML. `navAuth.js` checks `VanillaAdmins/{uid}` after sign-in and removes `hidden` only for admins. Result is cached in `sessionStorage` (`dc20_admin`) so only one Firestore read per browser session; cache is cleared on logout.
 
 All pages call `updateNavAuth(user, db)` — `db` is required for the admin check. **CSS note:** `site.css` and `admin.css` both include `[hidden] { display: none !important }` to prevent `display: block/flex` rules on nav items from overriding the `hidden` attribute.
+
+## Monster System (Beta 0.10.5)
+
+### Level Range
+
+Creatures have a level of `'novice'` (string) or integers `0–20`. Internally stored on `creature.level`. The Novice tier is below level 0 and has CM = 0.
+
+**Combat Mastery (CM):** `creature.level === 'novice' ? 0 : Math.ceil(creature.level / 2)` — computed in `createCreatureController.js`.
+
+### Stat Scaling Tables (`public/Rules/gameRules.js`)
+
+- **`baseLevelStatsData`** — array of 22 entries (Novice + 0–20). Each entry: `{ level, HP, PD, AD, Check, Damage, AP, Speed, SaveDC, TraitValue }`. Look up with `.find(e => e.level === level)` — do **not** use array index.
+- **`attributeScoresByLevel`** — same structure, scores in priority order `[Prime, Secondary, Tertiary, Quaternary]`.
+- **`roleModifiersData`** — 6 roles + `none`. Each role has `HPFactor`, `PDMod`, `ADMod`, `CheckMod`, `SpeedMod`, **`DamageFactor`** (multiplicative, replaces old flat `DamageMod`), **`TraitValueBonus``, `AttributePriority[]`, `Skills[]`.
+- **`powerScalingFactors`** / **`typeScalingFactors`** — also use `DamageFactor` (multiplicative).
+- `MPMod` / the MP system has been **removed** from all tables and state.
+
+### Monster Roles
+
+| Role | HPFactor | PDMod | ADMod | DamageFactor | TraitValueBonus |
+|------|----------|-------|-------|--------------|-----------------|
+| Brute | 1.25 | 0 | 0 | 1.25 | 0 |
+| Defender | 1.25 | +2 | +2 | 1.0 | 0 |
+| Leader | 1.0 | 0 | 0 | 0.75 | +4 |
+| Soldier | 1.0 | 0 | 0 | 1.0 | 0 |
+| Striker | 0.75 | -1 | -1 | 1.5 | 0 |
+| Tactician | 0.75 | 0 | 0 | 0.75 | +8 |
+| None | 1.0 | 0 | 0 | 1.0 | 0 |
+
+Tactician is Intelligence-primary (Priority: Int, Cha, Agi, Mig), `isCaster: true`.
+
+### Trait Value
+
+`TraitValue` is the per-monster budget for features (1 Trait Point = 2 AP per 3-round combat). It comes from `baseLevelStatsData[level].TraitValue + role.TraitValueBonus`. The statblock displays `Trait Value: X / Y` (spent / budget) where spent = sum of `featureCost` across all selected features.
+
+**Feature cost scale:**
+
+| Cost | Meaning |
+|------|---------|
+| 0 | Flavour / basic attack |
+| 1 | Minor passive (one damage type resistance, small utility) |
+| 2 | Significant passive (multi-type resistance, condition immunity, full class feature) |
+| 3–4 | Strong combat-changing ability |
+| 6+ | Game-changing (flight, major regeneration) |
+
+After editing `features.json`, re-upload with `node scripts/uploadFeatures.mjs`.
+
+### Damage Calculation
+
+`damage = baseLevelStats.Damage × role.DamageFactor × power.DamageFactor × type.DamageFactor`
+
+**Low-damage notes** (shown in statblock when `baseDamage < 1`):
+- `0.5` → "normal attacks cost 2 AP instead of 1 AP"
+- `0.25` → "normal attacks cost 2 AP instead of 1 AP, +1 on heavy hits (Impact)"
 
 ## DC20 Game Mechanics
 
