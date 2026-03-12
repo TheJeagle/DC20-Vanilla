@@ -974,7 +974,7 @@ function initializeEventHandlers() {
 
   if (dom.inputsContainer) {
     const handleInputChange = (event) => {
-      if (event.target.matches('input, textarea')) {
+      if (event.target.matches('input, textarea, select')) {
         updateStatblock();
       }
     };
