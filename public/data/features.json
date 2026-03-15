@@ -6223,5 +6223,302 @@
       "feature-cost/2",
       "status/poisoned"
     ]
+  },
+
+  {
+    "id": "humanoid-brute-skull-crack",
+    "type": "action-attack",
+    "name": "Skull Crack",
+    "featureDescription": "A devastating overhead blow that sends the target staggering back.",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "1 Space",
+      "actionDescription": "You bring your weapon down with terrible force, sending the target stumbling.",
+      "damageSegments": [
+        { "useBase": true, "modifier": 1, "type": "Bludgeoning" }
+      ],
+      "save": {
+        "attribute": "Mig",
+        "failure": "Pushed 2 Spaces directly away from you.",
+        "failureEach5": "+1 Space."
+      },
+      "enhancements": [
+        {
+          "name": "Flatten",
+          "cost": 1,
+          "save": {
+            "attribute": "Physical",
+            "failure": "The target is knocked Prone."
+          }
+        },
+        {
+          "name": "Savage Surge",
+          "cost": 1,
+          "damageSegments": [
+            { "useBase": false, "modifier": 2, "type": "Bludgeoning" }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      "role/brute",
+      "creature/humanoid",
+      "attack/martial",
+      "attack/single-target",
+      "target/pd",
+      "ap-cost/2",
+      "feature-cost/2",
+      "status/prone"
+    ]
+  },
+
+  {
+    "id": "humanoid-defender-shield-slam",
+    "type": "action-attack",
+    "name": "Shield Slam",
+    "featureDescription": "A powerful shield strike that can knock the target prone or force them to focus on you.",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "1 Space",
+      "actionDescription": "You drive your shield into the target with full force, staggering them.",
+      "damageSegments": [
+        { "useBase": true, "modifier": 0, "type": "Bludgeoning" }
+      ],
+      "enhancements": [
+        {
+          "name": "Knockdown",
+          "cost": 1,
+          "save": {
+            "attribute": "Mig",
+            "failure": "The target is knocked Prone."
+          }
+        },
+        {
+          "name": "Taunt",
+          "cost": 1,
+          "save": {
+            "attribute": "Cha",
+            "failure": "The target is Taunted.",
+            "duration": "until the end of its next turn"
+          }
+        }
+      ]
+    },
+    "tags": [
+      "role/defender",
+      "creature/humanoid",
+      "attack/martial",
+      "attack/single-target",
+      "target/pd",
+      "ap-cost/2",
+      "feature-cost/2",
+      "status/prone"
+    ]
+  },
+
+  {
+    "id": "humanoid-leader-command-strike",
+    "type": "action-attack",
+    "name": "Command Strike",
+    "featureDescription": "A decisive blow that demoralizes the target and can rally nearby allies.",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "1 Space",
+      "actionDescription": "You strike the target with authority, using the impact to galvanize your allies.",
+      "damageSegments": [
+        { "useBase": true, "modifier": 0, "type": "Slashing" }
+      ],
+      "enhancements": [
+        {
+          "name": "Demoralize",
+          "cost": 1,
+          "save": {
+            "attribute": "Mental",
+            "failure": "The target is Frightened.",
+            "duration": "until the end of its next turn",
+            "failureEach5": "Frightened for 1 minute instead."
+          }
+        },
+        {
+          "name": "Battle Cry",
+          "cost": 1,
+          "description": "All allies within 5 Spaces gain ADV on their next attack roll before the start of your next turn."
+        }
+      ]
+    },
+    "tags": [
+      "role/leader",
+      "creature/humanoid",
+      "attack/martial",
+      "attack/single-target",
+      "target/pd",
+      "ap-cost/2",
+      "feature-cost/2",
+      "status/frightened"
+    ]
+  },
+
+  {
+    "id": "humanoid-soldier-reckless-slash",
+    "type": "action-attack",
+    "name": "Reckless Slash",
+    "featureDescription": "A fast, aggressive strike that can hamstring the target or let the attacker reposition.",
+    "featureCost": 2,
+    "actionType": "Melee Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "1 Space",
+      "actionDescription": "You lunge with reckless speed, trading precision for momentum.",
+      "damageSegments": [
+        { "useBase": true, "modifier": 0, "type": "Slashing" }
+      ],
+      "enhancements": [
+        {
+          "name": "Hamstring",
+          "cost": 1,
+          "save": {
+            "attribute": "Agi",
+            "failure": "The target's Speed is reduced by 2 Spaces.",
+            "duration": "until the end of its next turn",
+            "failureEach5": "Speed reduced by 3 Spaces instead."
+          }
+        },
+        {
+          "name": "Follow Through",
+          "cost": 1,
+          "description": "You may immediately move up to 2 Spaces after this attack without provoking Opportunity Attacks."
+        }
+      ]
+    },
+    "tags": [
+      "role/soldier",
+      "creature/humanoid",
+      "attack/martial",
+      "attack/single-target",
+      "target/pd",
+      "ap-cost/1",
+      "feature-cost/2"
+    ]
+  },
+
+  {
+    "id": "humanoid-striker-dead-eye-shot",
+    "type": "action-attack",
+    "name": "Dead Eye Shot",
+    "featureDescription": "A precise ranged strike that can blind or pin the target.",
+    "featureCost": 2,
+    "actionType": "Ranged Martial Attack",
+    "effects": {
+      "cost": 1,
+      "targetDefense": "PD",
+      "target": "a creature",
+      "range": "15 / 30 Spaces",
+      "actionDescription": "You take careful aim and loose a bolt at a vulnerable point on the target.",
+      "damageSegments": [
+        { "useBase": true, "modifier": 1, "type": "Piercing" }
+      ],
+      "enhancements": [
+        {
+          "name": "Blinding Shot",
+          "cost": 1,
+          "save": {
+            "attribute": "Agi",
+            "failure": "The target is Blinded.",
+            "duration": "until the end of its next turn",
+            "failureEach5": "Blinded for 1 minute instead."
+          }
+        },
+        {
+          "name": "Pin Down",
+          "cost": 1,
+          "save": {
+            "attribute": "Physical",
+            "failure": "The target is Immobilized.",
+            "duration": "until the end of its next turn",
+            "failureEach5": "Also knocked Prone."
+          }
+        }
+      ]
+    },
+    "tags": [
+      "role/striker",
+      "creature/humanoid",
+      "attack/martial",
+      "attack/single-target",
+      "target/pd",
+      "ap-cost/1",
+      "feature-cost/2",
+      "status/blinded"
+    ]
+  },
+
+  {
+    "id": "humanoid-tactician-binding-curse",
+    "type": "action-attack",
+    "name": "Binding Curse",
+    "featureDescription": "A ranged psychic bolt that frightens on impact and can stun or root with enhancements.",
+    "featureCost": 2,
+    "actionType": "Ranged Spell Attack",
+    "effects": {
+      "cost": 2,
+      "targetDefense": "AD",
+      "target": "a creature",
+      "range": "10 / 15 Spaces",
+      "actionDescription": "You weave a hex around the target's mind, sending tendrils of psychic dread into their thoughts.",
+      "damageSegments": [
+        { "useBase": true, "modifier": -1, "type": "Psychic" }
+      ],
+      "save": {
+        "attribute": "Cha",
+        "failure": "The target is Frightened.",
+        "duration": "until the end of its next turn",
+        "failureEach5": "Frightened for 1 minute instead."
+      },
+      "enhancements": [
+        {
+          "name": "Mind Lock",
+          "cost": 2,
+          "save": {
+            "attribute": "Int",
+            "failure": "The target gains Stunned 2.",
+            "duration": "for 1 minute",
+            "repeatable": true
+          }
+        },
+        {
+          "name": "Anchoring Hex",
+          "cost": 1,
+          "save": {
+            "attribute": "Agi",
+            "failure": "The target is Immobilized.",
+            "duration": "until the end of its next turn"
+          }
+        }
+      ]
+    },
+    "tags": [
+      "role/tactician",
+      "creature/humanoid",
+      "attack/spellcaster",
+      "attack/single-target",
+      "target/ad",
+      "ap-cost/2",
+      "feature-cost/2",
+      "status/frightened"
+    ]
   }
 ]

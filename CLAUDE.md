@@ -128,15 +128,15 @@ Creatures have a level of `'novice'` (string) or integers `0–20`. Internally s
 
 ### Monster Roles
 
-| Role | HPFactor | PDMod | ADMod | DamageFactor | TraitValueBonus |
-|------|----------|-------|-------|--------------|-----------------|
-| Brute | 1.25 | 0 | 0 | 1.25 | 0 |
-| Defender | 1.25 | +2 | +2 | 1.0 | 0 |
-| Leader | 1.0 | 0 | 0 | 0.75 | +4 |
-| Soldier | 1.0 | 0 | 0 | 1.0 | 0 |
-| Striker | 0.75 | -1 | -1 | 1.5 | 0 |
-| Tactician | 0.75 | 0 | 0 | 0.75 | +8 |
-| None | 1.0 | 0 | 0 | 1.0 | 0 |
+| Role | HPFactor | PDMod | ADMod | DamageFactor | TraitValueBonus | Typical Traits |
+|------|----------|-------|-------|--------------|-----------------|----------------|
+| Brute | 1.25 | 0 | 0 | 1.25 | 0 | Resistances, Self Buffs |
+| Defender | 1.25 | +2 | +2 | 1.0 | 0 | Crowd Control, Debuffs |
+| Leader | 1.0 | 0 | 0 | 0.75 | +4 | Auras, Help, Repositioning |
+| Soldier | 1.0 | 0 | 0 | 1.0 | 0 | Basic Combat Benefits |
+| Striker | 0.75 | -1 | -1 | 1.5 | 0 | Ranged Attack, Mobility |
+| Tactician | 0.75 | 0 | 0 | 0.75 | +8 | Crowd Control, Zone Control, Healing |
+| None | 1.0 | 0 | 0 | 1.0 | 0 | — |
 
 Tactician is Intelligence-primary (Priority: Int, Cha, Agi, Mig), `isCaster: true`.
 
@@ -215,3 +215,24 @@ After editing `features.json`, re-upload with `node scripts/uploadFeatures.mjs`.
 Check these when working on related areas:
 
 - `.claude/docs/architectural_patterns.md` — Module layout, state management, data flow, feature system, and Firebase patterns used throughout the codebase
+- `.claude/docs/newDesignPattern.md` — Current DC20 Beta 0.10.5 monster design rules: stat tables, the 6 monster roles, damage-per-round guidelines, Trait Value budget, encounter building
+- `.claude/docs/ancestryTraits.md` — All ancestry traits with their `ancestryValue` costs (used as calibration reference for feature featureCost)
+- `.claude/docs/conditions.md` — All DC20 conditions with mechanical descriptions
+
+## Feature Cost Evaluator
+
+Admin script for auditing `featureCost` balance across all features in `features.json`.
+
+```bash
+node scripts/evaluateFeatures.mjs
+# generates scripts/evaluateFeatures-report.html — open in browser
+```
+
+**Formula:** `featureCost = damageCost + conditionCost + modifierCost + reactionTax`
+
+- **Damage:** base damage = 0 (free); AoE base−1 = 0 (free); each +1 modifier above baseline = +3
+- **Conditions:** `baseValue × durationFactor × saveFactor` — tables in `scripts/evaluationConstants.mjs`
+- **Modifiers:** calibrated to 1 ancestryValue = 1 featureCost (HP: 1.0/pt, PD/AD: 2.0/pt, resistance: 1.0/type)
+- **Reactions:** +1 featureCost flat tax
+
+Tune constants in `scripts/evaluationConstants.mjs` and re-run. After correcting values, run `node scripts/uploadFeatures.mjs` to sync to Firestore.

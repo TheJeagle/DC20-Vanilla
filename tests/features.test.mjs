@@ -803,6 +803,19 @@ test('no heavy-hit text for AD attacks', () => {
   assert.ok(!text.includes('heavy hits'), 'no heavy-hit text for AD attacks');
 });
 
+test('no heavy-hit text for area attacks on PD (regression: was shown incorrectly)', () => {
+  // Area attacks use PD but heavy-hit bonus only applies to single-target melee/ranged.
+  const action = buildAction(baseCreature({ damage: 4 }), {
+    actionType: 'Area Martial Attack',
+    effects: {
+      targetDefense:  'PD',
+      damageSegments: [{ useBase: true, modifier: 0.5, type: 'Bludgeoning' }],
+    },
+  });
+  const text = getFullText(createActionCardElement(action, 12, 4));
+  assert.ok(!text.includes('heavy hits'), 'no heavy-hit text for area attacks');
+});
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // createActionCardElement — mechanic type 2: Check vs Save
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -961,6 +974,20 @@ test('enhancement with save block renders save text', () => {
   assert.ok(text.includes('Trip'),  'enhancement name');
   assert.ok(text.includes('Agi'),   'save attribute in enhancement');
   assert.ok(text.includes('Prone'), 'failure in enhancement');
+});
+
+test('enhancement save successEach5 is rendered (regression: was silently dropped)', () => {
+  const action = buildAction(baseCreature(), {
+    name: 'Slam',
+    effects: {
+      enhancements: [{
+        name: 'Overpower', cost: 2,
+        save: { attribute: 'Mig', failure: 'Prone', success: 'Pushed back', successEach5: 'Knocked out' },
+      }],
+    },
+  });
+  const text = getFullText(createActionCardElement(action, 12, 5));
+  assert.ok(text.includes('Knocked out'), 'successEach5 rendered in enhancement save');
 });
 
 test('enhancement with damageSegments renders damage', () => {
