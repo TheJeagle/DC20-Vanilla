@@ -308,7 +308,6 @@ writeFileSync(htmlPath, buildHtml(results));
 console.log(`HTML report: ${htmlPath}\n`);
 
 function buildHtml(results) {
-  // Embed data for the editor panel — strip the circular `feature` ref cleanly
   const tableData = results.map(r => ({
     id: r.id,
     name: r.name,
@@ -328,19 +327,37 @@ function buildHtml(results) {
     const breakdownStr = `dmg ${bd.damageCost} / cond ${bd.conditionCost.toFixed(1)} / mod ${bd.modifierCost.toFixed(1)} / rxn ${bd.reactionTax}`;
     const flagsHtml = r.flags.map(f => `<span class="flag">⚑ ${f}</span>`).join('');
     const deltaStr = (r.delta >= 0 ? '+' : '') + r.delta;
-    return `<tr class="status-${r.status.toLowerCase()}" data-idx="${i}" data-status="${r.status}" data-delta="${Math.abs(r.delta)}" data-name="${r.name.replace(/"/g, '&quot;')}">
+    const statusLc = r.status.toLowerCase();
+    return `<tr class="status-${statusLc}" data-idx="${i}" data-status="${r.status}" data-name="${r.name.replace(/"/g, '&quot;')}">
       <td>${r.name}</td>
       <td class="mono small">${r.id}</td>
       <td class="small">${r.type}</td>
-      <td class="center"><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+      <td class="center"><span class="badge badge-${statusLc}" id="badge-${i}">${r.status}</span></td>
       <td class="center mono" id="stored-${i}">${r.stored}</td>
-      <td class="center mono">${r.computed}</td>
+      <td class="center mono" id="computed-${i}">${r.computed}</td>
       <td class="center mono ${r.delta > 0 ? 'pos' : r.delta < 0 ? 'neg' : ''}" id="delta-${i}">${deltaStr}</td>
-      <td class="small">${breakdownStr}${flagsHtml ? '<br>' + flagsHtml : ''}</td>
+      <td class="small" id="breakdown-${i}">${breakdownStr}${flagsHtml ? '<br>' + flagsHtml : ''}</td>
     </tr>`;
   }).join('\n');
 
   const summary = `OK: ${counts.OK} &nbsp;|&nbsp; UNDERPRICED: ${counts.UNDERPRICED} &nbsp;|&nbsp; OVERPRICED: ${counts.OVERPRICED} &nbsp;|&nbsp; FLAG: ${counts.FLAG}`;
+
+  // Scoring constants — injected verbatim so browser JS can recalculate
+  const CONSTANTS_JS = `
+const DAMAGE_PER_MODIFIER = ${DAMAGE_PER_MODIFIER};
+const DURATION_FACTORS = ${JSON.stringify(DURATION_FACTORS)};
+const SAVE_FACTORS = ${JSON.stringify(SAVE_FACTORS)};
+const CONDITION_BASE_VALUES = ${JSON.stringify(CONDITION_BASE_VALUES)};
+const MODIFIER_SCALES = ${JSON.stringify(MODIFIER_SCALES)};
+const RESISTANCE_COST = ${RESISTANCE_COST};
+const IMMUNITY_COST = ${IMMUNITY_COST};
+const VULNERABILITY_COST = ${VULNERABILITY_COST};
+const CONDITION_IMMUNITY_COST = ${CONDITION_IMMUNITY_COST};
+const CONDITION_RESISTANCE_COST = ${CONDITION_RESISTANCE_COST};
+const REACTION_TAX = ${REACTION_TAX};
+const MAX_RESISTANCES_WITHOUT_FLAG = ${MAX_RESISTANCES_WITHOUT_FLAG};
+const CONDITION_NAMES = Object.keys(CONDITION_BASE_VALUES);
+`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -354,11 +371,11 @@ function buildHtml(results) {
     --text: #e0e0e0; --muted: #777; --subtle: #555;
     --ok: #4caf50; --under: #ff9800; --over: #2196f3; --flag: #f44336;
     --ok-bg: #162318; --under-bg: #2e1e00; --over-bg: #0c2035; --flag-bg: #2e0d0d;
-    --panel-w: 480px;
+    --panel-w: 520px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-  #topbar { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+  #topbar { padding: 14px 20px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
   h1 { font-size: 17px; margin-bottom: 2px; }
   .summary { color: var(--muted); font-size: 12px; }
   .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
@@ -396,32 +413,28 @@ function buildHtml(results) {
   .pos { color: var(--under); }
   .neg { color: var(--over); }
   .flag { color: var(--flag); font-size: 11px; display: inline-block; margin-top: 2px; }
-  /* Detail panel */
-  #panel { width: var(--panel-w); flex-shrink: 0; border-left: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; transition: width 0.2s; }
-  #panel.hidden { width: 0; border-left: none; overflow: hidden; }
-  #panel-inner { padding: 16px; overflow-y: auto; flex: 1; }
-  #panel h2 { font-size: 15px; margin-bottom: 2px; }
-  #panel .panel-meta { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
-  .section { margin-bottom: 16px; }
-  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  /* Panel */
+  #panel { width: var(--panel-w); flex-shrink: 0; border-left: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+  #panel.hidden { width: 0; border-left: none; }
+  #panel-inner { padding: 14px 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+  #panel h2 { font-size: 15px; }
+  .panel-meta { font-size: 11px; color: var(--muted); }
+  .panel-score { font-size: 13px; font-weight: 600; }
+  .section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.6px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid var(--border); padding-bottom: 3px; }
   .reason { font-size: 12px; color: var(--text); padding: 3px 0; border-bottom: 1px solid #1e2030; line-height: 1.5; }
   .reason.flag-item { color: var(--flag); }
   .reason.zero { color: var(--subtle); }
-  .edit-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .edit-row label { font-size: 12px; color: var(--muted); min-width: 110px; margin: 0; }
-  .edit-row input[type=number], .edit-row input[type=text], .edit-row textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 5px 8px; border-radius: 4px; font-size: 13px; }
-  .edit-row input[type=number] { width: 80px; }
-  .edit-row input[type=text] { flex: 1; }
-  textarea#editDesc { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 8px; border-radius: 4px; font-size: 12px; width: 100%; min-height: 70px; resize: vertical; }
-  .panel-actions { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
+  #json-editor { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px; font-family: monospace; font-size: 11px; color: #ccc; width: 100%; min-height: 260px; resize: vertical; line-height: 1.5; }
+  #json-editor.error { border-color: var(--flag); }
+  #parse-error { color: var(--flag); font-size: 11px; min-height: 16px; }
+  .panel-actions { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
   .btn { padding: 7px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; border: 1px solid; }
-  .btn-apply { background: #1a2e40; border-color: var(--over); color: var(--over); }
-  .btn-apply:hover { background: #1e3850; }
-  .btn-cancel { background: var(--surface2); border-color: var(--border); color: var(--muted); }
-  .btn-cancel:hover { color: var(--text); }
-  #json-block { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px; font-family: monospace; font-size: 11px; white-space: pre-wrap; color: #aaa; max-height: 300px; overflow-y: auto; }
-  .hidden { display: none !important; }
+  .btn-recalc { background: #1e2e1e; border-color: var(--ok); color: var(--ok); }
+  .btn-recalc:hover { background: #243e24; }
+  .btn-close { background: var(--surface2); border-color: var(--border); color: var(--muted); }
+  .btn-close:hover { color: var(--text); }
   .changed-mark { color: var(--under); font-size: 10px; margin-left: 4px; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
@@ -454,76 +467,202 @@ function buildHtml(results) {
   <div id="table-wrap">
     <div class="count" id="rowCount"></div>
     <table id="tbl">
-      <thead>
-        <tr>
-          <th data-col="name">Name</th>
-          <th data-col="id">ID</th>
-          <th data-col="type">Type</th>
-          <th data-col="status" class="center">Status</th>
-          <th data-col="stored" class="center">Stored</th>
-          <th data-col="computed" class="center">Computed</th>
-          <th data-col="delta" class="center sorted-desc">Delta</th>
-          <th>Breakdown / Flags</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th data-col="name">Name</th>
+        <th data-col="id">ID</th>
+        <th data-col="type">Type</th>
+        <th data-col="status" class="center">Status</th>
+        <th data-col="stored" class="center">Stored</th>
+        <th data-col="computed" class="center">Computed</th>
+        <th data-col="delta" class="center sorted-desc">Delta</th>
+        <th>Breakdown / Flags</th>
+      </tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>
+
   <div id="panel" class="hidden">
     <div id="panel-inner">
-      <h2 id="panel-name"></h2>
-      <div class="panel-meta" id="panel-meta"></div>
-      <div class="section" id="section-flags" style="display:none">
+      <div>
+        <h2 id="panel-name"></h2>
+        <div class="panel-meta" id="panel-meta"></div>
+        <div class="panel-score" id="panel-score"></div>
+      </div>
+      <div id="section-flags" hidden>
         <div class="section-title">Design Flags</div>
         <div id="panel-flags"></div>
       </div>
-      <div class="section">
+      <div>
         <div class="section-title">Score Breakdown</div>
         <div id="panel-reasons"></div>
       </div>
-      <div class="section">
-        <div class="section-title">Edit</div>
-        <div class="edit-row">
-          <label>featureCost</label>
-          <input type="number" id="editCost" min="0" step="1">
-        </div>
-        <div class="edit-row" style="align-items:flex-start">
-          <label style="padding-top:4px">featureDescription</label>
-          <textarea id="editDesc"></textarea>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-title">Raw JSON</div>
-        <div id="json-block"></div>
+      <div>
+        <div class="section-title">Edit JSON — change any field, then Recalculate</div>
+        <textarea id="json-editor" spellcheck="false"></textarea>
+        <div id="parse-error"></div>
       </div>
     </div>
     <div class="panel-actions">
-      <button class="btn btn-apply" onclick="applyEdit()">Apply changes</button>
-      <button class="btn btn-cancel" onclick="closePanel()">Close</button>
+      <button class="btn btn-recalc" onclick="recalculate()">⟳ Recalculate &amp; Apply</button>
+      <button class="btn btn-close" onclick="closePanel()">Close</button>
     </div>
   </div>
 </div>
-<script>
-const DATA = ${JSON.stringify(tableData)};
-// Mutable working copy of all features (for download)
-const features = DATA.map(r => JSON.parse(JSON.stringify(r.feature)));
-// Track which rows have been edited
-const edited = new Set();
 
+<script>
+${CONSTANTS_JS}
+
+// ---- Scoring functions (mirrored from evaluateFeatures.mjs) ----
+function detectConditions(text) {
+  if (!text) return [];
+  const found = [];
+  for (const name of CONDITION_NAMES) {
+    const regex = new RegExp('\\\\b' + name + '(?:\\\\s+(\\\\d+))?\\\\b', 'i');
+    const match = text.match(regex);
+    if (match) found.push({ name, stacks: match[1] ? parseInt(match[1], 10) : 1 });
+  }
+  return found;
+}
+
+function getDurationKey(save) {
+  const duration = (save.duration || '').trim();
+  if (!duration) return '';
+  if (duration === 'until the end of its next turn') return 'until the end of its next turn';
+  if (duration === 'until the end of your next turn') return 'until the end of your next turn';
+  if (duration === 'for 1 minute') return save.repeatable ? 'for 1 minute (repeatable)' : 'for 1 minute';
+  if (duration === 'until removed') {
+    const easy = ['Prone','Bleeding','Burning','Grappled'];
+    return easy.some(c => (save.failure||'').includes(c)) ? 'until removed (ap)' : 'until removed';
+  }
+  if (/short rest/i.test(duration)) return 'until end of short rest';
+  if (/long rest/i.test(duration)) return 'until end of long rest';
+  return 'for 1 minute (repeatable)';
+}
+
+function scoreSaveBlock(save, label) {
+  if (!save) return { cost: 0, reasons: [] };
+  const durationKey = getDurationKey(save);
+  const durationFactor = DURATION_FACTORS[durationKey] ?? 1.0;
+  const saveKey = save?.attribute || 'none';
+  const saveFactor = SAVE_FACTORS[saveKey] ?? SAVE_FACTORS.none;
+  const conditions = detectConditions(save.failure || '');
+  const reasons = [];
+  let cost = 0;
+  if (conditions.length === 0 && save.failure) {
+    reasons.push(label + ': failure "' + save.failure.slice(0,60) + '" — no recognised condition (scores 0)');
+  }
+  for (const { name, stacks } of conditions) {
+    const baseValue = CONDITION_BASE_VALUES[name] ?? 0;
+    const c = baseValue * stacks * durationFactor * saveFactor;
+    cost += c;
+    reasons.push(label + ': ' + name + (stacks > 1 ? ' ×' + stacks : '') + ' (base ' + baseValue + ') × "' + (durationKey||'instant') + '" (' + durationFactor + ') × save ' + saveKey + ' (' + saveFactor + ') = ' + c.toFixed(2));
+  }
+  return { cost, reasons };
+}
+
+function scoreDamageSegments(segments, aoe, label) {
+  if (!segments || !segments.length) return { cost: 0, reasons: [] };
+  const baseline = aoe ? -1 : 0;
+  const baselineLabel = aoe ? 'AoE baseline −1' : 'single-target baseline 0';
+  let cost = 0;
+  const reasons = [];
+  for (const seg of segments) {
+    if (seg.useBase !== false && seg.amount == null) {
+      const modifier = seg.modifier ?? 0;
+      const c = (modifier - baseline) * DAMAGE_PER_MODIFIER;
+      cost += c;
+      if (c !== 0) reasons.push(label + ': ' + seg.type + ' modifier ' + (modifier>=0?'+':'') + modifier + ' vs ' + baselineLabel + ' → (' + modifier + ' − ' + baseline + ') × ' + DAMAGE_PER_MODIFIER + ' = ' + c.toFixed(1));
+      else reasons.push(label + ': ' + seg.type + ' modifier ' + modifier + ' = free baseline (0)');
+    } else if (seg.amount != null) {
+      const c = seg.amount * DAMAGE_PER_MODIFIER;
+      cost += c;
+      reasons.push(label + ': flat ' + seg.amount + ' ' + seg.type + ' × ' + DAMAGE_PER_MODIFIER + ' = ' + c.toFixed(1));
+    }
+  }
+  return { cost, reasons };
+}
+
+function checkApFlags(effects, actionType) {
+  const flags = [];
+  const ap = effects.cost;
+  const aoe = actionType && actionType.includes('Area');
+  if (ap >= 4) flags.push(ap + ' AP action — needs individual review');
+  if (!aoe && effects.targetDefense && ap >= 2 && !effects.save) {
+    const segs = effects.damageSegments || [];
+    if (segs.every(s => s.useBase !== false && s.amount == null && (s.modifier ?? 0) === 0))
+      flags.push(ap + ' AP single-target vs ' + effects.targetDefense + ', only base damage, no condition — consider reducing to 1 AP');
+  }
+  if (aoe) {
+    for (const seg of (effects.damageSegments || []))
+      if (seg.useBase !== false && seg.amount == null && (seg.modifier ?? 0) < -1)
+        flags.push('AoE damage modifier ' + seg.modifier + ' is below AoE baseline of −1 — design error');
+  }
+  return flags;
+}
+
+function scoreFeature(feature) {
+  const effects = feature.effects || {};
+  const actionType = feature.actionType || '';
+  const aoe = actionType.includes('Area');
+  let damageCost = 0, conditionCost = 0, modifierCost = 0;
+  const reasons = [], flags = [];
+
+  if (effects.cost != null) {
+    const dmg = scoreDamageSegments(effects.damageSegments, aoe, 'Main action');
+    damageCost += dmg.cost; reasons.push(...dmg.reasons);
+    const cond = scoreSaveBlock(effects.save, 'Main save');
+    conditionCost += cond.cost; reasons.push(...cond.reasons);
+    flags.push(...checkApFlags(effects, actionType));
+    for (const enh of (effects.enhancements || [])) {
+      const label = 'Enhancement "' + enh.name + '"';
+      const ed = scoreDamageSegments(enh.damageSegments, aoe, label + ' damage');
+      damageCost += ed.cost; reasons.push(...ed.reasons);
+      const ec = scoreSaveBlock(enh.save, label + ' save');
+      conditionCost += ec.cost; reasons.push(...ec.reasons);
+    }
+  }
+
+  // Modifiers
+  for (const [stat, scale] of Object.entries(MODIFIER_SCALES)) {
+    const v = effects[stat];
+    if (v) { const c = v * scale; modifierCost += c; reasons.push(stat + ': ' + (v>0?'+':'') + v + ' × ' + scale + ' = ' + c.toFixed(1)); }
+  }
+  const res = effects.resistances?.damage || [];
+  if (res.length) { const c = res.length * RESISTANCE_COST; modifierCost += c; reasons.push('Damage resistances: ' + res.join(', ') + ' (' + res.length + ' × ' + RESISTANCE_COST + ') = ' + c.toFixed(1)); }
+  const imm = effects.immunities?.damage || [];
+  if (imm.length) { const c = imm.length * IMMUNITY_COST; modifierCost += c; reasons.push('Damage immunities: ' + imm.join(', ') + ' (' + imm.length + ' × ' + IMMUNITY_COST + ') = ' + c.toFixed(1)); }
+  const vul = effects.vulnerabilities?.damage || [];
+  if (vul.length) { const c = vul.length * VULNERABILITY_COST; modifierCost += c; reasons.push('Damage vulnerabilities: ' + vul.join(', ') + ' (' + vul.length + ' × ' + VULNERABILITY_COST + ') = ' + c.toFixed(1)); }
+  const ci = effects.immunities?.condition || [];
+  if (ci.length) { const c = ci.length * CONDITION_IMMUNITY_COST; modifierCost += c; reasons.push('Condition immunities: ' + ci.join(', ') + ' (' + ci.length + ' × ' + CONDITION_IMMUNITY_COST + ') = ' + c.toFixed(1)); }
+  const cr = effects.resistances?.condition || [];
+  if (cr.length) { const c = cr.length * CONDITION_RESISTANCE_COST; modifierCost += c; reasons.push('Condition resistances: ' + cr.join(', ') + ' (' + cr.length + ' × ' + CONDITION_RESISTANCE_COST + ') = ' + c.toFixed(1)); }
+  if (res.length > MAX_RESISTANCES_WITHOUT_FLAG && vul.length === 0)
+    flags.push(res.length + ' damage resistances with no vulnerabilities — consider adding vulnerabilities');
+
+  const reactionTax = feature.isReaction ? REACTION_TAX : 0;
+  if (reactionTax) reasons.push('Reaction tax: +' + REACTION_TAX);
+
+  const computed = Math.round((damageCost + conditionCost + modifierCost + reactionTax) * 10) / 10;
+  const stored = feature.featureCost ?? 0;
+  const delta = Math.round((computed - stored) * 10) / 10;
+  let status;
+  if (flags.some(f => f.includes('review'))) status = 'FLAG';
+  else if (Math.abs(delta) <= 0.5) status = 'OK';
+  else if (delta > 0) status = 'UNDERPRICED';
+  else status = 'OVERPRICED';
+
+  return { computed, stored, delta, status, breakdown: { damageCost, conditionCost, modifierCost, reactionTax }, reasons, flags };
+}
+
+// ---- Table state ----
+const DATA = ${JSON.stringify(tableData)};
+const features = DATA.map(r => JSON.parse(JSON.stringify(r.feature)));
 let sortCol = 'delta', sortDir = -1, filterStatus = 'all', searchStr = '';
 let selectedIdx = null;
 
-function val(row, col) {
-  const d = DATA[parseInt(row.dataset.idx)];
-  if (col === 'delta') return Math.abs(d.delta) * (d.delta >= 0 ? 1 : -1);
-  if (col === 'stored') return parseFloat(document.getElementById('stored-' + row.dataset.idx)?.textContent ?? d.stored);
-  if (col === 'computed') return d.computed;
-  if (col === 'name') return d.name.toLowerCase();
-  if (col === 'id') return d.id;
-  if (col === 'type') return d.type;
-  if (col === 'status') return d.status;
-  return '';
-}
+function getStored(idx) { return parseFloat(document.getElementById('stored-' + idx)?.textContent ?? DATA[idx].stored); }
+function getComputed(idx) { return parseFloat(document.getElementById('computed-' + idx)?.textContent ?? DATA[idx].computed); }
 
 function refresh() {
   const tbody = document.querySelector('#tbl tbody');
@@ -531,33 +670,37 @@ function refresh() {
   rows.forEach(r => {
     const d = DATA[parseInt(r.dataset.idx)];
     const statusMatch = filterStatus === 'all' || r.dataset.status === filterStatus;
-    const name = d.name.toLowerCase(), id = d.id.toLowerCase();
-    const searchMatch = !searchStr || name.includes(searchStr) || id.includes(searchStr);
+    const s = searchStr;
+    const searchMatch = !s || d.name.toLowerCase().includes(s) || d.id.toLowerCase().includes(s);
     r.classList.toggle('hidden', !statusMatch || !searchMatch);
   });
   const visible = rows.filter(r => !r.classList.contains('hidden'));
   visible.sort((a, b) => {
-    const av = val(a, sortCol), bv = val(b, sortCol);
-    if (sortCol === 'delta') return (Math.abs(bv) - Math.abs(av)) * sortDir * -1 || 0;
+    const ia = parseInt(a.dataset.idx), ib = parseInt(b.dataset.idx);
+    let av, bv;
+    if (sortCol === 'delta') { av = Math.abs(getStored(ia) - getComputed(ia)); bv = Math.abs(getStored(ib) - getComputed(ib)); }
+    else if (sortCol === 'stored') { av = getStored(ia); bv = getStored(ib); }
+    else if (sortCol === 'computed') { av = getComputed(ia); bv = getComputed(ib); }
+    else if (sortCol === 'name') { av = DATA[ia].name.toLowerCase(); bv = DATA[ib].name.toLowerCase(); }
+    else if (sortCol === 'id') { av = DATA[ia].id; bv = DATA[ib].id; }
+    else if (sortCol === 'type') { av = DATA[ia].type; bv = DATA[ib].type; }
+    else if (sortCol === 'status') { av = a.dataset.status; bv = b.dataset.status; }
+    else { av = 0; bv = 0; }
     return typeof av === 'string' ? av.localeCompare(bv) * sortDir : (av - bv) * sortDir;
   });
   visible.forEach(r => tbody.appendChild(r));
   document.getElementById('rowCount').textContent = visible.length + ' of ' + rows.length + ' features shown';
 }
 
-// Sorting
 document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => {
-    const col = th.dataset.col;
-    sortDir = sortCol === col ? sortDir * -1 : -1;
-    sortCol = col;
-    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted-asc', 'sorted-desc'));
+    sortDir = sortCol === th.dataset.col ? sortDir * -1 : -1;
+    sortCol = th.dataset.col;
+    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted-asc','sorted-desc'));
     th.classList.add(sortDir === -1 ? 'sorted-desc' : 'sorted-asc');
     refresh();
   });
 });
-
-// Filters
 document.querySelectorAll('.filter-btns button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-btns button').forEach(b => b.classList.remove('active'));
@@ -566,60 +709,58 @@ document.querySelectorAll('.filter-btns button').forEach(btn => {
     refresh();
   });
 });
-
 document.getElementById('search').addEventListener('input', e => {
   searchStr = e.target.value.toLowerCase().trim();
   refresh();
 });
 
-// Row click — open panel
+// ---- Panel ----
 document.querySelector('#tbl tbody').addEventListener('click', e => {
   const row = e.target.closest('tr');
   if (!row) return;
   const idx = parseInt(row.dataset.idx);
   if (selectedIdx === idx) { closePanel(); return; }
-  openPanel(idx);
   document.querySelectorAll('#tbl tbody tr').forEach(r => r.classList.remove('selected'));
   row.classList.add('selected');
-  selectedIdx = idx;
+  openPanel(idx);
 });
 
 function openPanel(idx) {
+  selectedIdx = idx;
   const d = DATA[idx];
-  const f = features[idx];
   document.getElementById('panel-name').textContent = d.name;
-  document.getElementById('panel-meta').textContent = 'ID: ' + d.id + '  |  Type: ' + d.type + '  |  Computed: ' + d.computed + '  |  Stored: ' + d.stored;
+  document.getElementById('panel-meta').textContent = 'ID: ' + d.id + '  |  Type: ' + d.type;
+  renderScore(d.computed, d.stored, d.delta, d.status);
+  renderBreakdown(d.reasons, d.flags);
+  document.getElementById('json-editor').value = JSON.stringify(features[idx], null, 2);
+  document.getElementById('parse-error').textContent = '';
+  document.getElementById('json-editor').classList.remove('error');
+  document.getElementById('panel').classList.remove('hidden');
+}
 
-  // Flags
+function renderScore(computed, stored, delta, status) {
+  const colors = { OK: '#4caf50', UNDERPRICED: '#ff9800', OVERPRICED: '#2196f3', FLAG: '#f44336' };
+  const sign = delta >= 0 ? '+' : '';
+  document.getElementById('panel-score').innerHTML =
+    'Computed: <b>' + computed + '</b> &nbsp; Stored: <b>' + stored + '</b> &nbsp; Delta: <b style="color:' + (colors[status]||'#aaa') + '">' + sign + delta + '</b> &nbsp; <span class="badge badge-' + status.toLowerCase() + '">' + status + '</span>';
+}
+
+function renderBreakdown(reasons, flags) {
   const flagsEl = document.getElementById('panel-flags');
   const secFlags = document.getElementById('section-flags');
-  if (d.flags.length) {
-    flagsEl.innerHTML = d.flags.map(f => '<div class="reason flag-item">⚑ ' + esc(f) + '</div>').join('');
-    secFlags.style.display = '';
-  } else {
-    secFlags.style.display = 'none';
-  }
-
-  // Reasons
+  if (flags.length) {
+    flagsEl.innerHTML = flags.map(f => '<div class="reason flag-item">⚑ ' + esc(f) + '</div>').join('');
+    secFlags.hidden = false;
+  } else { secFlags.hidden = true; }
   const reasonsEl = document.getElementById('panel-reasons');
-  if (d.reasons.length) {
-    reasonsEl.innerHTML = d.reasons.map(r => {
-      const isZero = r.includes('= 0') || r.includes('free baseline');
-      return '<div class="reason' + (isZero ? ' zero' : '') + '">' + esc(r) + '</div>';
+  if (reasons.length) {
+    reasonsEl.innerHTML = reasons.map(r => {
+      const zero = r.includes('= 0') || r.includes('free baseline') || r.includes('scores 0)');
+      return '<div class="reason' + (zero ? ' zero' : '') + '">' + esc(r) + '</div>';
     }).join('');
   } else {
     reasonsEl.innerHTML = '<div class="reason zero">No mechanical components detected (passive/text feature)</div>';
   }
-
-  // Edit fields — use live feature data
-  document.getElementById('editCost').value = f.featureCost ?? 0;
-  document.getElementById('editDesc').value = f.featureDescription ?? '';
-
-  // JSON
-  document.getElementById('json-block').textContent = JSON.stringify(f, null, 2);
-
-  document.getElementById('panel').classList.remove('hidden');
-  selectedIdx = idx;
 }
 
 function closePanel() {
@@ -628,57 +769,86 @@ function closePanel() {
   selectedIdx = null;
 }
 
-function applyEdit() {
+function recalculate() {
   if (selectedIdx == null) return;
-  const newCost = parseFloat(document.getElementById('editCost').value);
-  const newDesc = document.getElementById('editDesc').value.trim();
+  const editor = document.getElementById('json-editor');
+  const errEl = document.getElementById('parse-error');
+  let parsed;
+  try {
+    parsed = JSON.parse(editor.value);
+    editor.classList.remove('error');
+    errEl.textContent = '';
+  } catch (e) {
+    editor.classList.add('error');
+    errEl.textContent = 'JSON parse error: ' + e.message;
+    return;
+  }
 
-  // Update working features copy
-  features[selectedIdx].featureCost = newCost;
-  features[selectedIdx].featureDescription = newDesc;
+  // Store updated feature
+  features[selectedIdx] = parsed;
 
-  // Update DATA stored value for display
-  DATA[selectedIdx].stored = newCost;
+  // Rescore
+  const result = scoreFeature(parsed);
 
-  // Update table cell
-  const storedCell = document.getElementById('stored-' + selectedIdx);
-  if (storedCell) {
-    storedCell.textContent = newCost;
-    if (!storedCell.querySelector('.changed-mark')) {
-      storedCell.insertAdjacentHTML('beforeend', '<span class="changed-mark">✎</span>');
+  // Update panel header/score/breakdown
+  document.getElementById('panel-name').textContent = parsed.name || DATA[selectedIdx].name;
+  document.getElementById('panel-meta').textContent = 'ID: ' + (parsed.id || DATA[selectedIdx].id) + '  |  Type: ' + (parsed.type || DATA[selectedIdx].type);
+  renderScore(result.computed, result.stored, result.delta, result.status);
+  renderBreakdown(result.reasons, result.flags);
+
+  // Update table row
+  const idx = selectedIdx;
+  const row = document.querySelector('[data-idx="' + idx + '"]');
+  if (row) {
+    // Status class
+    row.className = row.className.replace(/status-\\S+/, 'status-' + result.status.toLowerCase());
+    row.dataset.status = result.status;
+    // Badge
+    const badge = document.getElementById('badge-' + idx);
+    if (badge) { badge.textContent = result.status; badge.className = 'badge badge-' + result.status.toLowerCase(); }
+    // Stored
+    const storedCell = document.getElementById('stored-' + idx);
+    if (storedCell) {
+      storedCell.textContent = result.stored;
+      if (!storedCell.querySelector('.changed-mark')) storedCell.insertAdjacentHTML('beforeend', '<span class="changed-mark"> ✎</span>');
+    }
+    // Computed
+    const computedCell = document.getElementById('computed-' + idx);
+    if (computedCell) computedCell.textContent = result.computed;
+    // Delta
+    const deltaCell = document.getElementById('delta-' + idx);
+    if (deltaCell) {
+      deltaCell.textContent = (result.delta >= 0 ? '+' : '') + result.delta;
+      deltaCell.className = 'center mono ' + (result.delta > 0 ? 'pos' : result.delta < 0 ? 'neg' : '');
+    }
+    // Breakdown cell
+    const bd = result.breakdown;
+    const bdCell = document.getElementById('breakdown-' + idx);
+    if (bdCell) {
+      const breakdownStr = 'dmg ' + bd.damageCost + ' / cond ' + bd.conditionCost.toFixed(1) + ' / mod ' + bd.modifierCost.toFixed(1) + ' / rxn ' + bd.reactionTax;
+      const flagsHtml = result.flags.map(f => '<span class="flag">⚑ ' + esc(f) + '</span>').join('');
+      bdCell.innerHTML = breakdownStr + (flagsHtml ? '<br>' + flagsHtml : '');
     }
   }
 
-  // Update delta cell
-  const deltaCell = document.getElementById('delta-' + selectedIdx);
-  const newDelta = DATA[selectedIdx].computed - newCost;
-  if (deltaCell) {
-    deltaCell.textContent = (newDelta >= 0 ? '+' : '') + Math.round(newDelta * 10) / 10;
-    deltaCell.className = 'center mono ' + (newDelta > 0 ? 'pos' : newDelta < 0 ? 'neg' : '');
-  }
-
-  // Update JSON preview
-  document.getElementById('json-block').textContent = JSON.stringify(features[selectedIdx], null, 2);
-
-  // Update panel meta
-  document.getElementById('panel-meta').textContent = 'ID: ' + DATA[selectedIdx].id + '  |  Type: ' + DATA[selectedIdx].type + '  |  Computed: ' + DATA[selectedIdx].computed + '  |  Stored: ' + newCost;
-
-  edited.add(selectedIdx);
+  // Update DATA for sort/filter
+  DATA[idx].stored = result.stored;
+  DATA[idx].computed = result.computed;
+  DATA[idx].delta = result.delta;
+  DATA[idx].status = result.status;
+  DATA[idx].name = parsed.name || DATA[idx].name;
 }
 
 function downloadJson() {
-  const json = JSON.stringify(features, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(features, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = 'features.json';
-  a.click();
+  a.href = url; a.download = 'features.json'; a.click();
   URL.revokeObjectURL(url);
 }
 
 function esc(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 refresh();
