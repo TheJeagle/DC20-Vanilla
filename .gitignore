@@ -71,5 +71,3 @@ node_modules/
 # Production build output
 dist/
 
-# Generated evaluation report (recreated by node scripts/evaluateFeatures.mjs)
-scripts/evaluateFeatures-report.html

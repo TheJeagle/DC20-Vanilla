@@ -70,7 +70,7 @@ export const CONDITION_BASE_VALUES = {
 // ----- MODIFIER SCALES -----
 // featureCost per unit of each numeric stat.
 export const MODIFIER_SCALES = {
-  hp: 1.0,
+  hp: 0.5,
   pd: 2.0,
   ad: 2.0,
   speed: 1.0,
