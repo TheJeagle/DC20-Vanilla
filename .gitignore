@@ -71,3 +71,7 @@ node_modules/
 # Production build output
 dist/
 
+# Generated evaluator reports
+scripts/evaluateFeatures-report.html
+scripts/evaluateCreatures-report.html
+

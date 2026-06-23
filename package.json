@@ -5,7 +5,8 @@
   "scripts": {
     "build": "node build.mjs",
     "deploy": "node build.mjs && firebase deploy --only hosting,firestore:rules",
-    "test": "node tests/features.test.mjs"
+    "test": "node tests/stats.test.mjs && node tests/conformance.test.mjs && node tests/features.test.mjs",
+    "evaluate:creatures": "node scripts/evaluateCreatures.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
