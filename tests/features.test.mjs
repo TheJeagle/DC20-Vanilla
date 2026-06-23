@@ -731,8 +731,10 @@ test('Legendary and Apex badges rendered when flags are set', () => {
   const badgeRow = findByClass(card, 'action-badges');
   assert.ok(badgeRow, 'badge row present');
   const labels = badgeRow.children.map((b) => b.textContent);
-  assert.ok(labels.includes('Legendary Action'), 'Legendary Action badge');
-  assert.ok(labels.includes('Apex Action'),      'Apex Action badge');
+  // DC20 Monster Collection terminology: Legendary monsters use Reaction Points (RP);
+  // Epic (internally "apex") monsters use Round Actions.
+  assert.ok(labels.includes('RP Action'),    'RP Action badge (Legendary)');
+  assert.ok(labels.includes('Round Action'), 'Round Action badge (Epic/Apex)');
 });
 
 test('no badge row when neither flag is set', () => {
@@ -803,8 +805,11 @@ test('no heavy-hit text for AD attacks', () => {
   assert.ok(!text.includes('heavy hits'), 'no heavy-hit text for AD attacks');
 });
 
-test('no heavy-hit text for area attacks on PD (regression: was shown incorrectly)', () => {
-  // Area attacks use PD but heavy-hit bonus only applies to single-target melee/ranged.
+test('heavy-hit text shown for area PD attacks with a .5 damage value', () => {
+  // The Impact property (+1 on Heavy Hit) comes from the .5 damage increment and
+  // applies to Area Attacks too — per the DC20 Monster Collection bestiary, e.g.
+  // Animated Armor "Pathcarver", Molten Glass Ooze "Radiate Heat", Earth Tortoise
+  // "Rampage" are all Area Attacks that grant +1 extra damage on a Heavy Hit.
   const action = buildAction(baseCreature({ damage: 4 }), {
     actionType: 'Area Martial Attack',
     effects: {
@@ -813,7 +818,7 @@ test('no heavy-hit text for area attacks on PD (regression: was shown incorrectl
     },
   });
   const text = getFullText(createActionCardElement(action, 12, 4));
-  assert.ok(!text.includes('heavy hits'), 'no heavy-hit text for area attacks');
+  assert.ok(text.includes('heavy hits'), 'heavy-hit text present for area PD attacks');
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════

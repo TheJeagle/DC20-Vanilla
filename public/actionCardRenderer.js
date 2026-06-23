@@ -416,6 +416,7 @@ export function createActionCardElement(action, saveDC, baseDamage, {
         appendText(line, `${savePrefix}${enh.save.attribute} Save. Failure: ${enh.save.failure ?? ''}`);
         if (enh.save.failureEach5) appendText(line, ` Failure (Each 5): ${enh.save.failureEach5}.`);
         if (enh.save.success) appendText(line, ` Success: ${enh.save.success}.`);
+        if (enh.save.successEach5) appendText(line, ` Success (Each 5): ${enh.save.successEach5}.`);
         if (enh.save.duration) appendText(line, ` Duration: ${enh.save.duration}.`);
       } else if (Array.isArray(enh.damageSegments) && enh.damageSegments.length) {
         enh.damageSegments.forEach((seg, i) => {
