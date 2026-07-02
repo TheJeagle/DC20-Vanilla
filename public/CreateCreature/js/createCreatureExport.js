@@ -1,5 +1,5 @@
-import { creature, featureState } from './createCreatureState.js';
 import { FEATURE_TYPES, getFeatureSummary } from '../../features.js';
+import { creature, featureState } from './createCreatureState.js';
 
 function toTitleCase(str) {
   if (!str) return '';
@@ -62,7 +62,53 @@ function buildActionDesc(action, fallbackSaveDC, baseDamage) {
 function buildActionEntry(action, fallbackSaveDC, baseDamage) {
   const cost = action.cost != null ? ` (${action.cost})` : '';
   const name = `${action.name || 'Action'}${cost}`;
-  const desc = buildActionDesc(action, fallbackSaveDC, baseDamage);
+  let desc = buildActionDesc(action, fallbackSaveDC, baseDamage);
+
+  // Parse enhancements based on the Firebase JSON structure
+  if (Array.isArray(action.enhancements) && action.enhancements.length > 0) {
+    const enhStrings = action.enhancements.map(enh => {
+      if (!enh) return '';
+      const eCost = enh.cost ?? 1;
+      const eName = enh.name || 'Enhancement';
+      let parts = [];
+      
+      // 1. Handle Save block
+      if (enh.save && enh.save.attribute) {
+        const savePrefix = enh.save.repeatable ? 'Repeatable ' : '';
+        let s = `${savePrefix}${enh.save.attribute} Save. Failure: ${enh.save.failure || ''}`;
+        if (enh.save.failureEach5) s += ` Failure (Each 5): ${enh.save.failureEach5}.`;
+        if (enh.save.success) s += ` Success: ${enh.save.success}.`;
+        if (enh.save.successEach5) s += ` Success (Each 5): ${enh.save.successEach5}.`;
+        if (enh.save.duration) s += ` Duration: ${enh.save.duration}.`;
+        parts.push(s.trim());
+      } 
+      // 2. Handle Damage Segments
+      else if (Array.isArray(enh.damageSegments) && enh.damageSegments.length > 0) {
+        let dmgParts = enh.damageSegments.map(seg => {
+          const raw = seg.useBase !== undefined
+            ? (seg.useBase ? baseDamage : 0) + (Number(seg.modifier) || 0)
+            : Number(seg.amount) || 0;
+          const rounded = Math.floor(raw);
+          return seg.type ? `${rounded} ${seg.type}` : `${rounded}`;
+        });
+        parts.push(dmgParts.join(' + ') + ' damage.');
+      } 
+      // 3. Handle Fallback Description
+      else if (enh.description) {
+        parts.push(enh.description);
+      }
+
+      return `• (+${eCost}) ${eName}: ${parts.join(' ')}`;
+    }).filter(Boolean);
+
+    // Append enhancements to the action description
+    if (enhStrings.length > 0) {
+      // We use \\n here so that the yamlQuote function outputs literal "\n" characters
+      // inside the double-quoted string. The YAML parser reads this as a true line break.
+      desc += "\\n" + enhStrings.join("\\n");
+    }
+  }
+
   return `  - name: ${name}\n    desc: ${yamlQuote(desc)}`;
 }
 

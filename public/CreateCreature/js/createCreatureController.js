@@ -44,7 +44,7 @@ import {
   arraysEqual,
   ATTRIBUTE_KEYS,
 } from './createCreatureStats.js';
-import { renderCreatureStatblock, setFeatureReorderHandler, setFeatureRemoveHandler, initStatblockSectionToggles, setCustomFeatureEditHandler, setCustomFeatureAddHandler, setSaveToBankHandler } from './createCreatureStatblock.js';
+import { renderCreatureStatblock, setFeatureReorderHandler, setFeatureRemoveHandler, initStatblockSectionToggles, setCustomFeatureEditHandler, setCustomFeatureAddHandler, setSaveToBankHandler, setApplyFixHandler } from './createCreatureStatblock.js';
 import {
   renderFeatureControls,
   ensureSelectedFeatureDependencies,
@@ -1056,6 +1056,18 @@ function initializeEventHandlers() {
       console.error('Failed to save feature to bank', err);
       setSaveStatus('Failed to save feature to bank.', 'error', { sticky: false });
     }
+  });
+
+  // Apply balance fix from sim suggestions
+  setApplyFixHandler((deltas) => {
+    if (!creature.deltas || typeof creature.deltas !== 'object') {
+      creature.deltas = {};
+    }
+    for (const [field, amount] of Object.entries(deltas)) {
+      const current = Number(creature.deltas[field]) || 0;
+      creature.deltas[field] = current + amount;
+    }
+    updateStatblock();
   });
 
   // Add bank feature to creature handler

@@ -108,8 +108,8 @@ export const powerScalingFactors = {
     minion:     { HPFactor: 0.5, PDMod: -4, ADMod: -4, CheckMod: -1, SaveDCMod: -1, DamageFactor: 0.5,  APMod: -1, RP: 0 },
     weak:       { HPFactor: 0.7, PDMod: -2, ADMod: -2, CheckMod: -1, SaveDCMod: -1, DamageFactor: 0.75, APMod: -1, RP: 0 },
     normal:     { HPFactor: 1.0, PDMod: 0,  ADMod: 0,  CheckMod: 0,  SaveDCMod: 0,  DamageFactor: 1.0,  APMod: 0,  RP: 0 },
-    apex:       { HPFactor: 2.0, PDMod: 2,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 1,  DamageFactor: 1.5,  APMod: 0,  RP: 2 },
-    legendary:  { HPFactor: 4.0, PDMod: 2,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 1,  DamageFactor: 1.5,  APMod: 0,  RP: 4 },
+    apex:       { HPFactor: 2.0, PDMod: 2,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 1,  DamageFactor: 1.5,  APMod: 0,  RP: 3 },
+    legendary:  { HPFactor: 4.0, PDMod: 2,  ADMod: 2,  CheckMod: 1,  SaveDCMod: 1,  DamageFactor: 1.5,  APMod: 0,  RP: 6 },
 };
 
 // Type flavor: humanoid (armored), beast (tough hide), dragon (deadly and durable),
@@ -135,6 +135,33 @@ export const typeScalingFactors = {
     none:      {HPFactor: 1.0, PDMod:  0, ADMod: 0, CheckMod:  0,   SaveDCMod: 0, DamageFactor: 1.0},
 }
 
+
+// Official damage PER ATTACK by level × difficulty (Monster Collection p.5).
+// The Medium column matches baseLevelStatsData[].Damage by design.
+export const damageDifficultyTable = {
+    novice: { easy: 0.25, medium: 0.25, hard: 0.5,  veryHard: 1.5,  deadly: 2 },
+    0:      { easy: 0.25, medium: 0.5,  hard: 1,    veryHard: 2,    deadly: 2.5 },
+    1:      { easy: 0.25, medium: 0.5,  hard: 1,    veryHard: 2,    deadly: 3 },
+    2:      { easy: 0.5,  medium: 1,    hard: 1.5,  veryHard: 3,    deadly: 4 },
+    3:      { easy: 0.5,  medium: 1,    hard: 2,    veryHard: 3.5,  deadly: 5 },
+    4:      { easy: 1,    medium: 1.5,  hard: 2.5,  veryHard: 4,    deadly: 6 },
+    5:      { easy: 1,    medium: 1.5,  hard: 2.5,  veryHard: 4.5,  deadly: 6.5 },
+    6:      { easy: 1.5,  medium: 2,    hard: 3,    veryHard: 5.5,  deadly: 7.5 },
+    7:      { easy: 1.5,  medium: 2,    hard: 3.5,  veryHard: 5.5,  deadly: 8 },
+    8:      { easy: 1.5,  medium: 2.5,  hard: 4,    veryHard: 6,    deadly: 9 },
+    9:      { easy: 1.5,  medium: 2.5,  hard: 4,    veryHard: 7,    deadly: 10 },
+    10:     { easy: 2,    medium: 3,    hard: 5,    veryHard: 8,    deadly: 11 },
+    11:     { easy: 2,    medium: 3.5,  hard: 5,    veryHard: 8.5,  deadly: 12 },
+    12:     { easy: 2.5,  medium: 4,    hard: 5.5,  veryHard: 9,    deadly: 13 },
+    13:     { easy: 2.5,  medium: 4,    hard: 6,    veryHard: 9.5,  deadly: 14 },
+    14:     { easy: 3,    medium: 4.5,  hard: 6.5,  veryHard: 10,   deadly: 14.5 },
+    15:     { easy: 3,    medium: 4.5,  hard: 6.5,  veryHard: 10.5, deadly: 15.5 },
+    16:     { easy: 3.5,  medium: 5,    hard: 7,    veryHard: 11.5, deadly: 16 },
+    17:     { easy: 3.5,  medium: 5,    hard: 7.5,  veryHard: 12,   deadly: 17 },
+    18:     { easy: 4,    medium: 5.5,  hard: 8,    veryHard: 12.5, deadly: 18 },
+    19:     { easy: 4,    medium: 5.5,  hard: 8,    veryHard: 13,   deadly: 18.5 },
+    20:     { easy: 4.5,  medium: 6,    hard: 9,    veryHard: 13.5, deadly: 20 },
+};
 
 export const sizeScalingFactors = {
     tiny:       {PDMod: 2,  ADMod: -2, HPMod: 0.6},

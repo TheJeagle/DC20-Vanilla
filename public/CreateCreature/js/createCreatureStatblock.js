@@ -7,6 +7,7 @@ import {
   appendField, appendBoldField, appendText,
   createActionBadges, hasHalfDamage,
 } from '../../actionCardRenderer.js';
+import { creatureFromState, evaluateCreature } from '../../Rules/combatSim.js';
 
 let dragSourceId = null;
 let onFeatureReorder = () => {};
@@ -36,6 +37,12 @@ export function setCustomFeatureAddHandler(cb) {
 let onSaveToBank = () => {};
 export function setSaveToBankHandler(cb) {
   onSaveToBank = typeof cb === 'function' ? cb : () => {};
+}
+
+/** Called when a sim fix "Apply" button is clicked. Receives a deltas object, e.g. { PD: 1 }. */
+let onApplyFix = () => {};
+export function setApplyFixHandler(cb) {
+  onApplyFix = typeof cb === 'function' ? cb : () => {};
 }
 
 export function initStatblockSectionToggles() {
@@ -305,10 +312,9 @@ function renderFeatureSummary() {
 
 
 
-function createActionCardElement(action, { showTrigger = false, baseDamage = 0, apCostBonus = 0 } = {}) {
+function createActionCardElement(action, { showTrigger = false, baseDamage = 0 } = {}) {
   const isCustom = Boolean(action.isCustom);
-  const displayAction = apCostBonus ? { ...action, cost: (Number(action.cost) || 0) + apCostBonus } : action;
-  const card = sharedCreateActionCardElement(displayAction, creature.saveDC ?? 0, baseDamage, {
+  const card = sharedCreateActionCardElement(action, creature.saveDC ?? 0, baseDamage, {
     showTrigger,
     showDragHandle: !isCustom,
     showRemoveButton: true,
@@ -329,7 +335,7 @@ function createActionCardElement(action, { showTrigger = false, baseDamage = 0, 
   return card;
 }
 
-function renderActionList(target, actions, { emptyMessage = 'No actions available.', showTrigger = false, baseDamage = 0, apCostBonus = 0 } = {}) {
+function renderActionList(target, actions, { emptyMessage = 'No actions available.', showTrigger = false, baseDamage = 0 } = {}) {
   if (!target) return;
   target.innerHTML = '';
 
@@ -342,7 +348,7 @@ function renderActionList(target, actions, { emptyMessage = 'No actions availabl
   }
 
   actions.forEach((action) => {
-    const card = createActionCardElement(action, { showTrigger, baseDamage, apCostBonus });
+    const card = createActionCardElement(action, { showTrigger, baseDamage });
     if (card) target.appendChild(card);
   });
 }
@@ -375,9 +381,7 @@ function renderActionSummary() {
       ? creature.stats.damage
       : 0;
 
-  // For low-damage creatures (baseDamage < 1), attacks cost 2 AP and deal doubled damage.
-  const lowDamage = baseDamage > 0 && baseDamage < 1;
-  const effectiveBaseDamage = lowDamage ? baseDamage * 2 : baseDamage;
+  const effectiveBaseDamage = baseDamage;
 
   const infoItems = [
     { label: 'Attack', value: toSignedDisplayInteger(Number(creature.check) || 0) },
@@ -397,7 +401,6 @@ function renderActionSummary() {
   renderActionList(statblockActionsList, creature.featureActions, {
     emptyMessage: 'No actions available.',
     baseDamage: effectiveBaseDamage,
-    apCostBonus: lowDamage ? 1 : 0,
   });
 
   if (statblockReactionsSection && statblockReactionsList) {
@@ -421,7 +424,6 @@ function renderActionSummary() {
       emptyMessage: 'No reactions — use + to add one.',
       showTrigger: true,
       baseDamage: effectiveBaseDamage,
-      apCostBonus: lowDamage ? 1 : 0,
     });
   }
 }
@@ -440,215 +442,375 @@ function computePlayerHitChanceVs(defense) {
   return clampPercent(raw);
 }
 
-const CRIT_CHANCE = 0.05;
-const CRIT_BONUS_DAMAGE = 2;
-
-function computeExpectedDamagePerAttack(defense, baseDamage) {
-  const hitChance = computePlayerHitChanceVs(defense) / 100;
-  let bonusChance = 0;
-  for (let bonus = 5; bonus <= 20; bonus += 5) {
-    bonusChance += computePlayerHitChanceVs(defense + bonus) / 100;
-  }
-  return baseDamage * hitChance + bonusChance + CRIT_CHANCE * CRIT_BONUS_DAMAGE;
-}
-
 function renderRecommendations() {
   const { recommendationsPanel } = dom;
   if (!recommendationsPanel) return;
 
-  const chanceVsPD = computePlayerHitChanceVs(creature.PD);
-  const chanceVsPDHeavy = computePlayerHitChanceVs(creature.PD + 5);
-  const chanceVsPDBrutal = computePlayerHitChanceVs(creature.PD + 10);
-  const chanceVsAD = computePlayerHitChanceVs(creature.AD);
-  const chanceVsADHeavy = computePlayerHitChanceVs(creature.AD + 5);
-  const chanceVsADBrutal = computePlayerHitChanceVs(creature.AD + 10);
+  // ── Convert creature to sim format and run evaluation ──
+  const simInput = creatureFromState(creature);
+  const report = evaluateCreature(simInput);
 
-  const level = creature.level === 'novice' ? 0 : (Number(creature.level) || 0);
-  const expectedPlayerDPT = Math.ceil(level + 4);
-  const expectedPlayerDamagePerAttack = expectedPlayerDPT / 2;
-  const expectedDamageVsPDPerAttack = computeExpectedDamagePerAttack(
-    creature.PD,
-    expectedPlayerDamagePerAttack,
-  );
-  const expectedDamageVsADPerAttack = computeExpectedDamagePerAttack(
-    creature.AD,
-    expectedPlayerDamagePerAttack,
-  );
-  const expectedDamageVsPDPerRound = expectedDamageVsPDPerAttack * 2;
-  const expectedDamageVsADPerRound = expectedDamageVsADPerAttack;
-  const turnsToKill =
-    expectedDamageVsPDPerRound > 0 ? Number(creature.HP) / expectedDamageVsPDPerRound : Infinity;
-  const expectedDamageDealt = Math.ceil((Number(creature.damage) || 0) * 1.3 * (Number.isFinite(turnsToKill) ? turnsToKill : 0));
-  const expectedDamageVsPDPerRoundDisplay = Number.isFinite(expectedDamageVsPDPerRound)
-    ? toDisplayDamage(expectedDamageVsPDPerRound)
-    : 0;
-  const expectedDamageVsADPerRoundDisplay = Number.isFinite(expectedDamageVsADPerRound)
-    ? toDisplayDamage(expectedDamageVsADPerRound)
-    : 0;
-  const turnsToKillDisplay = Number.isFinite(turnsToKill) ? toDisplayInteger(turnsToKill) : 'ƒ?"';
+  const s = report.survivability;
+  const t = report.threat;
 
+  // ── Trait Value budget ──
+  const traitBudget = Number.isFinite(creature.traitValue) ? creature.traitValue : 0;
+  const traitSpent = computeSpentTraitValue();
+
+  // ── Attack target coverage ──
   const allActions = [
     ...(Array.isArray(creature.featureActions) ? creature.featureActions : []),
     ...(Array.isArray(creature.featureReactions) ? creature.featureReactions : []),
   ];
   const targetedDefenses = [...new Set(allActions.map((a) => a.targetDefense).filter(Boolean))];
-  const attackTargetsDisplay = targetedDefenses.length ? targetedDefenses.join(', ') : 'None';
 
-  const missPD   = 100 - chanceVsPD;
-  const hitPD    = chanceVsPD - chanceVsPDHeavy;
-  const heavyPD  = chanceVsPDHeavy - chanceVsPDBrutal;
-  const brutalPD = chanceVsPDBrutal;
+  // ── Build the DOM ──
+  recommendationsPanel.innerHTML = '';
 
-  const missAD   = 100 - chanceVsAD;
-  const hitAD    = chanceVsAD - chanceVsADHeavy;
-  const heavyAD  = chanceVsADHeavy - chanceVsADBrutal;
-  const brutalAD = chanceVsADBrutal;
+  // ── Header row: difficulty badge + trait budget ──
+  const header = document.createElement('div');
+  header.className = 'bal-header';
 
-  const makeBar = (label, miss, hit, heavy, brutal) => ({
-    type: 'bar',
-    label,
-    segments: [
-      { key: 'miss',   text: `${miss}% Miss`,   flex: miss },
-      { key: 'hit',    text: `${hit}% Hit`,     flex: hit },
-      { key: 'heavy',  text: `${heavy}% Heavy`, flex: heavy },
-      { key: 'brutal', text: `${brutal}% Brutal`, flex: brutal },
-    ],
-  });
+  const badge = document.createElement('div');
+  badge.className = `bal-difficulty ${difficultyColorClass(report.difficulty)}`;
+  badge.innerHTML = `<span class="bal-diff-label">${report.difficulty}</span>`;
+  header.appendChild(badge);
 
-  const traitBudgetRec = Number.isFinite(creature.traitValue) ? creature.traitValue : 0;
-  const traitSpentRec = computeSpentTraitValue();
+  // Trait budget bar
+  const traitSection = document.createElement('div');
+  traitSection.className = 'bal-trait-budget';
+  const traitLabel = document.createElement('div');
+  traitLabel.className = 'bal-trait-label';
+  traitLabel.textContent = `Trait Value: ${traitSpent} / ${traitBudget}`;
+  traitSection.appendChild(traitLabel);
+  const traitBar = document.createElement('div');
+  traitBar.className = 'bal-trait-bar';
+  const pct = traitBudget > 0 ? Math.min((traitSpent / traitBudget) * 100, 100) : 0;
+  const overBudget = traitSpent > traitBudget;
+  const traitFill = document.createElement('div');
+  traitFill.className = `bal-trait-fill${overBudget ? ' bal-trait-over' : ''}`;
+  traitFill.style.width = `${pct}%`;
+  traitBar.appendChild(traitFill);
+  if (overBudget) {
+    const overPct = Math.min(((traitSpent - traitBudget) / traitBudget) * 100, 100);
+    const overFill = document.createElement('div');
+    overFill.className = 'bal-trait-overflow';
+    overFill.style.width = `${overPct}%`;
+    traitBar.appendChild(overFill);
+  }
+  traitSection.appendChild(traitBar);
+  header.appendChild(traitSection);
+  recommendationsPanel.appendChild(header);
 
-  const lines = [
-    { label: 'Trait Value: ', value: `${traitSpentRec} / ${traitBudgetRec}` },
-    { label: 'Attack targets: ', value: attackTargetsDisplay },
-    makeBar('Player hit vs PD (equal level):', missPD, hitPD, heavyPD, brutalPD),
-    makeBar('Player hit vs AD (equal level):', missAD, hitAD, heavyAD, brutalAD),
-    {
-      label: 'Est. PD damage per player per round: ',
-      value: `${expectedDamageVsPDPerRoundDisplay}`,
-    },
-    {
-      label: 'Est. AD damage per player per round: ',
-      value: `${expectedDamageVsADPerRoundDisplay}`,
-    },
-    {
-      label: 'Avg. turns to defeat (PD): ',
-      value: `${turnsToKillDisplay}`,
-    },
-    { label: 'Avg. damage before death: ', value: `${expectedDamageDealt}` },
+  // ── Offense / Defense split cards ──
+  const splitRow = document.createElement('div');
+  splitRow.className = 'bal-split';
+
+  const pcCount = report.balance.pcCount || 1;
+  const pcLabel = pcCount > 1 ? `(${pcCount} PCs)` : '(1 PC)';
+
+  // Defense card
+  const defCard = buildStatCard('Defense', report.defenseDifficulty, [
+    { label: 'Effective HP', value: s.effectiveHP, sub: `raw ${s.rawHP}` },
+    { label: `Rounds to Kill ${pcLabel}`, value: report.balance.roundsToKill, target: 3.0, unit: '', better: 'high' },
+  ]);
+  splitRow.appendChild(defCard);
+
+  // Offense card
+  const offStats = [
+    { label: 'Focus DPR', value: t.focusDPR, sub: t.focusCondValue > 0 ? `+${t.focusCondValue} cond` : null },
+    { label: `Rounds to Down ${pcLabel}`, value: report.balance.roundsToDownPC, target: report.balance.targetRTD, unit: '', better: 'low' },
   ];
+  if (t.rp > 0) {
+    offStats.splice(1, 0, { label: `RP Damage (${t.rp} RP, 75%)`, value: t.rpDmgPerRound, sub: 'per round' });
+  }
+  const offCard = buildStatCard('Offense', report.offenseDifficulty, offStats);
+  splitRow.appendChild(offCard);
+  recommendationsPanel.appendChild(splitRow);
 
-  const warnings = [];
+  // ── Accuracy section: creature hit + player hit bars ──
+  const accSection = document.createElement('div');
+  accSection.className = 'bal-accuracy';
+
+  // Creature accuracy row
+  const creatureAcc = document.createElement('div');
+  creatureAcc.className = 'bal-acc-row';
+  creatureAcc.innerHTML = `<span class="bal-acc-label">Creature hit chance</span>`
+    + `<span class="bal-acc-value">${t.hitChance}%</span>`;
+  if (t.saveFailChance > 0) {
+    creatureAcc.innerHTML += `<span class="bal-acc-sep">|</span>`
+      + `<span class="bal-acc-label">Save fail</span>`
+      + `<span class="bal-acc-value">${t.saveFailChance}%</span>`;
+  }
+  accSection.appendChild(creatureAcc);
+
+  // Player hit chance bars
+  const makeBar = (label, defense) => {
+    const miss = 100 - computePlayerHitChanceVs(defense);
+    const hit = computePlayerHitChanceVs(defense) - computePlayerHitChanceVs(defense + 5);
+    const heavy = computePlayerHitChanceVs(defense + 5) - computePlayerHitChanceVs(defense + 10);
+    const brutal = computePlayerHitChanceVs(defense + 10);
+    return { label, segments: [
+      { key: 'miss', text: `${miss}%`, flex: miss },
+      { key: 'hit', text: `${hit}%`, flex: hit },
+      { key: 'heavy', text: `${heavy}%`, flex: heavy },
+      { key: 'brutal', text: `${brutal}%`, flex: brutal },
+    ]};
+  };
+
+  for (const bar of [makeBar('vs PD', creature.PD), makeBar('vs AD', creature.AD)]) {
+    const row = document.createElement('div');
+    row.className = 'bal-hitbar-row';
+    const l = document.createElement('span');
+    l.className = 'bal-hitbar-label';
+    l.textContent = bar.label;
+    row.appendChild(l);
+
+    const barEl = document.createElement('div');
+    barEl.className = 'hit-chance-bar';
+    for (const { key, text, flex } of bar.segments) {
+      if (flex <= 0) continue;
+      const seg = document.createElement('div');
+      seg.className = `hc-segment hc-${key}`;
+      seg.style.flex = String(flex);
+      seg.title = `${text} ${key.charAt(0).toUpperCase() + key.slice(1)}`;
+      seg.textContent = flex >= 12 ? text : '';
+      barEl.appendChild(seg);
+    }
+    row.appendChild(barEl);
+    accSection.appendChild(row);
+  }
+
+  // Hit chance bar legend
+  const legend = document.createElement('div');
+  legend.className = 'bal-hitbar-legend';
+  legend.innerHTML = '<span class="hc-legend-dot hc-miss"></span>Miss '
+    + '<span class="hc-legend-dot hc-hit"></span>Hit '
+    + '<span class="hc-legend-dot hc-heavy"></span>Heavy '
+    + '<span class="hc-legend-dot hc-brutal"></span>Brutal';
+  accSection.appendChild(legend);
+
+  recommendationsPanel.appendChild(accSection);
+
+  // ── Round 1 rotation (collapsible) ──
+  if (t.focusRotation && t.focusRotation.length > 0) {
+    const rotSection = document.createElement('details');
+    rotSection.className = 'bal-rotation';
+    const rotSummary = document.createElement('summary');
+    rotSummary.className = 'bal-rotation-summary';
+    rotSummary.textContent = `Round 1 Rotation (${t.focusRotation.length} actions)`;
+    rotSection.appendChild(rotSummary);
+    for (const line of t.focusRotation) {
+      const el = document.createElement('div');
+      el.className = 'bal-rotation-line';
+      el.textContent = line;
+      rotSection.appendChild(el);
+    }
+    recommendationsPanel.appendChild(rotSection);
+  }
+
+  // ── Warnings ──
+  const allWarnings = [...report.warnings];
   if (!targetedDefenses.includes('PD')) {
-    warnings.push('No attacks target PD — characters who invest in Precision Defense gain no benefit against this creature.');
+    allWarnings.push('No attacks target PD.');
   }
   if (!targetedDefenses.includes('AD')) {
-    warnings.push('No attacks target AD — characters who invest in Area Defense gain no benefit against this creature.');
+    allWarnings.push('No attacks target AD.');
   }
 
-  const pdMissHigh = missPD > 50;
-  const pdMissLow  = missPD < 40;
-  const adMissHigh = missAD > 50;
-  const adMissLow  = missAD < 40;
-
-  if (pdMissHigh) {
-    if (adMissLow) {
-      warnings.push(`Player Hit Chance vs PD is low: ${chanceVsPD}%, but offset by a high Player Hit Chance vs AD: ${chanceVsAD}% — only balanced if the party can target both defenses.`);
-    } else {
-      warnings.push(`Player Hit Chance vs PD is low: ${chanceVsPD}% — This creature may be too durable against Precision Attacks.`);
-    }
-  } else if (pdMissLow) {
-    if (adMissHigh) {
-      warnings.push(`Player Hit Chance vs PD is high: ${chanceVsPD}%, but offset by a low Player Hit Chance vs AD: ${chanceVsAD}% — only balanced if the party can target both defenses.`);
-    } else {
-      warnings.push(`Player Hit Chance vs PD is high: ${chanceVsPD}% — This creature may be too fragile against Precision Attacks.`);
-    }
-  }
-
-  if (adMissHigh && !pdMissLow) {
-    warnings.push(`Player Hit Chance vs AD is low: ${chanceVsAD}% — This creature may be too durable against Area Attacks.`);
-  } else if (adMissLow && !pdMissHigh) {
-    warnings.push(`Player Hit Chance vs AD is high: ${chanceVsAD}% — This creature may be too fragile against Area Attacks.`);
-  }
-
-  if (Number.isFinite(turnsToKill) && turnsToKill > 4) {
-    warnings.push(`High durability: ~${turnsToKillDisplay} turns to defeat.`);
-  }
-
-  const baseKillThreshold = Math.ceil(6 + 1.5 * level);
-  let multiplier = 1;
-  const power = String(creature.power || '').toLowerCase();
-  if (power === 'apex') multiplier = 2;
-  else if (power === 'legendary') multiplier = 4;
-
-  if (expectedDamageDealt > multiplier * baseKillThreshold) {
-    const note = multiplier === 1 ? '' : ` (adjusted for ${powerDisplayLabel(power)})`;
-    warnings.push(`High lethality: ${expectedDamageDealt} > ${multiplier * baseKillThreshold}${note}.`);
-  }
-
-  const wrapper = document.createElement('div');
-  wrapper.className = 'recommendations-content';
-
-  const list = document.createElement('div');
-  list.className = 'recommendations-list';
-  lines.forEach(({ type, label, value, segments }) => {
-    const row = document.createElement('div');
-    row.className = 'recommendations-row';
-
-    if (type === 'bar') {
-      row.classList.add('recommendations-row--bar');
-      const l = document.createElement('span');
-      l.className = 'recommendations-label';
-      l.textContent = label;
-      row.appendChild(l);
-
-      const bar = document.createElement('div');
-      bar.className = 'hit-chance-bar';
-      segments.forEach(({ key, text, flex }) => {
-        if (flex <= 0) return;
-        const seg = document.createElement('div');
-        seg.className = `hc-segment hc-${key}`;
-        seg.style.flex = String(flex);
-        seg.title = text;
-        seg.textContent = flex >= 15 ? text : `${flex}%`;
-        bar.appendChild(seg);
-      });
-      row.appendChild(bar);
-    } else {
-      const l = document.createElement('span');
-      l.className = 'recommendations-label';
-      l.textContent = label;
-      const v = document.createElement('span');
-      v.className = 'recommendations-value';
-      v.textContent = value;
-      row.append(l, v);
-    }
-
-    list.appendChild(row);
-  });
-  wrapper.appendChild(list);
-
-  const warningsBox = document.createElement('div');
-  warningsBox.className = 'recommendations-warnings';
-  if (warnings.length) {
-    const title = document.createElement('div');
-    title.className = 'warnings-title';
-    title.textContent = 'Warnings';
-    warningsBox.appendChild(title);
-
-    warnings.forEach((warning) => {
+  if (allWarnings.length > 0) {
+    const warningsBox = document.createElement('div');
+    warningsBox.className = 'bal-warnings';
+    for (const w of allWarnings) {
       const item = document.createElement('div');
-      item.className = 'warning-item';
-      item.textContent = warning;
+      item.className = 'bal-warning-item';
+      item.textContent = w;
       warningsBox.appendChild(item);
-    });
-  }
-
-  recommendationsPanel.innerHTML = '<h2>Recommendations</h2>';
-  if (warnings.length) {
+    }
     recommendationsPanel.appendChild(warningsBox);
   }
-  recommendationsPanel.appendChild(wrapper);
+
+  // ── Fix suggestions ──
+  if (report.difficulty !== 'Medium') {
+    const fixes = computeFixSuggestions(simInput, report);
+    if (fixes.length > 0) {
+      const fixSection = document.createElement('div');
+      fixSection.className = 'bal-fixes';
+      const fixTitle = document.createElement('div');
+      fixTitle.className = 'bal-fixes-title';
+      fixTitle.textContent = 'Suggested Fixes';
+      fixSection.appendChild(fixTitle);
+
+      for (const fix of fixes) {
+        const row = document.createElement('div');
+        row.className = 'bal-fix-row';
+        const desc = document.createElement('span');
+        desc.className = 'bal-fix-desc';
+        desc.textContent = fix.description;
+        const resultSpan = document.createElement('span');
+        resultSpan.className = `bal-fix-result ${difficultyColorClass(fix.resultDifficulty)}`;
+        resultSpan.textContent = fix.resultDifficulty;
+        const btn = document.createElement('button');
+        btn.className = 'bal-fix-btn';
+        btn.textContent = 'Apply';
+        btn.type = 'button';
+        btn.addEventListener('click', () => onApplyFix(fix.deltas));
+        row.append(desc, resultSpan, btn);
+        fixSection.appendChild(row);
+      }
+      recommendationsPanel.appendChild(fixSection);
+    }
+  }
+}
+
+/** Build a stat card for the offense/defense split */
+function buildStatCard(title, difficulty, stats) {
+  const card = document.createElement('div');
+  card.className = `bal-card ${difficultyColorClass(difficulty)}`;
+  const hdr = document.createElement('div');
+  hdr.className = 'bal-card-header';
+  hdr.innerHTML = `<span class="bal-card-title">${title}</span>`
+    + `<span class="bal-card-diff">${difficulty}</span>`;
+  card.appendChild(hdr);
+
+  for (const stat of stats) {
+    const row = document.createElement('div');
+    row.className = 'bal-card-stat';
+    const lbl = document.createElement('span');
+    lbl.className = 'bal-card-stat-label';
+    lbl.textContent = stat.label;
+    const val = document.createElement('span');
+    val.className = 'bal-card-stat-value';
+    val.textContent = stat.value;
+    if (stat.sub) {
+      const sub = document.createElement('span');
+      sub.className = 'bal-card-stat-sub';
+      sub.textContent = stat.sub;
+      val.appendChild(sub);
+    }
+    row.append(lbl, val);
+    if (stat.target != null) {
+      // Deviation indicator
+      const dev = ((stat.value - stat.target) / stat.target * 100);
+      const devSign = dev > 0 ? '+' : '';
+      const devEl = document.createElement('span');
+      devEl.className = 'bal-card-stat-dev';
+      const isGood = (stat.better === 'high' && dev >= 0) || (stat.better === 'low' && dev <= 0) || Math.abs(dev) < 15;
+      devEl.classList.add(isGood ? 'bal-dev-ok' : 'bal-dev-warn');
+      devEl.textContent = `${devSign}${Math.round(dev)}%`;
+      row.appendChild(devEl);
+    }
+    card.appendChild(row);
+  }
+  return card;
+}
+
+/**
+ * Compute fix suggestions by running "what if" simulations with stat tweaks.
+ * Returns an array of { description, deltas, resultDifficulty } sorted by
+ * how close they bring the creature to Medium.
+ */
+function computeFixSuggestions(baseSimInput, baseReport) {
+  const isTooStrong = ['Hard', 'Very Hard', 'Deadly'].includes(baseReport.difficulty);
+  const sign = isTooStrong ? -1 : 1;
+
+  // Candidate tweaks: [description, delta field, amount]
+  const candidates = [];
+
+  // Defense tweaks (PD, AD, HP)
+  if (baseReport.defenseDifficulty !== 'Medium') {
+    const defTooHigh = ['Hard', 'Very Hard', 'Deadly'].includes(baseReport.defenseDifficulty);
+    const dSign = defTooHigh ? -1 : 1;
+    for (const step of [1, 2, 3]) {
+      candidates.push([`${dSign * step > 0 ? '+' : ''}${dSign * step} PD`, 'PD', dSign * step]);
+      candidates.push([`${dSign * step > 0 ? '+' : ''}${dSign * step} AD`, 'AD', dSign * step]);
+    }
+    // HP tweaks in larger increments
+    const hpStep = Math.max(1, Math.round(baseSimInput.hp * 0.15));
+    for (const mult of [1, 2]) {
+      const amt = dSign * hpStep * mult;
+      candidates.push([`${amt > 0 ? '+' : ''}${amt} HP`, 'HP', amt]);
+    }
+  }
+
+  // Offense tweaks (damage, check/attackBonus)
+  if (baseReport.offenseDifficulty !== 'Medium') {
+    const offTooHigh = ['Hard', 'Very Hard', 'Deadly'].includes(baseReport.offenseDifficulty);
+    const oSign = offTooHigh ? -1 : 1;
+    for (const step of [1, 2, 3]) {
+      candidates.push([`${oSign * step > 0 ? '+' : ''}${oSign * step} Check`, 'check', oSign * step]);
+    }
+    // Damage comes from the base damage stat
+    const dmgBase = baseSimInput.damage || 1;
+    for (const step of [0.5, 1, 2]) {
+      const amt = oSign * step;
+      if (dmgBase + amt < 0) continue;
+      candidates.push([`${amt > 0 ? '+' : ''}${amt} Damage`, 'damage', amt]);
+    }
+  }
+
+  // Evaluate each candidate
+  const results = [];
+  const seenDescriptions = new Set();
+  for (const [desc, field, amount] of candidates) {
+    if (seenDescriptions.has(desc)) continue;
+    seenDescriptions.add(desc);
+
+    // Build tweaked creature
+    const tweaked = { ...baseSimInput };
+    const deltaField = field;
+    switch (field) {
+      case 'PD': tweaked.pd = baseSimInput.pd + amount; break;
+      case 'AD': tweaked.ad = baseSimInput.ad + amount; break;
+      case 'HP': tweaked.hp = baseSimInput.hp + amount; break;
+      case 'check': tweaked.attackBonus = baseSimInput.attackBonus + amount; break;
+      case 'damage':
+        tweaked.damage = baseSimInput.damage + amount;
+        // Also adjust attacks if they exist
+        if (tweaked.attacks) {
+          tweaked.attacks = baseSimInput.attacks.map(a => ({
+            ...a,
+            damage: Math.max(0, a.damage + amount),
+          }));
+        }
+        break;
+    }
+
+    const tweakedReport = evaluateCreature(tweaked);
+
+    // Only suggest if it moves toward Medium
+    const baseDist = difficultyDistance(baseReport.difficulty);
+    const tweakedDist = difficultyDistance(tweakedReport.difficulty);
+    if (tweakedDist < baseDist) {
+      results.push({
+        description: desc,
+        deltas: { [deltaField]: amount },
+        resultDifficulty: tweakedReport.difficulty,
+        distance: tweakedDist,
+      });
+    }
+  }
+
+  // Sort by closest to Medium, then by smallest change
+  results.sort((a, b) => a.distance - b.distance || Math.abs(Object.values(a.deltas)[0]) - Math.abs(Object.values(b.deltas)[0]));
+
+  // Return top 5 distinct suggestions
+  return results.slice(0, 5);
+}
+
+/** Distance from Medium: 0 = Medium, 1 = Easy/Hard, 2 = Very Hard, 3 = Deadly */
+function difficultyDistance(label) {
+  const map = { 'Very Easy': 2, 'Easy': 1, 'Medium': 0, 'Hard': 1, 'Very Hard': 2, 'Deadly': 3 };
+  return map[label] ?? 2;
+}
+
+/** CSS class for difficulty coloring */
+function difficultyColorClass(label) {
+  const map = {
+    'Very Easy': 'diff-veryeasy', 'Easy': 'diff-easy', 'Medium': 'diff-medium',
+    'Hard': 'diff-hard', 'Very Hard': 'diff-veryhard', 'Deadly': 'diff-deadly',
+  };
+  return map[label] || 'diff-medium';
 }
 
 function computeSpentTraitValue() {
